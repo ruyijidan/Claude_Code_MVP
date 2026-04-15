@@ -23,6 +23,10 @@ owner: core
   外部仓库：[lintsinghua/claude-code-book](https://github.com/lintsinghua/claude-code-book/tree/main)
   适合：理解对话循环、权限管线、上下文系统、Harness 心智模型
 
+- [`12-harness-patterns.md`](./12-harness-patterns.md)
+  对应文章：`Claude Code中的12个 Harness 模式`
+  适合：把常见 Harness 控制点和本项目当前实现做一张对照表
+
 ### 2. 产品形态与成熟 Harness 参考
 
 如果你想理解“当 Harness 长成产品后会是什么样”，重点看：
@@ -70,6 +74,7 @@ owner: core
 
 ## 当前已整理文档
 
+- [`12-harness-patterns.md`](./12-harness-patterns.md)
 - [`hermes-agent.md`](./hermes-agent.md)
 - [`deer-flow.md`](./deer-flow.md)
 - [`everything-claude-code.md`](./everything-claude-code.md)
@@ -86,6 +91,7 @@ owner: core
 
 | 参考 | 主要价值 | 对应我们的短板 | 对应路线图 |
 |---|---|---|---|
+| [`12-harness-patterns.md`](./12-harness-patterns.md) | Harness 控制点清单、pattern 对照表 | 上下文、验证、repair、权限等模式还未系统盘点 | `P0` 控制层梳理、`P1` 工作流补齐 |
 | `claude-code-book` | Harness 心智模型、对话循环、权限、上下文系统 | 角色与流程认知层不足 | `P0` 控制层、`P1` 工作流分层 |
 | [`hermes-agent.md`](./hermes-agent.md) | 更完整的产品化 Harness 形态 | memory、skills、toolsets、多入口产品面 | `P1` 记忆系统、模板层、外部信息接入 |
 | [`deer-flow.md`](./deer-flow.md) | skills、sandbox、middleware、sub-agent、long-horizon | skills 缺失、middleware 缺失、sandbox 缺失、state 偏轻 | `P1` 模板/skills、`P2` 多 Agent、`P2` application legibility |
