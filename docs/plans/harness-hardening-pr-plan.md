@@ -1,5 +1,5 @@
 ---
-last_updated: 2026-04-14
+last_updated: 2026-04-15
 status: active
 owner: core
 ---
@@ -102,6 +102,8 @@ Low. This PR adds harness control without changing runtime providers or CLI beha
 
 ## PR 2: Scoped Context Selector
 
+Status: completed on 2026-04-15
+
 ### Goal
 
 Replace generic file sampling with a task-scoped context selection path so the model receives more relevant repo context and less accidental noise.
@@ -152,6 +154,14 @@ class ScopedContext:
 - Context selection remains bounded and deterministic
 - Relevant architecture docs are consistently included
 - Existing repo-summary functionality is preserved
+
+### Delivered
+
+- Added `app/agent/context_selector.py`
+- Refactored `app/agent/context_builder.py` to combine raw repo signals with selector output
+- Preserved `candidate_files` compatibility while adding structured scoped context fields
+- Added unit coverage for context selection and context builder integration
+- Verified that the full test suite still passes after the scoped context upgrade
 
 ### Risk Level
 

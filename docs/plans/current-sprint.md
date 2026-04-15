@@ -1,5 +1,5 @@
 ---
-last_updated: 2026-04-14
+last_updated: 2026-04-15
 status: active
 owner: core
 ---
@@ -22,6 +22,8 @@ Move Claude Code MVP from a runnable coding loop into a clearer harness-oriented
 - Complete harness hardening PR 1:
   - completion contracts
   - verification gates
+- Complete harness hardening PR 2:
+  - scoped context selector
 
 ## Next
 
@@ -29,7 +31,6 @@ Move Claude Code MVP from a runnable coding loop into a clearer harness-oriented
 - Add application legibility foundations
 - Add stronger import and file-size guardrails
 - Start harness hardening PR wave:
-  - PR 2: scoped context selector
   - PR 3: failure classifier and repair policy
 
 ## Later
