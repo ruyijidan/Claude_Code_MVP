@@ -61,6 +61,30 @@ This means the project now has an end-to-end first version of all three planned 
 
 The next major improvements are no longer about introducing these control points for the first time. They are about tightening them, broadening coverage, and making them more phase-aware.
 
+## Follow-On Direction
+
+After the first hardening wave, the repository began a second kind of improvement:
+
+- adding workflow assets under `specs/workflows/`
+- adding reusable templates under `specs/templates/`
+- adding reusable rules under `specs/rules/`
+- connecting those assets to planner, verification, repair, and critic behavior
+
+This is a different kind of change from PR1-PR3.
+
+PR1-PR3 made the harness control plane thicker.
+The follow-on work makes that control plane easier to adjust by moving more execution meaning into explicit repo assets.
+
+At a high level, the direction is:
+
+- workflow assets shape plans
+- workflow verification shapes gates and completion checks
+- workflow stop conditions shape repair interfaces
+- rule assets shape critic behavior
+
+This follow-on direction is intentionally incremental.
+It is not yet a full workflow engine, but it creates the asset boundaries needed to grow toward one.
+
 ## PR 1: Completion Contracts And Verification Gates
 
 Status: completed on 2026-04-14

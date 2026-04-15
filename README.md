@@ -51,6 +51,14 @@ Harness 更像：
 - 把 runtime、policy、verify、replay 这些 Harness 核心部件拆成清晰层次
 - 把文档、约束脚本、测试和参考资料沉淀成可持续迭代的工程骨架
 
+同时，项目现在也开始补一层更靠上的可复用资产表达：
+
+- `specs/workflows/`：结构化工作流资产
+- `specs/templates/`：可复用输出模板
+- `specs/rules/`：可复用行为规则
+- `docs/patterns/`：稳定的架构模式说明
+- `docs/guides/`：面向贡献者的操作手册
+
 从代码结构上看，它已经具备一个 Harness MVP 最关键的几层：
 
 - 入口层：[`app/cli/main.py`](./app/cli/main.py)
@@ -100,6 +108,21 @@ Harness 更像：
 - 执行怎么被抽象
 - 结果怎么被验证
 - 失败怎么被修复
+
+读完这些代码层之后，如果你想进一步理解“怎样把这些能力沉淀成更可复用的上层资产”，可以继续看：
+
+1. [`specs/workflows`](./specs/workflows)
+2. [`specs/templates`](./specs/templates)
+3. [`specs/rules`](./specs/rules)
+4. [`docs/patterns`](./docs/patterns)
+5. [`docs/guides`](./docs/guides)
+
+推荐优先看：
+
+- [`docs/patterns/workflow-layer.md`](./docs/patterns/workflow-layer.md)
+- [`docs/patterns/asset-layer.md`](./docs/patterns/asset-layer.md)
+- [`docs/guides/how-to-add-a-workflow.md`](./docs/guides/how-to-add-a-workflow.md)
+- [`docs/guides/how-to-add-a-rule.md`](./docs/guides/how-to-add-a-rule.md)
 
 ### 第三步：直接跑起来，看闭环怎么工作
 

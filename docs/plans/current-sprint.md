@@ -34,6 +34,7 @@ Move Claude Code MVP from a runnable coding loop into a clearer harness-oriented
 - Add worktree-based verification script
 - Add application legibility foundations
 - Add stronger import and file-size guardrails
+- Continue turning workflow, template, and rule assets into behavior-shaping harness inputs
 
 ## Later
 

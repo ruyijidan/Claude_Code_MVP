@@ -5,6 +5,8 @@ Navigation:
 - [`README.md`](./README.md): project positioning, quick start, and capability boundaries
 - [`AGENTS.md`](./AGENTS.md): agent navigation and repository working rules
 - [`docs/architecture/interaction-harness.md`](./docs/architecture/interaction-harness.md): interaction entry layer, intent normalization, and kickoff visibility
+- [`docs/patterns/`](./docs/patterns): stable architectural patterns and reusable harness concepts
+- [`docs/guides/`](./docs/guides): contributor playbooks for extending workflows and assets
 - [`docs/`](./docs): detailed architecture constraints, conventions, and plans
 
 ## Overview
@@ -36,6 +38,11 @@ Key files:
 - [`docs/architecture/overview.md`](./docs/architecture/overview.md)
 - [`docs/architecture/boundaries.md`](./docs/architecture/boundaries.md)
 - [`docs/architecture/interaction-harness.md`](./docs/architecture/interaction-harness.md)
+- [`docs/patterns/workflow-layer.md`](./docs/patterns/workflow-layer.md)
+- [`docs/patterns/asset-layer.md`](./docs/patterns/asset-layer.md)
+- [`specs/workflows`](./specs/workflows)
+- [`specs/templates`](./specs/templates)
+- [`specs/rules`](./specs/rules)
 - [`docs/conventions/README.md`](./docs/conventions/README.md)
 - [`docs/plans/current-sprint.md`](./docs/plans/current-sprint.md)
 
@@ -44,6 +51,7 @@ Responsibilities:
 - explain repository purpose
 - define architecture boundaries
 - document interaction entry behavior and continuation rules
+- expose reusable workflow, template, and rule assets
 - document conventions and plans
 - give the agent a stable navigation map
 
