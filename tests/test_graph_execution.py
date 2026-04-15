@@ -58,6 +58,10 @@ class GraphExecutionTests(unittest.TestCase):
             )
             self.assertEqual(result["test_result"], "passed")
             self.assertIn("calculator.py", "".join(result["changed_files"]))
+            self.assertEqual(result["repair_action"], "added_missing_tests")
+            self.assertTrue(result["repair_attempts"])
+            self.assertEqual(result["repair_attempts"][0]["repair_decision"]["action"], "add_missing_tests")
+            self.assertIn("missing_tests", {item["kind"] for item in result["repair_attempts"][0]["failure_signals"]})
 
     def test_execute_investigate_issue_task(self) -> None:
         root = Path(__file__).resolve().parents[1]

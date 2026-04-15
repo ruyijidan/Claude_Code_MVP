@@ -169,6 +169,8 @@ Low to medium. This PR changes what context the agent sees, but keeps the runtim
 
 ## PR 3: Failure Classifier And Repair Policy
 
+Status: completed on 2026-04-15
+
 ### Goal
 
 Turn repair from a lightweight retry helper into a small recovery system that classifies failures, chooses a repair policy, and knows when to stop.
@@ -228,6 +230,15 @@ class RepairDecision:
 - Repair decisions are recorded in state and replay data
 - The loop has explicit stop conditions for repeated low-value retries
 - `self_repair.py` becomes an execution helper rather than a mixed strategy module
+
+### Delivered
+
+- Added `app/superpowers/failure_classifier.py`
+- Added `app/superpowers/repair_policy.py`
+- Refactored `app/superpowers/self_repair.py` into an execution helper driven by `RepairDecision`
+- Updated `app/agent/loop.py` to classify failures before repair and record repair attempts
+- Persisted failure signals, repair decisions, and repair attempt history in replay artifacts
+- Added unit coverage for failure classification, repair policy decisions, and repair-driven graph execution
 
 ### Risk Level
 

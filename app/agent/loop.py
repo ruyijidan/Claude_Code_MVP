@@ -15,6 +15,8 @@ from app.core.spec_loader import SpecLoader
 from app.evals.evaluator import Evaluator
 from app.evals.replay import ReplayLogger
 from app.runtime.ecc_adapter import ECCAdapter
+from app.superpowers.failure_classifier import FailureClassifier
+from app.superpowers.repair_policy import RepairPolicy
 from app.superpowers.retry_policy import RetryPolicy
 from app.superpowers.self_repair import SelfRepairEngine
 
@@ -33,6 +35,8 @@ class CodingAgentLoop:
         self.planner = LightweightPlanner()
         self.completion_contracts = CompletionContractRegistry()
         self.gate_runner = VerificationGateRunner(self.completion_contracts)
+        self.failure_classifier = FailureClassifier()
+        self.repair_policy = RepairPolicy()
         self.retry_policy = RetryPolicy()
         self.repair_engine = SelfRepairEngine(adapter)
         self.evaluator = Evaluator()
@@ -70,8 +74,31 @@ class CodingAgentLoop:
         state.update(router.run(state))
 
         attempt = 1
-        while self.retry_policy.should_retry(attempt, state.get("critic_issues", [])):
-            state.update(self.repair_engine.repair(state, state["critic_issues"]))
+        repair_attempts: list[dict] = []
+        state.update(self._record_repair_state(state, attempt, repair_attempts))
+        while state.get("critic_issues"):
+            decision = self.repair_policy.decide(
+                attempt,
+                self.failure_classifier.classify(state, state.get("critic_issues", [])),
+            )
+            retry_allowed = decision.retry_allowed and self.retry_policy.should_retry(attempt, state.get("critic_issues", []))
+            repair_attempt = {
+                "attempt": attempt,
+                "failure_signals": [item.to_dict() for item in self.failure_classifier.classify(state, state.get("critic_issues", []))],
+                "repair_decision": decision.to_dict(),
+                "retry_allowed": retry_allowed,
+            }
+            repair_attempts.append(repair_attempt)
+            state.update(
+                {
+                    "failure_signals": repair_attempt["failure_signals"],
+                    "repair_decision": repair_attempt["repair_decision"],
+                    "repair_attempts": list(repair_attempts),
+                }
+            )
+            if not retry_allowed:
+                break
+            state.update(self.repair_engine.repair(state, decision))
             state.update(verifier.run(state))
             state.update(self.gate_runner.run_post_execute(state))
             state.update(critic.run(state))
@@ -81,3 +108,12 @@ class CodingAgentLoop:
         state.update(self.evaluator.score(state))
         state["trajectory_path"] = self.replay_logger.persist(state)
         return state
+
+    def _record_repair_state(self, state: dict, attempt: int, repair_attempts: list[dict]) -> dict:
+        failure_signals = self.failure_classifier.classify(state, state.get("critic_issues", []))
+        repair_decision = self.repair_policy.decide(attempt, failure_signals)
+        return {
+            "failure_signals": [item.to_dict() for item in failure_signals],
+            "repair_decision": repair_decision.to_dict(),
+            "repair_attempts": list(repair_attempts),
+        }

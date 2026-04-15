@@ -21,6 +21,9 @@ class ReplayLogger:
             "verification_errors": state.get("verification_errors", []),
             "completion_check": state.get("completion_check", {}),
             "gate_results": state.get("gate_results", []),
+            "failure_signals": state.get("failure_signals", []),
+            "repair_decision": state.get("repair_decision", {}),
+            "repair_attempts": state.get("repair_attempts", []),
             "score": state.get("score"),
         }
         return str(self.store.write(name, payload))

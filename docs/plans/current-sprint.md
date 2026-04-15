@@ -24,14 +24,15 @@ Move Claude Code MVP from a runnable coding loop into a clearer harness-oriented
   - verification gates
 - Complete harness hardening PR 2:
   - scoped context selector
+- Complete harness hardening PR 3:
+  - failure classifier
+  - repair policy
 
 ## Next
 
 - Add worktree-based verification script
 - Add application legibility foundations
 - Add stronger import and file-size guardrails
-- Start harness hardening PR wave:
-  - PR 3: failure classifier and repair policy
 
 ## Later
 
