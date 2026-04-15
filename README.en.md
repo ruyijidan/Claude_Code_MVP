@@ -2,567 +2,286 @@
 
 [中文说明](./README.md)
 
-Repository:
-- GitHub: [ruyijidan/Claude_Code_MVP](https://github.com/ruyijidan/Claude_Code_MVP)
-- Git remote: `git@github.com:ruyijidan/Claude_Code_MVP.git`
+`Claude_Code_MVP` is a learning-oriented project for understanding Claude Code style agent harness design in a terminal-first coding workflow.
 
-External reference:
-- [`claude-code-book`](https://github.com/lintsinghua/claude-code-book/tree/main)
-  This is a Chinese deep-dive repository focused on Claude Code and Agent Harness architecture. It is not a dependency of this project, but it is highly relevant for understanding the design direction, permission pipeline, conversation loop, context system, and harness mental model behind this repository.
-- [`claw-code`](https://github.com/ultraworkers/claw-code/tree/main)
-  This is a useful open-source reference for a CLI-oriented agent harness product shape. It is not a dependency of this project, but it is valuable for understanding runtime surface design, documentation layering, and repository presentation.
-- [`hermes-agent`](https://github.com/nousresearch/hermes-agent)
-  This is a more complete and product-like agent harness reference. It is not a dependency of this project, but it is useful for understanding future directions such as skills, memory, toolsets, MCP, and multi-entry product surfaces. Project-specific notes are captured in [`docs/reference/hermes-agent.md`](./docs/reference/hermes-agent.md).
-- [`DeerFlow 2.0`](https://github.com/bytedance/deer-flow)
-  This is a strong reference for a super-agent harness runtime with skills, sandboxing, middleware, sub-agents, context engineering, and long-term memory. It is not a dependency of this project, but it is very useful for understanding how a minimal harness might evolve into a more complete runtime. Project-specific notes are captured in [`docs/reference/deer-flow.md`](./docs/reference/deer-flow.md).
-- [`everything-claude-code`](https://github.com/affaan-m/everything-claude-code)
-  This is a harness enhancement system that packages skills, hooks, rules, commands, memory, and MCP-related assets together. It is not a dependency of this project, but it is a very good reference for how future agent assets can be organized into reusable enhancement layers. Project-specific notes are captured in [`docs/reference/everything-claude-code.md`](./docs/reference/everything-claude-code.md).
-- `Claude Code source-engineering analysis`
-  This is an engineering-oriented synthesis of industrial Claude Code implementation patterns, especially around context compression, permission systems, memory, streaming execution, and multi-agent isolation. It is useful as a reference for understanding the current gaps in this project. Project-specific notes are captured in [`docs/reference/claude-code-source-leak.md`](./docs/reference/claude-code-source-leak.md).
-- `Dewu Spec Coding practice`
-  This is a practical field report on Claude Code plus Spec Coding in a real project. It is especially useful for understanding rules, template layers, visual anchoring, MCP usage, and recurring AI failure modes. Project-specific notes are captured in [`docs/reference/dewu-spec-coding.md`](./docs/reference/dewu-spec-coding.md).
-
-A terminal-first Claude Code style MVP repository.
-
-This project is no longer positioned as a multi-agent research starter. It is being reshaped into a more practical coding-agent MVP with the following loop:
+It is built around a minimal but complete execution loop:
 
 `CLI -> Repo Context -> Plan -> Execute -> Verify -> Repair -> Replay`
 
-For the clearest explanation of the system shape and harness layers, start with [`ARCHITECTURE.md`](./ARCHITECTURE.md).
+This repository is not just a demo that asks a model to write code, and it is not yet a large productized agent platform either. It is better understood as a small, concrete starting point for learning what a harness is, how a harness works, and how to engineer one step by step.
 
-## If You Are Developing With Claude Code
+## What Is a Harness?
 
-The most practical setup is not to treat every tool as a competitor, but to use them in layers:
+If you remember only one line:
 
-- `Claude Code`: the execution engine
-- `Superpowers`: the engineering workflow layer
-- `gstack`: the high-level decision and role-review layer
-- `DeerFlow`: the runtime blueprint for future platformization
-- `everything-claude-code`: the reference for organizing reusable enhancement assets
+**The agent is the executor. The harness is the operating environment.**
 
-### Recommended adoption order
+A harness is not the model itself. It is the system around the model that makes the agent actually usable. The real questions it answers are:
 
-- Start with `Claude Code + Superpowers`
-- Add `gstack` when you are building web products and need richer review / QA / browser flows
-- Use `DeerFlow` as an architectural reference when you want to grow toward a fuller harness runtime
-- Use `everything-claude-code` as a reference when you want to organize skills, hooks, rules, commands, and MCP-style assets
+- Where do tasks enter the system?
+- How is context organized?
+- How are tools and runtimes invoked?
+- Which actions are allowed, and which must be blocked?
+- How are results verified?
+- How are failures repaired?
+- How are runs recorded, replayed, and reviewed?
 
-### 1. Claude Code: execution engine
+That is why a harness is not mainly about “producing an answer.” It is about turning an agent run into a full engineering loop:
 
-Claude Code is best treated as the agent that actually does the work:
+`Request -> Context -> Plan -> Execute -> Verify -> Repair -> Replay`
 
-- reading code
-- editing code
-- running commands
-- running tests
-- fixing bugs
-- implementing scoped features
+That is also the core difference between a simple AI demo and an agent harness.
 
-It is strongest when the task is concrete and execution-ready.
+A typical demo looks like:
 
-### 2. Superpowers: workflow layer
+`prompt -> model -> output`
 
-Superpowers is most useful for adding engineering discipline around Claude Code:
+A harness looks more like:
 
-- brainstorming before implementation
-- explicit planning
-- stronger task decomposition
-- TDD-first execution habits
-- code review
-- branch finishing
+`prompt -> environment -> policy -> execution -> verification -> recovery -> trace`
 
-The main value is not a single skill. The value is that the workflow itself becomes more structured and repeatable.
+## What This Project Actually Does
 
-### 3. gstack: decision layer
+The goal of this project is not to clone the full Claude Code product. The goal is to implement the most important pieces of a Claude Code style harness first, and make them available as a minimal, runnable, understandable foundation for learning and iteration.
 
-gstack is most useful when the problem needs different evaluation perspectives:
+Today, the project focuses on four things:
 
-- product / value review
-- engineering / architecture review
-- design review
-- code review
-- QA
-- ship / release thinking
+- providing a `CLI first` entry point for a coding agent
+- turning repo-aware context, planning, execution, verification, and repair into a single-agent closed loop
+- separating runtime, policy, verification, and replay into clear layers
+- turning docs, guardrail scripts, tests, and reference notes into a reusable engineering skeleton
 
-It is especially useful for web products, SaaS tools, admin panels, and projects where browser-based QA matters.
+At the code level, it already contains the most important layers of a harness MVP:
 
-### 4. DeerFlow: platform blueprint
+- entry layer: [`app/cli/main.py`](./app/cli/main.py)
+- execution layer: [`app/agent/loop.py`](./app/agent/loop.py), [`app/agent/context_builder.py`](./app/agent/context_builder.py), [`app/agent/planner.py`](./app/agent/planner.py)
+- runtime layer: [`app/runtime`](./app/runtime)
+- constraint layer: [`app/agent/policies.py`](./app/agent/policies.py), [`scripts/check_architecture.py`](./scripts/check_architecture.py)
+- verification and repair layer: [`scripts/agent_verify.sh`](./scripts/agent_verify.sh), [`app/superpowers/self_repair.py`](./app/superpowers/self_repair.py), [`app/evals/replay.py`](./app/evals/replay.py)
 
-DeerFlow is not the first thing to install if your goal is simply to ship code with Claude Code.
-It is more useful as a blueprint for what a larger harness runtime could become:
+In other words, this repository is not mainly trying to teach “how to call a model.” It is trying to show:
 
-- skills
-- middleware
-- sandbox
-- sub-agents
-- long-term memory
-- richer runtime state
+**what the surrounding harness needs to look like if a coding agent is going to be genuinely usable.**
 
-Use it when thinking about future architecture, not as the first step for everyday coding.
+## How To Learn Harness Design Through This Project
 
-### 5. everything-claude-code: enhancement-asset reference
+The best way to learn a harness is not to memorize definitions first. It is to read ideas and implementations side by side inside a small working codebase.
 
-Everything Claude Code is best thought of as a packaging and organization reference for reusable harness assets:
+### Step 1: Build the right mental model
 
-- `skills/`
-- `hooks/`
-- `rules/`
-- `commands/`
-- `mcp-configs/`
-- `schemas/`
+Start with these documents in order:
 
-It is useful when you want to grow from "a repo that runs" into "a repo with reusable agent assets."
+1. [`README.md`](./README.md): build the high-level picture
+2. [`ARCHITECTURE.md`](./ARCHITECTURE.md): understand the execution path and layering
+3. [`docs/architecture/harness-explained.md`](./docs/architecture/harness-explained.md): read the deeper Chinese explanation
 
-### Suggested workflows by task size
+The goal of this pass is not to memorize APIs. It is to answer three questions:
 
-#### Small tasks
+- What is the difference between a harness and a prompt wrapper?
+- Why do policy, verification, and replay matter?
+- Why is “just calling a model” not enough for an agent project?
 
-Examples:
+### Step 2: Read the code by layer, not file-by-file at random
 
-- copy changes
-- visibility logic fixes
-- CSS spacing tweaks
-- single-field API updates
-- small bug fixes
+A good reading path is:
 
-Recommended path:
+1. entry layer: [`app/cli/main.py`](./app/cli/main.py)
+2. context and planning: [`app/agent/context_builder.py`](./app/agent/context_builder.py), [`app/agent/planner.py`](./app/agent/planner.py)
+3. main loop: [`app/agent/loop.py`](./app/agent/loop.py)
+4. runtime: [`app/runtime/adapter_factory.py`](./app/runtime/adapter_factory.py), [`app/runtime/local_runtime.py`](./app/runtime/local_runtime.py), [`app/runtime/cli_adapter.py`](./app/runtime/cli_adapter.py)
+5. constraints and verification: [`app/agent/policies.py`](./app/agent/policies.py), [`scripts/check_architecture.py`](./scripts/check_architecture.py), [`scripts/agent_verify.sh`](./scripts/agent_verify.sh)
+6. repair and traceability: [`app/superpowers/self_repair.py`](./app/superpowers/self_repair.py), [`app/evals/replay.py`](./app/evals/replay.py)
 
-- use Claude Code directly
-- optionally add a lightweight Superpowers planning step
+Reading the repo this way makes it much easier to map code back to the core harness questions:
 
-#### Medium tasks
+- How does a request enter?
+- How is context constructed?
+- How is work constrained?
+- How is execution abstracted?
+- How are outcomes verified?
+- How are failures repaired?
 
-Examples:
+### Step 3: Run it and watch the loop in practice
 
-- a CRUD page
-- a standard business module
-- a moderate refactor
-
-Recommended path:
-
-1. Use Superpowers for brainstorming and planning.
-2. Let Claude Code implement the plan.
-3. Let Claude Code run tests and fix the results.
-4. Use gstack `/review`.
-5. For web products, also use gstack `/qa`.
-
-#### Large tasks
-
-Examples:
-
-- a complex feature module
-- a core workflow refactor
-- a multi-page or multi-interface delivery
-
-Recommended path:
-
-1. Use gstack for high-level reviews such as `/plan-ceo-review`, `/plan-eng-review`, and `/plan-design-review`.
-2. Use Superpowers for the detailed execution plan.
-3. Let Claude Code implement against that plan.
-4. Use Superpowers to reinforce testing, review, and branch-finishing discipline.
-5. Use gstack for `/review`, `/qa`, and `/ship`.
-
-### If you only adopt one enhancement layer
-
-- Choose `Superpowers` first if you care most about execution discipline, testing, planning, and review.
-- Choose `gstack` first if you care most about product / design / engineering / QA perspective switching and browser validation.
-
-### Practical recommendation for this project
-
-- Borrow workflow discipline from `Superpowers`
-- Borrow role-based review and QA from `gstack`
-- Use `DeerFlow` as the reference for skills, middleware, sandbox, and sub-agent architecture
-- Use `everything-claude-code` as the reference for skills, hooks, rules, commands, and asset organization
-
-In one line:
-
-**Claude Code handles execution, Superpowers handles workflow, gstack handles judgment, DeerFlow provides the future runtime blueprint, and ECC provides the asset-organization reference.**
-
-## What This Project Is
-
-This repository is a local Claude Code MVP kernel focused on:
-
-- `CLI first`
-- `single coding loop`
-- `repo-aware context`
-- reusable `runtime / repair / replay`
-
-It is not a full Claude Code product and not a full infra platform yet. The best description right now is:
-
-A practical local MVP that can evolve into a real coding agent.
-
-## What Harness Means Here
-
-You can think of a harness as: **the operating environment around the agent, not just the model itself.**
-
-It answers five core questions:
-
-- where tasks enter the system
-- how context is organized
-- how tools and runtimes are invoked
-- which boundaries must not be crossed
-- how work is verified, repaired, and recorded
-
-In this project, that maps to the following chain:
-
-`user request`
--> [`app/cli/main.py`](./app/cli/main.py)
--> `Permission Pipeline`
--> [`app/agent/loop.py`](./app/agent/loop.py)
--> [`app/runtime`](./app/runtime)
--> `Verify`
--> [`app/superpowers/self_repair.py`](./app/superpowers/self_repair.py)
--> [`app/evals/replay.py`](./app/evals/replay.py)
-
-Using the three-layer Harness Engineering view, the project currently looks like this:
-
-### 1. Information Layer
-
-This makes the project legible to the agent.
-
-Key files:
-
-- [`AGENTS.md`](./AGENTS.md)
-- [`docs/architecture/overview.md`](./docs/architecture/overview.md)
-- [`docs/architecture/boundaries.md`](./docs/architecture/boundaries.md)
-- [`docs/conventions/README.md`](./docs/conventions/README.md)
-- [`docs/plans/current-sprint.md`](./docs/plans/current-sprint.md)
-
-This layer answers: **where knowledge lives and where the agent should look.**
-
-### 2. Constraint Layer
-
-This forces the agent to operate within rules.
-
-Key files:
-
-- [`app/agent/policies.py`](./app/agent/policies.py)
-- [`scripts/check_architecture.py`](./scripts/check_architecture.py)
-- [`scripts/agent_verify.sh`](./scripts/agent_verify.sh)
-- [` .github/workflows/harness-checks.yml `](./.github/workflows/harness-checks.yml)
-
-This layer answers: **what is allowed, what is blocked, and how mistakes are caught.**
-
-### 3. Automation Layer
-
-This lets the agent complete a closed loop.
-
-Key files:
-
-- [`app/agent/loop.py`](./app/agent/loop.py)
-- [`app/runtime/adapter_factory.py`](./app/runtime/adapter_factory.py)
-- [`app/superpowers/self_repair.py`](./app/superpowers/self_repair.py)
-- [`app/evals/replay.py`](./app/evals/replay.py)
-
-This layer answers: **how execution, verification, repair, and replay fit together.**
-
-In one sentence:
-
-**This project is not just a prompt wrapper that writes code. It is a minimal agent harness.**
-It already has the backbone of `entrypoint + runtime + policy + verify + repair + replay`, even though more advanced harness features are still ahead.
-
-## Harness Reading Order
-
-If you want to understand this project as a harness engineering codebase, start here:
-
-- [`README.md`](./README.md)
-- [`ARCHITECTURE.md`](./ARCHITECTURE.md)
-- [`AGENTS.md`](./AGENTS.md)
-- [`docs/architecture/overview.md`](./docs/architecture/overview.md)
-- [`docs/architecture/boundaries.md`](./docs/architecture/boundaries.md)
-- [`docs/conventions/README.md`](./docs/conventions/README.md)
-- [`docs/plans/current-sprint.md`](./docs/plans/current-sprint.md)
-
-Use the docs with this split of responsibilities:
-
-- [`README.md`](./README.md): product positioning, quick start, and current capability boundaries
-- [`AGENTS.md`](./AGENTS.md): agent navigation and repository working rules
-- [`ARCHITECTURE.md`](./ARCHITECTURE.md): execution flow, harness layers, and how the system works
-- [`docs/`](./docs): more detailed architecture constraints, conventions, and plans
-
-For external architectural reading, also see:
-
-- [`claude-code-book`](https://github.com/lintsinghua/claude-code-book/tree/main)
-- [`claw-code`](https://github.com/ultraworkers/claw-code/tree/main)
-
-## Current Capabilities
-
-### 1. CLI entrypoint
-
-The CLI lives in [`app/cli/main.py`](./app/cli/main.py).
-
-Example usage:
-
-```bash
-cc "fix failing tests"
-cc "implement tool router" --repo /path/to/repo
-cc "investigate intermittent failures" --json
-```
-
-Key flags:
-
-- `--repo`
-- `--provider`
-- `--task-type`
-- `--json`
-- `--auto-approve`
-- `--dangerously-skip-confirmation`
-
-### 2. Single-agent loop
-
-The main execution loop is in [`app/agent/loop.py`](./app/agent/loop.py).
-
-Current flow:
-
-1. collect repository context
-2. infer task type
-3. build a lightweight plan
-4. apply code changes
-5. run tests and verify outputs
-6. enter repair loop if needed
-7. persist replay artifacts
-
-### 3. Repo-aware context
-
-Context building lives in [`app/agent/context_builder.py`](./app/agent/context_builder.py).
-
-It currently collects:
-
-- repository path
-- user prompt
-- git status summary
-- candidate files
-- whether a `tests/` directory exists
-
-This is one of the most important foundations before wiring in a real model.
-
-### 4. Runtime / Repair / Replay
-
-The most valuable parts of the old starter repo are preserved:
-
-- runtime factory: [`app/runtime/adapter_factory.py`](./app/runtime/adapter_factory.py)
-- local runtime: [`app/runtime/local_runtime.py`](./app/runtime/local_runtime.py)
-- command/file primitives: [`app/runtime/ecc_adapter.py`](./app/runtime/ecc_adapter.py)
-- git summary tool: [`app/runtime/git_tool.py`](./app/runtime/git_tool.py)
-- repair: [`app/superpowers/self_repair.py`](./app/superpowers/self_repair.py)
-- replay: [`app/evals/replay.py`](./app/evals/replay.py)
-
-## Provider Status
-
-The runtime factory currently accepts:
-
-- `local`
-- `claude_code`
-- `codex_cli`
-
-Current status:
-
-- `local`: local single-loop execution
-- `claude_code`: delegates to the local `claude` CLI
-- `codex_cli`: delegates to the local `codex` CLI
-
-So `claude_code` and `codex_cli` now have real delegated CLI paths.
-Whether they run reliably depends on local login state, API keys, config-directory permissions, and network access.
-
-## Task Types
-
-A small set of task contracts is still kept for output and repair constraints:
-
-- `implement_feature`
-- `fix_bug`
-- `write_tests`
-- `investigate_issue`
-
-They live in [`specs/tasks`](./specs/tasks).
-
-Specs are now treated as a constraint layer rather than the main product entrypoint.
-
-## Quick Start
-
-### Requirements
-
-- Python 3.10+
-
-### Provider Configuration (Anthropic-Compatible)
-
-The project now auto-loads provider settings from the repository root [`.env`](./.env) file.
-It supports shell-style `export KEY=value` lines.
-
-Example local configuration:
-
-```bash
-export ANTHROPIC_BASE_URL="https://llm-api.zego.cloud"
-export ANTHROPIC_AUTH_TOKEN="<your-token>"
-export ANTHROPIC_MODEL="glm-5"
-```
-
-Notes:
-
-- `ANTHROPIC_BASE_URL`: Anthropic-compatible endpoint
-- `ANTHROPIC_AUTH_TOKEN`: auth token
-- `ANTHROPIC_MODEL`: default model name
-
-To validate the `claude_code` provider through the project:
-
-```bash
-cd /data/ji/code/Claude_Code_MVP
-python3 -m app.cli.main   --repo .   --provider claude_code   --delegate-to-provider   --auto-approve   --json   "Reply with exactly MODEL_OK"
-```
-
-Expected result: `returncode: 0` and `MODEL_OK` in the output.
-
-### Run in development
-
-```bash
-cd /data/ji/code/Claude_Code_MVP
-python3 -m app.cli.main "fix failing tests" --repo .
-python3 -m app.cli.main "implement tool router" --repo . --json
-```
-
-### Install the CLI
+Install:
 
 ```bash
 cd /data/ji/code/Claude_Code_MVP
 pip install -e .
+```
+
+Minimal run:
+
+```bash
+cd /data/ji/code/Claude_Code_MVP
 cc "fix failing tests" --repo .
 ```
 
-### Run tests
+You can also use the module entrypoint directly:
 
 ```bash
 cd /data/ji/code/Claude_Code_MVP
-python3 -m unittest discover -s tests
+python3 -m app.cli.main "implement tool router" --repo . --json
 ```
 
-### Quick Start
+Run verification:
 
 ```bash
 cd /data/ji/code/Claude_Code_MVP
-
 python3 -m unittest discover -s tests
-
 python3 -m app.cli.main --repo . --show-status
-python3 -m app.cli.main --repo . --show-review
 python3 -m app.cli.main --repo . --show-permissions
-
 bash scripts/agent_verify.sh
-
-python3 -m app.cli.main --repo . "summarize the current harness architecture"
 ```
 
-### Acceptance Check
+Once you have actually run these commands, the code becomes much easier to understand. The harness stops being an abstract idea and starts to look like a real system made of entrypoints, rules, execution, verification, and recovery.
 
-After the first run, confirm the following items work as expected:
+### Step 4: Treat it as a reference sample, not a final answer
 
-1. `python3 -m unittest discover -s tests`
-   Expected: the test suite finishes and ends with `OK`
+`Claude_Code_MVP` is a harness MVP, not a full industrial implementation. It is especially useful for learning:
 
-2. `python3 -m app.cli.main --repo . --show-status`
-   Expected: prints the current branch and working tree status
+- which layers a minimal harness should have
+- how those layers should be decoupled
+- how docs, scripts, and tests together form a control surface
 
-3. `python3 -m app.cli.main --repo . --show-review`
-   Expected: prints changed files, diff stats, and a short review summary
+What it is not yet:
 
-4. `python3 -m app.cli.main --repo . --show-permissions`
-   Expected: prints the current permission mode, risk level, decision, and suggested flags
+- a full multi-agent platform
+- a long-term memory system
+- a productized UI or dashboard
+- a full industrial isolation and permission system
 
-5. `bash scripts/agent_verify.sh`
-   Expected: creates a temporary worktree, runs architecture checks and tests, and cleans up automatically
+The most useful way to learn from it is:
 
-6. `python3 -m app.cli.main --repo . "summarize the current harness architecture"`
-   Expected: the local loop returns a result instead of exiting with an error
+- first use it to understand the skeleton
+- then use external references to understand fuller forms
+- then return to this repo and ask what the next missing layer should be
 
-### Success Criteria
+## Learning Notes: How To Actually Get Good At Harness Thinking
 
-The local MVP can be considered successfully running when all of the following are true:
+It is easy to read a few conceptual articles and feel like you understand harnesses. The harder part is turning those concepts into an engineering loop.
 
-- Unit tests pass
-- The CLI `--show-*` commands produce valid output
-- `scripts/agent_verify.sh` completes successfully
-- The local `local_loop` returns a result
+In practice, the following approach tends to work better.
 
-### Worktree Verification
+### 1. Do not define a harness as “more agents”
 
-A harness-style local verification script is available:
+Many people initially equate harness design with role systems, multi-agent orchestration, or a pile of fancy tools.
 
-```bash
-cd /data/ji/code/Claude_Code_MVP
-bash scripts/agent_verify.sh
-bash scripts/agent_verify.sh main
-```
+But the more fundamental questions are:
 
-The script will:
+- Is there a control surface for task entry?
+- Is there policy before execution?
+- Is there verification after execution?
+- Can the system recover from failure?
+- Is there traceability for what happened?
 
-- create a temporary git worktree
-- install the project
-- run architecture boundary checks
-- run the test suite
-- clean up the worktree automatically
+Understanding these base layers matters much more than jumping straight into multi-agent design.
 
-## Structure
+### 2. Separate the documentation layer, constraint layer, and automation layer
 
-```text
-app/
-├── agent/
-│   ├── context_builder.py
-│   ├── loop.py
-│   ├── planner.py
-│   └── policies.py
-├── cli/
-│   └── main.py
-├── evals/
-├── runtime/
-├── superpowers/
-└── tools/
-```
+The real sign that you understand a harness is not that you can repeat a definition. It is that you can separate which part of the system solves which class of problem:
 
-Key directories:
+- the documentation layer answers where the agent should find knowledge
+- the constraint layer answers what the agent is allowed to do
+- the automation layer answers how the agent closes the loop reliably
 
-- [`app/cli`](./app/cli): terminal entrypoint
-- [`app/agent`](./app/agent): single-agent loop, context, and policies
-- [`app/runtime`](./app/runtime): local runtime and provider abstraction
-- [`app/superpowers`](./app/superpowers): retry / repair
-- [`app/evals`](./app/evals): replay / scoring
-- [`specs`](./specs): retained task contracts
-- [`docs`](./docs): agent-readable architecture, conventions, and plans
+If you do not separate these layers clearly, everything eventually collapses into the main loop.
 
-## Relationship To The Older Structure
+### 3. Learn the minimal loop before the advanced capabilities
 
-The project still keeps some older modules, such as:
+A better learning order is:
 
-- [`app/graph/executor.py`](./app/graph/executor.py)
-- [`app/agents`](./app/agents)
+1. understand `CLI -> Context -> Plan -> Execute -> Verify -> Repair -> Replay`
+2. then study provider abstraction, policy, and worktree verification
+3. only then move to skills, memory, MCP, and sub-agents
 
-But those are now closer to compatibility and internal reuse layers than the primary product interface.
+That order makes the topic much less overwhelming.
 
-The new primary entrypoints are:
+### 4. Read code and run verification side by side
 
-- [`app/cli/main.py`](./app/cli/main.py)
-- [`app/agent/loop.py`](./app/agent/loop.py)
+Harnesses are hard to understand from source alone because much of their value shows up in runtime behavior.
 
-## Verified So Far
-
-Currently validated:
+That is why it helps to read and run in parallel:
 
 - `python3 -m unittest discover -s tests`
-- basic CLI invocation works
-- the local coding loop runs end to end
+- `python3 -m app.cli.main --repo . --show-status`
+- `python3 -m app.cli.main --repo . --show-permissions`
+- `bash scripts/agent_verify.sh`
 
-## Recommended Next Steps
+This makes several ideas click faster:
 
-### P0
+- why policy exists
+- why verification matters
+- why worktree checks belong inside a harness
 
-- add stronger import and layer guardrails
-- add dangerous command confirmation and path boundaries
+### 5. Use external references to build intuition for fuller systems
 
-### P1
+This project is good for understanding the skeleton. These references help you imagine what a fuller harness can grow into:
 
-- make context selection smarter
-- upgrade planning from rule-based heuristics to model-driven planning
-- strengthen verifier boundary checks and contract checks
+- [`claude-code-book`](https://github.com/lintsinghua/claude-code-book/tree/main): a Chinese deep-dive into Claude Code and harness mental models
+- [`claw-code`](https://github.com/ultraworkers/claw-code/tree/main): a useful reference for CLI product shape, repo presentation, and runtime surface design
+- [`hermes-agent`](https://github.com/nousresearch/hermes-agent): a more complete, product-like harness reference for skills, memory, toolsets, MCP, and multi-entry surfaces
+- [`DeerFlow 2.0`](https://github.com/bytedance/deer-flow): a strong reference for skills, sandboxing, middleware, sub-agents, and long-horizon runtime design
+- [`everything-claude-code`](https://github.com/affaan-m/everything-claude-code): a reference for packaging skills, hooks, rules, commands, memory, and MCP assets into reusable enhancement layers
+- `Claude Code source-engineering analysis`: an engineering-oriented synthesis for context compression, permissions, memory, streaming execution, and multi-agent isolation; see [`docs/reference/claude-code-source-leak.md`](./docs/reference/claude-code-source-leak.md)
+- `Dewu Spec Coding practice`: a practical field report on rules, demonstration layers, MCP usage, and common AI failure modes; see [`docs/reference/dewu-spec-coding.md`](./docs/reference/dewu-spec-coding.md)
+- [`docs/reference/README.md`](./docs/reference/README.md): the project’s own index of reference notes, reading order, and capability mapping
 
-### P2
+The goal is not to copy these projects wholesale. The better way to use them is to ask:
 
-- add session memory
-- add API / daemon mode
-- add a trajectory viewer / dashboard
+- Which layer does this add?
+- Why does that layer exist?
+- What would the smallest useful version of that layer look like in our own project?
+
+## Suggested Reading Order
+
+If you are learning harness design for the first time, this is a practical order:
+
+1. [`README.md`](./README.md): understand what you are trying to learn
+2. [`ARCHITECTURE.md`](./ARCHITECTURE.md): study the main system path
+3. [`docs/architecture/harness-explained.md`](./docs/architecture/harness-explained.md): build a deeper mental model
+4. [`AGENTS.md`](./AGENTS.md): understand repo navigation and working rules
+5. [`docs/architecture/boundaries.md`](./docs/architecture/boundaries.md): understand why boundaries matter
+6. [`docs/plans/current-sprint.md`](./docs/plans/current-sprint.md): understand what the project still needs next
+7. [`docs/reference/README.md`](./docs/reference/README.md): expand into broader harness references
+
+## What To Build Next: P0 / P1 / P2
+
+If we describe “making a real harness” in three stages, the next steps for this project look like this.
+
+### P0: Make the control and verification surfaces dependable
+
+This stage is not about more features. It is about making the system trustworthy:
+
+- thicken the permission system with finer risk classes and clearer refusal reasons, plus more stable `--show-permissions` output
+- strengthen architecture boundary guardrails so future iterations do not blur layers
+- make verification thicker with more structured results and failure classification
+- make replay / trace more explanatory so it is clear what happened and why
+
+### P1: Make it feel like a real coding harness
+
+This stage focuses on task understanding and workflow quality:
+
+- smarter context building (file selection, change awareness, test linkage, task-type awareness)
+- move planning from rule-only to model-assisted planning
+- push verification beyond “tests passed” into completion and quality checks
+- introduce lightweight templates / specs so task types influence execution paths
+- begin a lightweight memory layer to stabilize multi-task runs
+
+### P2: Platform-level depth and long-horizon capability
+
+This stage is about industrial harness thickness:
+
+- an asset layer for skills / hooks / rules / commands
+- middleware and a clearer runtime pipeline
+- sub-agent or multi-agent collaboration
+- fuller memory and state systems
+- stronger observability (trajectory viewer / dashboard)
+- API / daemon mode, plus cost, cache, and isolation systems
+
+For more detailed breakdowns, see [`ROADMAP.md`](./ROADMAP.md) and [`docs/plans/current-sprint.md`](./docs/plans/current-sprint.md).
+
+## Repository
+
+- GitHub: [ruyijidan/Claude_Code_MVP](https://github.com/ruyijidan/Claude_Code_MVP)
+- Git remote: `git@github.com:ruyijidan/Claude_Code_MVP.git`
