@@ -1,0 +1,16 @@
+{
+  "name": "surgical_changes",
+  "intent": "Prefer the smallest relevant change set and avoid unrelated edits.",
+  "applies_to": [
+    "implement_feature",
+    "fix_bug",
+    "write_tests",
+    "investigate_issue"
+  ],
+  "checks": [
+    "changed files should map back to the current task",
+    "avoid broad cleanup when it is not required for correctness",
+    "do not expand scope unless verification or architecture constraints require it"
+  ],
+  "failure_message": "The proposed change set is broader than the task requires."
+}

@@ -1,0 +1,34 @@
+{
+  "name": "bugfix",
+  "goal": "Fix a concrete defect with the smallest reliable change and verify the result with tests.",
+  "entry_signals": [
+    "prompt contains fix, bug, failing, regression, error",
+    "task type inferred as fix_bug"
+  ],
+  "required_context": [
+    "AGENTS.md",
+    "ARCHITECTURE.md",
+    "docs/architecture/boundaries.md",
+    "likely_relevant_files",
+    "test_targets",
+    "git_summary"
+  ],
+  "steps": [
+    "inspect repo context and identify likely bug surface",
+    "describe the smallest intended fix",
+    "apply focused code changes",
+    "run verification and check completion contract",
+    "repair only when failure signals allow bounded recovery"
+  ],
+  "verification": [
+    "tests must pass",
+    "at least one changed file must be recorded",
+    "at least one changed test file must be recorded",
+    "completion contract must pass"
+  ],
+  "stop_conditions": [
+    "architecture violation detected",
+    "repair policy denies retry",
+    "maximum retry budget reached"
+  ]
+}

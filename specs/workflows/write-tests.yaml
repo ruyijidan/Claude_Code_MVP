@@ -1,0 +1,33 @@
+{
+  "name": "write_tests",
+  "goal": "Add or extend tests with minimal supporting changes and verify that the test suite passes.",
+  "entry_signals": [
+    "prompt contains write and test",
+    "task type inferred as write_tests"
+  ],
+  "required_context": [
+    "AGENTS.md",
+    "ARCHITECTURE.md",
+    "docs/architecture/boundaries.md",
+    "likely_relevant_files",
+    "test_targets",
+    "git_summary"
+  ],
+  "steps": [
+    "inspect the target module and current test surface",
+    "add the minimum test coverage needed for the request",
+    "apply any narrow supporting code changes only if required for testability",
+    "run verification and completion checks"
+  ],
+  "verification": [
+    "tests must pass",
+    "at least one changed file must be recorded",
+    "at least one changed test file must be recorded",
+    "completion contract must pass"
+  ],
+  "stop_conditions": [
+    "architecture violation detected",
+    "repair policy denies retry",
+    "maximum retry budget reached"
+  ]
+}

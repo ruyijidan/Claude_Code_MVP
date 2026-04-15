@@ -1,0 +1,31 @@
+{
+  "name": "investigate_issue",
+  "goal": "Investigate a problem, produce an explicit report, and verify the required artifact exists.",
+  "entry_signals": [
+    "prompt contains investigate or debug why",
+    "task type inferred as investigate_issue"
+  ],
+  "required_context": [
+    "AGENTS.md",
+    "ARCHITECTURE.md",
+    "docs/architecture/boundaries.md",
+    "likely_relevant_files",
+    "git_summary"
+  ],
+  "steps": [
+    "inspect the relevant repo surface and identify likely issue boundaries",
+    "produce a written investigation artifact",
+    "add or update verification coverage for the investigation artifact",
+    "run verification and completion checks"
+  ],
+  "verification": [
+    "tests must pass",
+    "at least one changed file must be recorded",
+    "completion contract must pass"
+  ],
+  "stop_conditions": [
+    "architecture violation detected",
+    "repair policy denies retry",
+    "maximum retry budget reached"
+  ]
+}

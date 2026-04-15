@@ -28,6 +28,26 @@ class AgentSpec:
 
 
 @dataclass(slots=True)
+class WorkflowSpec:
+    name: str
+    goal: str
+    entry_signals: list[str]
+    required_context: list[str]
+    steps: list[str]
+    verification: list[str]
+    stop_conditions: list[str]
+
+
+@dataclass(slots=True)
+class RuleSpec:
+    name: str
+    intent: str
+    applies_to: list[str]
+    checks: list[str]
+    failure_message: str
+
+
+@dataclass(slots=True)
 class PlanStep:
     id: str
     description: str

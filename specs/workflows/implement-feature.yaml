@@ -1,0 +1,34 @@
+{
+  "name": "implement_feature",
+  "goal": "Add a new feature with bounded context, explicit verification, and a clear completion summary.",
+  "entry_signals": [
+    "prompt does not match bugfix, write-tests, or investigate patterns",
+    "task type inferred as implement_feature"
+  ],
+  "required_context": [
+    "AGENTS.md",
+    "ARCHITECTURE.md",
+    "docs/architecture/boundaries.md",
+    "likely_relevant_files",
+    "test_targets",
+    "git_summary"
+  ],
+  "steps": [
+    "inspect context and identify the smallest feature surface",
+    "apply implementation changes",
+    "ensure tests or verification artifacts exist",
+    "run verification gates",
+    "record replay artifacts and summary"
+  ],
+  "verification": [
+    "tests must pass",
+    "at least one changed file must be recorded",
+    "at least one changed test file must be recorded",
+    "completion contract must pass"
+  ],
+  "stop_conditions": [
+    "architecture violation detected",
+    "verification gates fail without retry allowance",
+    "maximum retry budget reached"
+  ]
+}

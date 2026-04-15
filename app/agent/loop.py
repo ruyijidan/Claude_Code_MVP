@@ -45,8 +45,10 @@ class CodingAgentLoop:
     def run(self, repo_path: Path, prompt: str, task_name: str | None = None) -> dict:
         task_type = task_name or self.planner.infer_task_type(prompt)
         task_spec = self.spec_loader.load_task(task_type)
+        workflow_name = self.planner.workflow_name_for_task_type(task_type)
+        workflow_spec = self.spec_loader.load_workflow(workflow_name)
         context = self.context_builder.build(repo_path, prompt)
-        plan = self.planner.build_plan(prompt, context, task_type)
+        plan = self.planner.build_plan(prompt, context, task_type, workflow_spec)
         provider_info = self.adapter.provider_info()
 
         state = {
@@ -56,6 +58,7 @@ class CodingAgentLoop:
                 "feature_request": prompt,
             },
             "task_spec": task_spec,
+            "workflow_spec": workflow_spec,
             "runtime_provider": self.adapter.provider_name,
             "provider_info": provider_info,
             "repo_context": context,
@@ -64,7 +67,10 @@ class CodingAgentLoop:
 
         coder = CoderAgent(self.spec_loader.load_agent("coder"), self.adapter)
         verifier = VerifierAgent(self.spec_loader.load_agent("verifier"), self.adapter)
-        critic = CriticAgent(self.spec_loader.load_agent("critic"))
+        critic = CriticAgent(
+            self.spec_loader.load_agent("critic"),
+            self.spec_loader.load_rule("surgical-changes"),
+        )
         router = RouterAgent(self.spec_loader.load_agent("router"))
 
         state.update(coder.run(state))
@@ -80,6 +86,7 @@ class CodingAgentLoop:
             decision = self.repair_policy.decide(
                 attempt,
                 self.failure_classifier.classify(state, state.get("critic_issues", [])),
+                workflow_spec,
             )
             retry_allowed = decision.retry_allowed and self.retry_policy.should_retry(attempt, state.get("critic_issues", []))
             repair_attempt = {
@@ -111,7 +118,7 @@ class CodingAgentLoop:
 
     def _record_repair_state(self, state: dict, attempt: int, repair_attempts: list[dict]) -> dict:
         failure_signals = self.failure_classifier.classify(state, state.get("critic_issues", []))
-        repair_decision = self.repair_policy.decide(attempt, failure_signals)
+        repair_decision = self.repair_policy.decide(attempt, failure_signals, state.get("workflow_spec"))
         return {
             "failure_signals": [item.to_dict() for item in failure_signals],
             "repair_decision": repair_decision.to_dict(),

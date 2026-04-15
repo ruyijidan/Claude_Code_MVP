@@ -13,6 +13,7 @@ class ReplayLogger:
         name = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
         payload = {
             "task": state["task_spec"].name,
+            "workflow": state.get("workflow_spec").name if state.get("workflow_spec") is not None else None,
             "runtime_provider": state.get("runtime_provider"),
             "provider_info": state.get("provider_info", {}),
             "plan": state.get("plan", []),
