@@ -10,4 +10,6 @@ class CriticAgent(BaseAgent):
             issues.append("tests_failed")
         if state.get("verification_errors"):
             issues.extend(state["verification_errors"])
+        if state.get("gate_failures"):
+            issues.extend(state["gate_failures"])
         return {"critic_issues": issues}

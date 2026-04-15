@@ -6,8 +6,10 @@ from app.agents.coder_agent import CoderAgent
 from app.agents.critic_agent import CriticAgent
 from app.agents.router_agent import RouterAgent
 from app.agents.verifier_agent import VerifierAgent
+from app.agent.completion_contracts import CompletionContractRegistry
 from app.agent.context_builder import RepoContextBuilder
 from app.agent.planner import LightweightPlanner
+from app.agent.verification_gates import VerificationGateRunner
 from app.core.memory_store import MemoryStore
 from app.core.spec_loader import SpecLoader
 from app.evals.evaluator import Evaluator
@@ -29,6 +31,8 @@ class CodingAgentLoop:
         self.adapter = adapter
         self.context_builder = RepoContextBuilder(adapter)
         self.planner = LightweightPlanner()
+        self.completion_contracts = CompletionContractRegistry()
+        self.gate_runner = VerificationGateRunner(self.completion_contracts)
         self.retry_policy = RetryPolicy()
         self.repair_engine = SelfRepairEngine(adapter)
         self.evaluator = Evaluator()
@@ -61,6 +65,7 @@ class CodingAgentLoop:
 
         state.update(coder.run(state))
         state.update(verifier.run(state))
+        state.update(self.gate_runner.run_post_execute(state))
         state.update(critic.run(state))
         state.update(router.run(state))
 
@@ -68,6 +73,7 @@ class CodingAgentLoop:
         while self.retry_policy.should_retry(attempt, state.get("critic_issues", [])):
             state.update(self.repair_engine.repair(state, state["critic_issues"]))
             state.update(verifier.run(state))
+            state.update(self.gate_runner.run_post_execute(state))
             state.update(critic.run(state))
             state.update(router.run(state))
             attempt += 1

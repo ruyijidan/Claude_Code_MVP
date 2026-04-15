@@ -19,6 +19,8 @@ class ReplayLogger:
             "changed_files": state.get("changed_files", []),
             "test_result": state.get("test_result"),
             "verification_errors": state.get("verification_errors", []),
+            "completion_check": state.get("completion_check", {}),
+            "gate_results": state.get("gate_results", []),
             "score": state.get("score"),
         }
         return str(self.store.write(name, payload))

@@ -30,10 +30,14 @@ class GraphExecutionTests(unittest.TestCase):
             )
             self.assertEqual(result["test_result"], "passed")
             self.assertEqual(result["selected_path"], "complete")
+            self.assertTrue(result["completion_check"]["passed"])
+            self.assertTrue(all(item["passed"] for item in result["gate_results"]))
             self.assertTrue(Path(result["trajectory_path"]).exists())
             payload = json.loads(Path(result["trajectory_path"]).read_text(encoding="utf-8"))
             self.assertEqual(payload["task"], "implement_feature")
             self.assertEqual(payload["runtime_provider"], "local")
+            self.assertTrue(payload["completion_check"]["passed"])
+            self.assertTrue(all(item["passed"] for item in payload["gate_results"]))
 
     def test_execute_fix_bug_task(self) -> None:
         root = Path(__file__).resolve().parents[1]
