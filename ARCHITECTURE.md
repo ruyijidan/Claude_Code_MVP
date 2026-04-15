@@ -4,6 +4,7 @@ Navigation:
 
 - [`README.md`](./README.md): project positioning, quick start, and capability boundaries
 - [`AGENTS.md`](./AGENTS.md): agent navigation and repository working rules
+- [`docs/architecture/interaction-harness.md`](./docs/architecture/interaction-harness.md): interaction entry layer, intent normalization, and kickoff visibility
 - [`docs/`](./docs): detailed architecture constraints, conventions, and plans
 
 ## Overview
@@ -34,6 +35,7 @@ Key files:
 - [`AGENTS.md`](./AGENTS.md)
 - [`docs/architecture/overview.md`](./docs/architecture/overview.md)
 - [`docs/architecture/boundaries.md`](./docs/architecture/boundaries.md)
+- [`docs/architecture/interaction-harness.md`](./docs/architecture/interaction-harness.md)
 - [`docs/conventions/README.md`](./docs/conventions/README.md)
 - [`docs/plans/current-sprint.md`](./docs/plans/current-sprint.md)
 
@@ -41,6 +43,7 @@ Responsibilities:
 
 - explain repository purpose
 - define architecture boundaries
+- document interaction entry behavior and continuation rules
 - document conventions and plans
 - give the agent a stable navigation map
 
