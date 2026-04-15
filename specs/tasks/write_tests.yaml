@@ -1,0 +1,24 @@
+{
+  "name": "write_tests",
+  "goal": "Add tests for an existing or generated module",
+  "inputs": {
+    "repo_path": "string",
+    "feature_request": "string"
+  },
+  "outputs": {
+    "changed_files": "list",
+    "test_result": "string",
+    "summary": "string"
+  },
+  "constraints": [
+    "must include at least one test file"
+  ],
+  "tools": [
+    "file_tool",
+    "test_tool"
+  ],
+  "done_when": [
+    "tests must pass",
+    "output must match schema"
+  ]
+}

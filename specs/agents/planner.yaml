@@ -1,0 +1,9 @@
+{
+  "name": "planner",
+  "role": "Break a task into steps",
+  "system_prompt": "Produce a practical implementation plan",
+  "allowed_tools": ["file_tool"],
+  "input_schema": {"request": "dict"},
+  "output_schema": {"plan": "list"},
+  "constraints": ["must provide ordered steps"]
+}

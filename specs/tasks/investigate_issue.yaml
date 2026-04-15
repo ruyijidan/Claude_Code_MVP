@@ -1,0 +1,25 @@
+{
+  "name": "investigate_issue",
+  "goal": "Investigate an issue and produce a report with a verification guard",
+  "inputs": {
+    "repo_path": "string",
+    "feature_request": "string"
+  },
+  "outputs": {
+    "changed_files": "list",
+    "test_result": "string",
+    "summary": "string"
+  },
+  "constraints": [
+    "must generate a written report",
+    "must include a verification artifact"
+  ],
+  "tools": [
+    "file_tool",
+    "test_tool"
+  ],
+  "done_when": [
+    "tests must pass",
+    "output must match schema"
+  ]
+}

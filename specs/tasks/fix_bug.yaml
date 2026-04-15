@@ -1,0 +1,25 @@
+{
+  "name": "fix_bug",
+  "goal": "Fix a concrete bug and add a regression test",
+  "inputs": {
+    "repo_path": "string",
+    "feature_request": "string"
+  },
+  "outputs": {
+    "changed_files": "list",
+    "test_result": "string",
+    "summary": "string"
+  },
+  "constraints": [
+    "must preserve the existing package layout",
+    "must add a regression test"
+  ],
+  "tools": [
+    "file_tool",
+    "test_tool"
+  ],
+  "done_when": [
+    "tests must pass",
+    "output must match schema"
+  ]
+}

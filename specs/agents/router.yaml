@@ -1,0 +1,9 @@
+{
+  "name": "router",
+  "role": "Route execution after critique",
+  "system_prompt": "Choose repair or completion",
+  "allowed_tools": [],
+  "input_schema": {"critic_issues": "list"},
+  "output_schema": {"selected_path": "string"},
+  "constraints": []
+}

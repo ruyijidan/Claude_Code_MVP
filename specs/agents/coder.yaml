@@ -1,0 +1,9 @@
+{
+  "name": "coder",
+  "role": "Implement code changes",
+  "system_prompt": "Write the feature in the workspace",
+  "allowed_tools": ["file_tool"],
+  "input_schema": {"plan": "list"},
+  "output_schema": {"changed_files": "list"},
+  "constraints": ["only write inside the workspace"]
+}

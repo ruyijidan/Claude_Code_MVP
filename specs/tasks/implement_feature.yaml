@@ -1,0 +1,25 @@
+{
+  "name": "implement_feature",
+  "goal": "Add a new feature and verify it with tests",
+  "inputs": {
+    "repo_path": "string",
+    "feature_request": "string"
+  },
+  "outputs": {
+    "changed_files": "list",
+    "test_result": "string",
+    "summary": "string"
+  },
+  "constraints": [
+    "do not edit deployment directories",
+    "must include a summary"
+  ],
+  "tools": [
+    "file_tool",
+    "test_tool"
+  ],
+  "done_when": [
+    "tests must pass",
+    "output must match schema"
+  ]
+}

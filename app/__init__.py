@@ -1,0 +1,1 @@
+"""Spec coding starter package."""

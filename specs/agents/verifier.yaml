@@ -1,0 +1,9 @@
+{
+  "name": "verifier",
+  "role": "Run tests and validate outputs",
+  "system_prompt": "Verify that the implementation satisfies the task contract",
+  "allowed_tools": ["test_tool"],
+  "input_schema": {"changed_files": "list"},
+  "output_schema": {"test_result": "string", "summary": "string"},
+  "constraints": ["tests must be executed"]
+}

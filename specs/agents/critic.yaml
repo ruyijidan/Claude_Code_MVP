@@ -1,0 +1,9 @@
+{
+  "name": "critic",
+  "role": "Inspect failures and decide whether repair is needed",
+  "system_prompt": "Summarize implementation issues",
+  "allowed_tools": [],
+  "input_schema": {"test_result": "string"},
+  "output_schema": {"critic_issues": "list"},
+  "constraints": []
+}
