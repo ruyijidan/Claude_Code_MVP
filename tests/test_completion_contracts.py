@@ -3,6 +3,7 @@ from __future__ import annotations
 import unittest
 
 from app.agent.completion_contracts import CompletionContractRegistry
+from app.core.models import WorkflowSpec
 
 
 class CompletionContractTests(unittest.TestCase):
@@ -38,6 +39,29 @@ class CompletionContractTests(unittest.TestCase):
             check.reasons,
             ["expected at least one changed file", "expected a non-empty summary"],
         )
+
+    def test_workflow_verification_controls_test_file_requirement(self) -> None:
+        registry = CompletionContractRegistry()
+        workflow = WorkflowSpec(
+            name="investigate_issue",
+            goal="Investigate",
+            entry_signals=[],
+            required_context=[],
+            steps=[],
+            verification=["tests must pass", "at least one changed file must be recorded", "completion contract must pass"],
+            stop_conditions=[],
+        )
+
+        check = registry.evaluate(
+            "investigate_issue",
+            {
+                "changed_files": ["reports/investigation.md"],
+                "implementation_summary": "Generated an investigation report.",
+            },
+            workflow,
+        )
+
+        self.assertTrue(check.passed)
 
 
 if __name__ == "__main__":

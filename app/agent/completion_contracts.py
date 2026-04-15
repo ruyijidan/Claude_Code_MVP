@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass
 
+from app.core.models import WorkflowSpec
+
 
 @dataclass(slots=True)
 class CompletionCheck:
@@ -14,11 +16,11 @@ class CompletionCheck:
 
 
 class CompletionContractRegistry:
-    def evaluate(self, task_type: str, state: dict) -> CompletionCheck:
+    def evaluate(self, task_type: str, state: dict, workflow: WorkflowSpec | None = None) -> CompletionCheck:
         changed_files = state.get("changed_files", [])
         summary = state.get("implementation_summary") or state.get("summary")
         reasons: list[str] = []
-        required_checks = ["changed files recorded", "summary recorded"]
+        required_checks = list(workflow.verification) if workflow is not None else ["changed files recorded", "summary recorded"]
 
         if not isinstance(changed_files, list) or not changed_files:
             reasons.append("expected at least one changed file")
@@ -26,10 +28,11 @@ class CompletionContractRegistry:
         if not isinstance(summary, str) or not summary.strip():
             reasons.append("expected a non-empty summary")
 
-        if task_type in {"fix_bug", "write_tests", "implement_feature"}:
-            required_checks.append("test file changed")
-            if not self._has_test_file(changed_files):
-                reasons.append(f"{task_type} requires at least one changed test file")
+        verification_text = " ".join(required_checks).lower()
+        if workflow is None and task_type in {"fix_bug", "write_tests", "implement_feature"}:
+            verification_text = f"{verification_text} changed test file"
+        if "changed test file" in verification_text and not self._has_test_file(changed_files):
+            reasons.append(f"{task_type} requires at least one changed test file")
 
         return CompletionCheck(
             passed=not reasons,

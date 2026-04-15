@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass
 
+from app.core.models import WorkflowSpec
 from app.superpowers.failure_classifier import FailureSignal
 
 
@@ -19,7 +20,7 @@ class RepairPolicy:
     def __init__(self, max_test_failure_attempts: int = 2) -> None:
         self.max_test_failure_attempts = max_test_failure_attempts
 
-    def decide(self, attempt: int, failure_signals: list[FailureSignal]) -> RepairDecision:
+    def decide(self, attempt: int, failure_signals: list[FailureSignal], workflow: WorkflowSpec | None = None) -> RepairDecision:
         if not failure_signals:
             return RepairDecision(
                 action="none",
@@ -28,8 +29,9 @@ class RepairPolicy:
             )
 
         kinds = {signal.kind for signal in failure_signals}
+        stop_text = " ".join(workflow.stop_conditions).lower() if workflow is not None else ""
 
-        if "architecture_violation" in kinds:
+        if "architecture_violation" in kinds and ("architecture violation" in stop_text or not stop_text):
             return RepairDecision(
                 action="stop",
                 retry_allowed=False,
@@ -44,16 +46,22 @@ class RepairPolicy:
             )
 
         if "no_effect_change" in kinds:
+            max_no_effect_attempts = 2
+            if "maximum retry budget reached" in stop_text:
+                max_no_effect_attempts = 2
             return RepairDecision(
                 action="retry_with_existing_changes",
-                retry_allowed=attempt < 2,
+                retry_allowed=attempt < max_no_effect_attempts,
                 reason="retry once when no effective change was recorded",
             )
 
         if "test_failure" in kinds:
+            max_test_failure_attempts = self.max_test_failure_attempts
+            if "maximum retry budget reached" in stop_text:
+                max_test_failure_attempts = self.max_test_failure_attempts
             return RepairDecision(
                 action="retry_tests",
-                retry_allowed=attempt < self.max_test_failure_attempts,
+                retry_allowed=attempt < max_test_failure_attempts,
                 reason="bounded retries are allowed for test failures",
             )
 
