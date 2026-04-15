@@ -27,6 +27,7 @@ Move Claude Code MVP from a runnable coding loop into a clearer harness-oriented
 - Complete harness hardening PR 3:
   - failure classifier
   - repair policy
+- Finish the first harness hardening wave and record the stage summary in `docs/plans/harness-hardening-pr-plan.md`
 
 ## Next
 

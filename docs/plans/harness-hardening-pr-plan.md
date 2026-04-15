@@ -27,6 +27,40 @@ The next step is not to make the model logic more elaborate. The next step is to
 - verification gates
 - failure classification and repair policy
 
+## Wave Summary
+
+Status: completed on 2026-04-15
+
+The first hardening wave is now complete.
+
+This wave moved the repository from a lighter implicit loop toward a more explicit harness shape in three ways:
+
+- success is now defined outside the model through completion contracts and verification gates
+- repo context is now selected more deliberately through a scoped context selector
+- repair is now policy-driven through failure classification, repair decisions, and recorded repair attempts
+
+After this wave, the single-agent loop has stronger control points around:
+
+- what context is shown to the agent
+- what counts as task completion
+- what verification signals can block success
+- what failure types allow repair and when repair must stop
+
+Concrete harness gains from this wave:
+
+- structured `completion_check` and `gate_results` in loop state and replay artifacts
+- structured scoped context fields alongside backward-compatible `candidate_files`
+- structured `failure_signals`, `repair_decision`, and `repair_attempts` in loop state and replay artifacts
+- broader unit and integration coverage for completion, context selection, and repair policy behavior
+
+This means the project now has an end-to-end first version of all three planned control additions:
+
+- completion and verification control
+- context selection control
+- repair policy control
+
+The next major improvements are no longer about introducing these control points for the first time. They are about tightening them, broadening coverage, and making them more phase-aware.
+
 ## PR 1: Completion Contracts And Verification Gates
 
 Status: completed on 2026-04-14
