@@ -9,10 +9,10 @@ The codebase is optimized for harness engineering experiments, not for ad hoc pr
 
 ## Repository
 - Git remote: `git@github.com:ruyijidan/Claude_Code_MVP.git`
-- Canonical repo URL: `https://github.com/ruyijidan/Claude_Code_MVP`
-- External harness reference: `https://github.com/lintsinghua/claude-code-book/tree/main`
+- Canonical repo URL: [ruyijidan/Claude_Code_MVP](https://github.com/ruyijidan/Claude_Code_MVP)
+- External harness reference: [claude-code-book](https://github.com/lintsinghua/claude-code-book/tree/main)
   Use this as a conceptual reference for Claude Code style harness design. It is not a runtime dependency and should not be treated as implementation source-of-truth for this repository.
-- External CLI harness reference: `https://github.com/ultraworkers/claw-code/tree/main`
+- External CLI harness reference: [claw-code](https://github.com/ultraworkers/claw-code/tree/main)
   Use this as a reference for CLI product shape, repository surface, and documentation organization. It is not a runtime dependency and should not be treated as implementation source-of-truth for this repository.
 
 ## Quick Navigation

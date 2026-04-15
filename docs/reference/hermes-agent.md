@@ -8,7 +8,7 @@ owner: core
 
 ## 仓库链接
 
-- GitHub: `https://github.com/nousresearch/hermes-agent`
+- GitHub: [nousresearch/hermes-agent](https://github.com/nousresearch/hermes-agent)
 
 ## 这份文档的用途
 

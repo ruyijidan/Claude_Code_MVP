@@ -3,19 +3,19 @@
 [中文说明](./README.md)
 
 Repository:
-- GitHub: `https://github.com/ruyijidan/Claude_Code_MVP`
+- GitHub: [ruyijidan/Claude_Code_MVP](https://github.com/ruyijidan/Claude_Code_MVP)
 - Git remote: `git@github.com:ruyijidan/Claude_Code_MVP.git`
 
 External reference:
-- `claude-code-book`: `https://github.com/lintsinghua/claude-code-book/tree/main`
+- [`claude-code-book`](https://github.com/lintsinghua/claude-code-book/tree/main)
   This is a Chinese deep-dive repository focused on Claude Code and Agent Harness architecture. It is not a dependency of this project, but it is highly relevant for understanding the design direction, permission pipeline, conversation loop, context system, and harness mental model behind this repository.
-- `claw-code`: `https://github.com/ultraworkers/claw-code/tree/main`
+- [`claw-code`](https://github.com/ultraworkers/claw-code/tree/main)
   This is a useful open-source reference for a CLI-oriented agent harness product shape. It is not a dependency of this project, but it is valuable for understanding runtime surface design, documentation layering, and repository presentation.
-- `hermes-agent`: `https://github.com/nousresearch/hermes-agent`
+- [`hermes-agent`](https://github.com/nousresearch/hermes-agent)
   This is a more complete and product-like agent harness reference. It is not a dependency of this project, but it is useful for understanding future directions such as skills, memory, toolsets, MCP, and multi-entry product surfaces. Project-specific notes are captured in [`docs/reference/hermes-agent.md`](./docs/reference/hermes-agent.md).
-- `DeerFlow 2.0`: `https://github.com/bytedance/deer-flow`
+- [`DeerFlow 2.0`](https://github.com/bytedance/deer-flow)
   This is a strong reference for a super-agent harness runtime with skills, sandboxing, middleware, sub-agents, context engineering, and long-term memory. It is not a dependency of this project, but it is very useful for understanding how a minimal harness might evolve into a more complete runtime. Project-specific notes are captured in [`docs/reference/deer-flow.md`](./docs/reference/deer-flow.md).
-- `everything-claude-code`: `https://github.com/affaan-m/everything-claude-code`
+- [`everything-claude-code`](https://github.com/affaan-m/everything-claude-code)
   This is a harness enhancement system that packages skills, hooks, rules, commands, memory, and MCP-related assets together. It is not a dependency of this project, but it is a very good reference for how future agent assets can be organized into reusable enhancement layers. Project-specific notes are captured in [`docs/reference/everything-claude-code.md`](./docs/reference/everything-claude-code.md).
 - `Claude Code source-engineering analysis`
   This is an engineering-oriented synthesis of industrial Claude Code implementation patterns, especially around context compression, permission systems, memory, streaming execution, and multi-agent isolation. It is useful as a reference for understanding the current gaps in this project. Project-specific notes are captured in [`docs/reference/claude-code-source-leak.md`](./docs/reference/claude-code-source-leak.md).
@@ -282,8 +282,8 @@ Use the docs with this split of responsibilities:
 
 For external architectural reading, also see:
 
-- `claude-code-book`: `https://github.com/lintsinghua/claude-code-book/tree/main`
-- `claw-code`: `https://github.com/ultraworkers/claw-code/tree/main`
+- [`claude-code-book`](https://github.com/lintsinghua/claude-code-book/tree/main)
+- [`claw-code`](https://github.com/ultraworkers/claw-code/tree/main)
 
 ## Current Capabilities
 

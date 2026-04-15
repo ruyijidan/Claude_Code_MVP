@@ -20,7 +20,7 @@ owner: core
 如果你想先理解“什么是 Claude Code / Agent Harness”，优先看：
 
 - `claude-code-book`
-  外部仓库：`https://github.com/lintsinghua/claude-code-book/tree/main`
+  外部仓库：[lintsinghua/claude-code-book](https://github.com/lintsinghua/claude-code-book/tree/main)
   适合：理解对话循环、权限管线、上下文系统、Harness 心智模型
 
 ### 2. 产品形态与成熟 Harness 参考
@@ -28,15 +28,15 @@ owner: core
 如果你想理解“当 Harness 长成产品后会是什么样”，重点看：
 
 - [`hermes-agent.md`](./hermes-agent.md)
-  对应外部仓库：`https://github.com/nousresearch/hermes-agent`
+  对应外部仓库：[nousresearch/hermes-agent](https://github.com/nousresearch/hermes-agent)
   适合：skills、memory、toolsets、MCP、多入口产品形态
 
 - [`deer-flow.md`](./deer-flow.md)
-  对应外部仓库：`https://github.com/bytedance/deer-flow`
+  对应外部仓库：[bytedance/deer-flow](https://github.com/bytedance/deer-flow)
   适合：理解 skills、sandbox、middleware、sub-agent、long-horizon agent 运行时，以及我们当前与更完整 Harness 之间的差距
 
 - [`everything-claude-code.md`](./everything-claude-code.md)
-  对应外部仓库：`https://github.com/affaan-m/everything-claude-code`
+  对应外部仓库：[affaan-m/everything-claude-code](https://github.com/affaan-m/everything-claude-code)
   适合：理解 skills、hooks、rules、commands、MCP、schemas 等“增强层资产”如何被组织成一个可安装的 Harness 增强系统
 
 - [`claude-code-source-leak.md`](./claude-code-source-leak.md)
@@ -44,7 +44,7 @@ owner: core
   适合：理解上下文压缩、权限厚度、记忆体系、流式执行、多 Agent 隔离、成本控制，以及本项目当前短板
 
 - `claw-code`
-  外部仓库：`https://github.com/ultraworkers/claw-code/tree/main`
+  外部仓库：[ultraworkers/claw-code](https://github.com/ultraworkers/claw-code/tree/main)
   适合：CLI 产品表面、文档分层、仓库表达方式
 
 ### 3. Spec Coding 实战方法论

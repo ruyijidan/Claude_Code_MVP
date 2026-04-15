@@ -53,7 +53,7 @@ For a fuller Chinese walkthrough of how this repository maps to harness concepts
 
 This project also uses the following repository as a conceptual reference for Claude Code style harness thinking:
 
-- `claude-code-book`: `https://github.com/lintsinghua/claude-code-book/tree/main`
-- `claw-code`: `https://github.com/ultraworkers/claw-code/tree/main`
+- [`claude-code-book`](https://github.com/lintsinghua/claude-code-book/tree/main)
+- [`claw-code`](https://github.com/ultraworkers/claw-code/tree/main)
 
 These are reading/reference resources, not code dependencies.

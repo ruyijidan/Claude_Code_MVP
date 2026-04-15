@@ -3,19 +3,19 @@
 [English Version](./README.en.md)
 
 仓库地址：
-- GitHub: `https://github.com/ruyijidan/Claude_Code_MVP`
+- GitHub: [ruyijidan/Claude_Code_MVP](https://github.com/ruyijidan/Claude_Code_MVP)
 - Git remote: `git@github.com:ruyijidan/Claude_Code_MVP.git`
 
 外部参考：
-- `claude-code-book`: `https://github.com/lintsinghua/claude-code-book/tree/main`
+- [`claude-code-book`](https://github.com/lintsinghua/claude-code-book/tree/main)
   说明：这是一个面向 Claude Code / Agent Harness 架构的中文深度分析仓库。它不是本项目依赖，但对理解本项目的设计方向、权限管线、对话循环、上下文系统和 Harness 心智模型很有帮助。
-- `claw-code`: `https://github.com/ultraworkers/claw-code/tree/main`
+- [`claw-code`](https://github.com/ultraworkers/claw-code/tree/main)
   说明：这是一个面向 CLI Agent Harness 的开源实现参考。它不是本项目依赖，但对理解产品化 CLI 结构、文档分层、仓库表达方式和 runtime surface 的组织很有帮助。
-- `hermes-agent`: `https://github.com/nousresearch/hermes-agent`
+- [`hermes-agent`](https://github.com/nousresearch/hermes-agent)
   说明：这是一个更完整、更产品化的 Agent Harness 参考。它不是本项目依赖，但适合用来理解 skills、memory、toolsets、MCP、多入口产品形态等后续演进方向。项目内整理说明见 [`docs/reference/hermes-agent.md`](./docs/reference/hermes-agent.md)。
-- `DeerFlow 2.0`
+- [`DeerFlow 2.0`](https://github.com/bytedance/deer-flow)
   说明：这是一个从 Deep Research 框架演进为 Super Agent Harness 的代表性参考。它不是本项目依赖，但非常适合用来理解 skills、sandbox、middleware、sub-agent、long-horizon agent，以及我们当前和更完整 Harness 之间的差距。项目内整理说明见 [`docs/reference/deer-flow.md`](./docs/reference/deer-flow.md)。
-- `everything-claude-code`
+- [`everything-claude-code`](https://github.com/affaan-m/everything-claude-code)
   说明：这是一个把 skills、hooks、rules、commands、memory、MCP 等增强层资产打包在一起的 Harness 增强系统。它不是本项目依赖，但非常适合用来理解未来如何把工程资产组织成可安装、可组合、可扩展的增强层。项目内整理说明见 [`docs/reference/everything-claude-code.md`](./docs/reference/everything-claude-code.md)。
 - `Claude Code 源码工程分析`
   说明：这是对 Claude Code 工业级实现的一类工程视角总结，适合用来理解上下文压缩、权限系统、记忆体系、流式执行、多 Agent 隔离，以及我们当前项目的短板。项目内整理说明见 [`docs/reference/claude-code-source-leak.md`](./docs/reference/claude-code-source-leak.md)。
@@ -306,8 +306,8 @@
 
 如果你想补 Claude Code / Agent Harness 的外部心智模型，推荐同时参考：
 
-- `claude-code-book`: `https://github.com/lintsinghua/claude-code-book/tree/main`
-- `claw-code`: `https://github.com/ultraworkers/claw-code/tree/main`
+- [`claude-code-book`](https://github.com/lintsinghua/claude-code-book/tree/main)
+- [`claw-code`](https://github.com/ultraworkers/claw-code/tree/main)
 
 ## 已有能力
 
