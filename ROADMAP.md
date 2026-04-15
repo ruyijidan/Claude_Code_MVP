@@ -29,6 +29,33 @@
 
 `Claude_Code_MVP` 已经是 Harness MVP，但还不是工业级 Harness。
 
+## P0 / P1 / P2 方向速览
+
+为了和 README 的学习主线保持一致，这里先给一份简化版方向，细节仍以各阶段内容为准。
+
+### P0：控制面与安全面先做厚
+
+- 补 `import / layer guardrails`，用明确层级规则 + CI 强制守卫
+- 增加危险命令确认与路径约束，形成更细风险分级 + 稳定 `--show-permissions` 输出
+- 增加结构化验证摘要（通过/失败/原因/风险级别）
+- 让 replay / trace 能解释发生了什么、为什么失败、下一步怎么修
+
+### P1：让 Harness 更像真实可用的 coding agent
+
+- 让 `context builder` 更智能：相关文件排序、git diff 感知、测试关联
+- 把 `planner` 从规则式升级为模型辅助规划，带显式测试与风险计划
+- 增强 `verifier`：不仅跑测试，还做完成度/边界/约束检查
+- 引入轻量模板或 spec 层，让任务类型影响执行路径
+- 做任务模式分层（quick edit vs. spec mode），避免单一 loop 解决所有任务
+
+### P2：平台化与长周期能力
+
+- 增加 session memory（短期/工作/长期 + 摘要）
+- 增加 API / daemon 模式
+- 增加 trajectory viewer / dashboard
+- 增强 skills / hooks / middleware 资产体系
+- 增加成本、缓存、隔离等工业级能力
+
 ## P0：必须补的 Harness 基础层
 
 这些能力最影响后续所有功能的上限，优先级最高。

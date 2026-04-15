@@ -247,37 +247,36 @@ Harness 这种东西只看代码很难真正吃透，因为很多关键价值体
 
 ## 下一步：P0 / P1 / P2 应该补什么
 
-如果把“做好 Harness”拆成三阶段，这个项目下一步的重点可以这样理解：
+如果把“做好 Harness”拆成三阶段，这个项目下一步的重点可以这样理解。
 
-### P0：先把控制面和验证面补扎实
+### P0：控制面与安全面先做厚
 
 这一层不是追求更多能力，而是让系统更可控、更可信：
 
-- 继续加厚权限体系：更细的风险分级、更清晰的拒绝原因、更稳定的 `--show-permissions` 输出结构
-- 把架构边界守卫补严：防止后续迭代把层级耦合写乱
-- 把 verify 做厚：输出更结构化的验证结果、补齐失败分类和回归检查
-- 让 replay / trace 更清楚：能解释发生了什么、为什么失败、下一步怎么修
+- 补 `import / layer guardrails`，用明确层级规则 + CI 强制守卫
+- 增加危险命令确认与路径约束，形成更细风险分级 + 稳定 `--show-permissions` 输出
+- 增加结构化验证摘要（通过/失败/原因/风险级别）
+- 让 replay / trace 能解释发生了什么、为什么失败、下一步怎么修
 
-### P1：让系统更像真实可用的 coding agent
+### P1：让 Harness 更像真实可用的 coding agent
 
 这一层要让 Harness 更懂任务、更懂上下文：
 
-- 上下文构建更聪明：文件筛选、变更感知、测试关联、任务类型感知
-- planner 从规则式向模型驱动过渡，让计划更贴近真实开发流程
-- verifier 从“测试过没”变成“质量/完成度检查器”
-- 引入模板层 / 轻量 spec，让任务类型真正影响执行路径
-- 开始补轻量记忆层，为跨任务稳定性打底
+- 让 `context builder` 更智能：相关文件排序、git diff 感知、测试关联
+- 把 `planner` 从规则式升级为模型辅助规划，带显式测试与风险计划
+- 增强 `verifier`：不仅跑测试，还做完成度/边界/约束检查
+- 引入轻量模板或 spec 层，让任务类型影响执行路径
+- 做任务模式分层（quick edit vs. spec mode），避免单一 loop 解决所有任务
 
-### P2：平台化厚度和长期能力
+### P2：平台化与长周期能力
 
 这一层是“从 MVP 走向工业级 Harness”的能力补齐：
 
-- skills / hooks / rules / commands 的增强资产体系
-- middleware / runtime pipeline 能力
-- sub-agent / 多 agent 协作
-- 更完整的 memory / state 系统
-- 更强的可观测性（trajectory viewer / dashboard）
-- API / daemon 模式，和更强的成本、缓存、隔离体系
+- 增加 session memory（短期/工作/长期 + 摘要）
+- 增加 API / daemon 模式
+- 增加 trajectory viewer / dashboard
+- 增强 skills / hooks / middleware 资产体系
+- 增加成本、缓存、隔离等工业级能力
 
 更细的拆解可以直接看 [`ROADMAP.md`](./ROADMAP.md) 和 [`docs/plans/current-sprint.md`](./docs/plans/current-sprint.md)。
 

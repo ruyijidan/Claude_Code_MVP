@@ -249,35 +249,34 @@ If you are learning harness design for the first time, this is a practical order
 
 If we describe “making a real harness” in three stages, the next steps for this project look like this.
 
-### P0: Make the control and verification surfaces dependable
+### P0: Thicken the control and safety surfaces
 
 This stage is not about more features. It is about making the system trustworthy:
 
-- thicken the permission system with finer risk classes and clearer refusal reasons, plus more stable `--show-permissions` output
-- strengthen architecture boundary guardrails so future iterations do not blur layers
-- make verification thicker with more structured results and failure classification
-- make replay / trace more explanatory so it is clear what happened and why
+- add explicit import / layer guardrails with clear rules and CI enforcement
+- add dangerous command confirmation and path constraints, with finer risk classes and stable `--show-permissions` output
+- add a structured verification summary (pass/fail, reason, risk level)
+- make replay / trace explain what happened, why it failed, and what to do next
 
 ### P1: Make it feel like a real coding harness
 
 This stage focuses on task understanding and workflow quality:
 
-- smarter context building (file selection, change awareness, test linkage, task-type awareness)
-- move planning from rule-only to model-assisted planning
-- push verification beyond “tests passed” into completion and quality checks
+- smarter `context builder`: relevance ranking, git diff awareness, and test linkage
+- upgrade `planner` from rule-only to model-assisted planning, with explicit test and risk plans
+- upgrade `verifier`: not only tests, but completion, boundary, and constraint checks
 - introduce lightweight templates / specs so task types influence execution paths
-- begin a lightweight memory layer to stabilize multi-task runs
+- add task-mode separation (quick edit vs. spec mode) so one loop does not handle everything
 
-### P2: Platform-level depth and long-horizon capability
+### P2: Platform depth and long-horizon capability
 
 This stage is about industrial harness thickness:
 
-- an asset layer for skills / hooks / rules / commands
-- middleware and a clearer runtime pipeline
-- sub-agent or multi-agent collaboration
-- fuller memory and state systems
-- stronger observability (trajectory viewer / dashboard)
-- API / daemon mode, plus cost, cache, and isolation systems
+- add session memory (short-term, working, long-term summaries)
+- add API / daemon mode
+- add a trajectory viewer / dashboard
+- strengthen the skills / hooks / middleware asset layer
+- add cost, cache, and isolation foundations
 
 For more detailed breakdowns, see [`ROADMAP.md`](./ROADMAP.md) and [`docs/plans/current-sprint.md`](./docs/plans/current-sprint.md).
 
