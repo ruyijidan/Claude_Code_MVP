@@ -4,13 +4,13 @@ status: active
 owner: core
 ---
 
-# Asset Layer
+# Asset Layer / 资产层
 
-## Purpose
+## Purpose / 目的
 
 The asset layer is where repeatable execution knowledge becomes explicit repository material instead of staying trapped inside prompt wording or loop code.
 
-## What Counts As An Asset
+## What Counts As An Asset / 什么算资产
 
 In `Claude_Code_MVP`, the first useful asset categories are:
 
@@ -24,7 +24,7 @@ These are stored under:
 - `specs/templates/`
 - `specs/rules/`
 
-## Why This Layer Matters
+## Why This Layer Matters / 为什么这层重要
 
 Without an asset layer, every adjustment tends to fall into one of two bad buckets:
 
@@ -36,7 +36,7 @@ An explicit asset layer gives the project a middle option:
 - keep the harness core stable
 - move reusable execution meaning into versioned repo assets
 
-## Current Repository Direction
+## Current Repository Direction / 当前仓库方向
 
 The repository now uses this layer in a lightweight but real way:
 
@@ -47,7 +47,7 @@ The repository now uses this layer in a lightweight but real way:
 
 This is still an early version, but it already changes the project’s adjustment surface.
 
-## What Should Stay Out Of This Layer
+## What Should Stay Out Of This Layer / 什么不该放进这一层
 
 The asset layer should not replace the harness core.
 
@@ -67,7 +67,7 @@ The asset layer should instead describe:
 - reusable expectations
 - reusable behavior boundaries
 
-## Design Principle
+## Design Principle / 设计原则
 
 Keep the asset layer:
 

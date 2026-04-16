@@ -4,9 +4,11 @@ Navigation:
 
 - [`README.md`](./README.md): project positioning, quick start, and capability boundaries
 - [`AGENTS.md`](./AGENTS.md): agent navigation and repository working rules
+- [`docs/README.md`](./docs/README.md): documentation map and recommended reading paths
+- [`docs/architecture/README.md`](./docs/architecture/README.md): architecture-specific reading order
 - [`docs/architecture/interaction-harness.md`](./docs/architecture/interaction-harness.md): interaction entry layer, intent normalization, and kickoff visibility
-- [`docs/patterns/`](./docs/patterns): stable architectural patterns and reusable harness concepts
-- [`docs/guides/`](./docs/guides): contributor playbooks for extending workflows and assets
+- [`docs/patterns/README.md`](./docs/patterns/README.md): stable architectural patterns and reusable harness concepts
+- [`docs/guides/README.md`](./docs/guides/README.md): contributor playbooks for extending workflows and assets
 - [`docs/`](./docs): detailed architecture constraints, conventions, and plans
 
 ## Overview
@@ -268,7 +270,7 @@ This makes the project more than a coding sandbox. It turns the harness into a d
 
 ## Configuration Model
 
-Local provider configuration is auto-loaded from:
+Local provider configuration is discovered from:
 
 - [`.env`](./.env)
 
@@ -276,13 +278,37 @@ The loader lives in:
 
 - [`app/core/env_loader.py`](./app/core/env_loader.py)
 
-At the moment the project supports shell-style `export KEY=value` entries for local configuration, including Anthropic-compatible settings such as:
+The CLI entrypoint uses an auth-loading policy so that provider-specific auth settings do not unintentionally override a working local CLI login.
+
+Supported auth modes:
+
+- `auto`
+- `cli`
+- `env`
+
+Current behavior:
+
+- `auto`: default mode. For `claude_code` and `codex_cli`, the harness skips `.env` keys with the `ANTHROPIC_` prefix and prefers the local CLI login/session. For local runtimes and non-CLI providers, `.env` values still load normally.
+- `cli`: explicitly prefer the local CLI login/session and skip `.env` keys with the `ANTHROPIC_` prefix.
+- `env`: explicitly load Anthropic-compatible `.env` values into the process environment.
+
+Shell-style `export KEY=value` entries are supported, including Anthropic-compatible settings such as:
 
 - `ANTHROPIC_BASE_URL`
 - `ANTHROPIC_AUTH_TOKEN`
 - `ANTHROPIC_MODEL`
 
-This makes the delegated provider path easier to run without manually exporting variables every time.
+The practical reason for this split is simple:
+
+- `claude_code` works well with an existing `claude auth` session
+- some projects still need explicit `ANTHROPIC_*` configuration for gateways or compatible services
+- the harness should support both without letting one mode silently break the other
+
+Recommended usage:
+
+- use default `auto` mode for `claude_code`
+- use `--auth-source cli` when you want to force local Claude CLI auth
+- use `--auth-source env` when you intentionally want the project `.env` to supply `ANTHROPIC_*`
 
 ## Current Boundaries
 

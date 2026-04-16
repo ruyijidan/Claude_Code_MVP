@@ -4,19 +4,20 @@ status: active
 owner: core
 ---
 
-# Conventions
+# Conventions / 约定
 
 This directory defines project rules that should be easy for both humans and agents to follow.
 
-## Read Next
+## Read Next / 接着阅读
 
+- Docs map: `docs/README.md`
 - Testing: `docs/conventions/testing.md`
 - Runtime and Git workflow: `docs/conventions/runtime-and-git.md`
 - Documentation hygiene: `docs/conventions/docs.md`
-- Patterns: `docs/patterns/`
-- Guides: `docs/guides/`
+- Patterns: `docs/patterns/README.md`
+- Guides: `docs/guides/README.md`
 
-## Core Conventions
+## Core Conventions / 核心约定
 
 1. Prefer small, composable modules over large multi-purpose files.
 2. Keep runtime abstractions reusable across different frontends.

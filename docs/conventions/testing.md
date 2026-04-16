@@ -4,22 +4,22 @@ status: active
 owner: core
 ---
 
-# Testing Conventions
+# Testing Conventions / 测试约定
 
-## Expectations
+## Expectations / 期望
 
 - New user-visible CLI behavior should have a test when practical.
 - Runtime helpers should be covered by focused unit tests.
 - Avoid tests that depend on live network access.
 - Prefer deterministic tests over end-to-end external CLI execution.
 
-## Patterns
+## Patterns / 模式
 
 - Patch external command execution in tests instead of invoking real long-running tools.
 - Use temporary directories for repository simulations.
 - Assert developer-facing output, not just internal return values.
 
-## Minimum Bar
+## Minimum Bar / 最低要求
 
 When adding a new feature, at least one of the following should exist:
 

@@ -81,7 +81,8 @@ Harness 更像：
 
 1. [`README.md`](./README.md)：先建立整体认知
 2. [`ARCHITECTURE.md`](./ARCHITECTURE.md)：看执行链路和系统分层
-3. [`docs/architecture/harness-explained.md`](./docs/architecture/harness-explained.md)：看中文深度解释
+3. [`docs/README.md`](./docs/README.md)：看文档总导航和阅读路径
+4. [`docs/architecture/harness-explained.md`](./docs/architecture/harness-explained.md)：看中文深度解释
 
 这一轮的目标不是记 API，而是先回答三个问题：
 
@@ -146,6 +147,23 @@ cc "fix failing tests" --repo .
 cd /data/ji/code/Claude_Code_MVP
 python3 -m app.cli.main "implement tool router" --repo . --json
 ```
+
+如果你要走外部 provider CLI，也可以显式指定认证来源：
+
+```bash
+cd /data/ji/code/Claude_Code_MVP
+python3 -m app.cli.main "Reply with exactly MODEL_OK" --repo . --provider claude_code --delegate-to-provider --auto-approve
+python3 -m app.cli.main "Reply with exactly MODEL_OK" --repo . --provider claude_code --auth-source cli --delegate-to-provider --auto-approve
+python3 -m app.cli.main "Reply with exactly MODEL_OK" --repo . --provider claude_code --auth-source env --delegate-to-provider --auto-approve
+```
+
+认证模式说明：
+
+- `auto`：默认模式。`claude_code` / `codex_cli` 优先走本机 CLI 登录态，不导入项目 `.env` 里的 `ANTHROPIC_*`
+- `cli`：显式强制走本机 CLI 登录态
+- `env`：显式启用项目 `.env` 里的 `ANTHROPIC_*` 配置
+
+推荐默认使用 `auto`。只有在你明确要让项目 `.env` 驱动外部 provider 时，再切到 `env`。
 
 跑验证：
 

@@ -4,13 +4,13 @@ status: active
 owner: core
 ---
 
-# Workflow Layer
+# Workflow Layer / 工作流层
 
-## Purpose
+## Purpose / 目的
 
 The workflow layer is where repeatable task shapes become explicit project assets instead of staying implicit inside the agent loop.
 
-## Why It Exists
+## Why It Exists / 为什么存在
 
 `Claude_Code_MVP` already has a working harness loop:
 
@@ -25,7 +25,7 @@ That loop is a strong control skeleton, but by itself it does not yet explain ho
 
 The workflow layer fills that gap.
 
-## What Belongs Here
+## What Belongs Here / 这里应该放什么
 
 Workflow assets should describe:
 
@@ -37,7 +37,7 @@ Workflow assets should describe:
 
 These assets are not implementation code. They are structured execution contracts that the harness can interpret over time.
 
-## Current Repository Mapping
+## Current Repository Mapping / 当前仓库映射
 
 Today, the project already has the raw ingredients:
 
@@ -49,7 +49,7 @@ Today, the project already has the raw ingredients:
 
 The new `specs/workflows/` directory is the missing expression layer that can tie these pieces together.
 
-## First-Version Shape
+## First-Version Shape / 第一版形态
 
 The first workflow assets should stay simple.
 
@@ -64,7 +64,7 @@ Each workflow can define:
 
 That is enough to move the project from “one generic loop” toward “multiple explicit harness workflows” without introducing a heavy workflow engine too early.
 
-## Why This Matters
+## Why This Matters / 为什么重要
 
 Without a workflow layer, the project risks putting too much responsibility back into:
 
@@ -78,7 +78,7 @@ With a workflow layer, the project gains:
 - more reusable task behavior
 - cleaner future evolution toward phase-aware state machines
 
-## Near-Term Direction
+## Near-Term Direction / 近期方向
 
 The first practical use of this layer is likely:
 
@@ -88,7 +88,7 @@ The first practical use of this layer is likely:
 
 That keeps the harness architecture aligned with the repo’s current MVP scope while making future growth much cleaner.
 
-## Current Status
+## Current Status / 当前状态
 
 The repository has now moved beyond a purely descriptive workflow layer.
 

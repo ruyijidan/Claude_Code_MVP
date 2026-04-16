@@ -4,13 +4,13 @@ status: active
 owner: core
 ---
 
-# Harness Explained
+# Harness Explained / Harness 解释
 
-## 一句话
+## 一句话 / One Sentence
 
 `Claude_Code_MVP` 不是单纯的“AI 帮你写代码工具”，而是一个把 Agent 放进可读、可控、可验证环境里的最小 Harness。
 
-## 1. Harness 到底是什么
+## 1. Harness 到底是什么 / What Harness Really Is
 
 Harness 不是模型本身，而是模型外面的这套工程系统。
 
@@ -29,9 +29,9 @@ Harness 不是模型本身，而是模型外面的这套工程系统。
 - Agent 是执行者
 - Harness 是运行环境
 
-## 2. 这个项目里，Harness 分成哪几层
+## 2. 这个项目里，Harness 分成哪几层 / Which Layers Exist In This Project
 
-### 入口层
+### 入口层 / Entry Layer
 
 用户请求从 CLI 进来。
 
@@ -52,7 +52,7 @@ Harness 不是模型本身，而是模型外面的这套工程系统。
 
 - [`interaction-harness.md`](./interaction-harness.md)
 
-### 执行层
+### 执行层 / Execution Layer
 
 真正干活的是单代理循环。
 
@@ -66,7 +66,7 @@ Harness 不是模型本身，而是模型外面的这套工程系统。
 
 `Context -> Plan -> Execute -> Verify -> Repair`
 
-### 运行时层
+### 运行时层 / Runtime Layer
 
 这一层负责“真的去动手”。
 
@@ -91,7 +91,7 @@ Harness 不是模型本身，而是模型外面的这套工程系统。
 - `claude_code`：委托本机 `claude`
 - `codex_cli`：委托本机 `codex`
 
-### 约束层
+### 约束层 / Constraint Layer
 
 Harness 不只是“能跑”，还要“别跑偏”。
 
@@ -110,7 +110,7 @@ Harness 不只是“能跑”，还要“别跑偏”。
 - 哪些依赖边界不能越
 - 哪些错误会直接阻断
 
-### 验证层
+### 验证层 / Verification Layer
 
 Harness 要能自证，而不是只会产出。
 
@@ -129,7 +129,7 @@ Harness 要能自证，而不是只会产出。
 
 这就是 Harness 的 verify 环节。
 
-### 恢复与记录层
+### 恢复与记录层 / Recovery And Trace Layer
 
 Harness 不只要执行，还要会修、会记。
 
@@ -145,11 +145,11 @@ Harness 不只要执行，还要会修、会记。
 - replay / trajectory
 - postmortem 能力
 
-## 3. 这个项目怎么对应 Harness 三层认知
+## 3. 这个项目怎么对应 Harness 三层认知 / How This Project Maps To The Three Harness Layers
 
 最容易理解的方法就是按三层看。
 
-### 信息层
+### 信息层 / Information Layer
 
 让 Agent 看得懂项目。
 
@@ -171,7 +171,7 @@ Agent 去哪里找知识。
 - 短输入应该如何被规范化成明确动作
 - 启动回显什么时候该短、什么时候该详细
 
-### 约束层
+### 约束层 / Constraint Layer
 
 让 Agent 不得不按规则做。
 
@@ -186,7 +186,7 @@ Agent 去哪里找知识。
 
 Agent 什么能做，什么不能做。
 
-### 自动化层
+### 自动化层 / Automation Layer
 
 让 Agent 自己形成闭环。
 
@@ -201,7 +201,7 @@ Agent 什么能做，什么不能做。
 
 Agent 做完后怎么自己验证、失败后怎么继续。
 
-## 4. 这个项目最像 Harness 的地方
+## 4. 这个项目最像 Harness 的地方 / Where This Project Most Resembles A Harness
 
 最像的不是“能调模型”，而是这些环节已经被串起来了：
 
@@ -222,7 +222,7 @@ Agent 做完后怎么自己验证、失败后怎么继续。
 
 这就是 Harness 和普通 Agent demo 的本质区别。
 
-## 5. 这个项目现在还缺什么
+## 5. 这个项目现在还缺什么 / What Is Still Missing
 
 它已经是 Harness MVP，但还不是完整 Harness。
 
@@ -242,7 +242,7 @@ Agent 做完后怎么自己验证、失败后怎么继续。
 
 `Claude Code MVP` 内核版 Harness，而不是最终完整版。
 
-## 6. 现在这个项目怎么用 Harness 视角去讲给别人
+## 6. 现在这个项目怎么用 Harness 视角去讲给别人 / How To Explain This Project Through A Harness Lens
 
 可以直接这样描述：
 
@@ -250,7 +250,7 @@ Agent 做完后怎么自己验证、失败后怎么继续。
 它把开发请求接进来，用 CLI 作为入口，用 runtime 执行，用 policy 控边界，用 tests 和 worktree 做验证，用 repair 和 replay 做闭环。
 它已经具备 Harness 的骨架：信息层、约束层、自动化层都在，只是高级能力还在继续补。
 
-## 7. 最后一张最简图
+## 7. 最后一张最简图 / Final Simple Picture
 
 可以把当前项目理解成这条链：
 

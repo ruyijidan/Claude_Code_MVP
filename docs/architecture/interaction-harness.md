@@ -4,9 +4,9 @@ status: active
 owner: core
 ---
 
-# Interaction Harness
+# Interaction Harness / 交互 Harness
 
-## 一句话
+## 一句话 / One Sentence
 
 很多用户输入并不是完整任务，而是对当前上下文的续接。
 
@@ -14,7 +14,7 @@ owner: core
 
 这部分能力不属于代码执行层，也不只是模型“多说一句”的表现，更准确地说，它属于 Harness 的交互入口层。
 
-## 1. 为什么要单独看这层
+## 1. 为什么要单独看这层 / Why This Layer Deserves Its Own Doc
 
 在 Agent 系统里，用户并不总是给出完整、结构化、一次说清的指令。
 
@@ -34,11 +34,11 @@ owner: core
 
 所以 Harness 需要在真正执行前，先做一层交互控制。
 
-## 2. 这层到底在做什么
+## 2. 这层到底在做什么 / What This Layer Actually Does
 
 可以把它拆成三个能力。
 
-### 2.1 输入规范化
+### 2.1 输入规范化 / Intent Normalization
 
 把用户的自然表达转换成更稳定、可执行的内部任务表示。
 
@@ -60,7 +60,7 @@ owner: core
 - 识别它继承的是哪一段上下文
 - 补出执行所需的明确动作
 
-### 2.2 执行启动回显
+### 2.2 执行启动回显 / Execution Kickoff Echo
 
 在真正干活前，用一条简短更新告诉用户：
 
@@ -79,7 +79,7 @@ owner: core
 - 让用户能及时打断错误理解
 - 降低“系统是不是已经开始做别的事”的不确定感
 
-### 2.3 续轮策略
+### 2.3 续轮策略 / Turn Continuation Policy
 
 当用户只说一句短话时，Harness 需要决定：
 
@@ -89,7 +89,7 @@ owner: core
 
 这其实就是 turn continuation policy。
 
-## 3. 它在整体 Harness 里属于哪一层
+## 3. 它在整体 Harness 里属于哪一层 / Where It Sits In The Overall Harness
 
 如果按本项目常说的三层去看：
 
@@ -107,7 +107,7 @@ owner: core
 
 也就是说，它处在正式执行之前，但会直接影响后续整个执行链。
 
-## 4. 为什么这不是模型能力本身
+## 4. 为什么这不是模型能力本身 / Why This Is Not Pure Model Capability
 
 表面上看，像“把 `好` 扩写成完整句子”很像模型自然语言能力。
 
@@ -133,11 +133,11 @@ owner: core
 
 **这层的文案可以像模型能力，但它的行为边界应该属于 Harness。**
 
-## 5. 这层通常包含哪些规则
+## 5. 这层通常包含哪些规则 / What Rules Usually Live Here
 
 一个较成熟的 interaction harness，通常至少要有这几类规则。
 
-### 5.1 短输入继承规则
+### 5.1 短输入继承规则 / Short Utterance Inheritance Rules
 
 例如：
 
@@ -148,7 +148,7 @@ owner: core
 - `别做这个了`
   终止当前任务并等待新指令
 
-### 5.2 回显长度规则
+### 5.2 回显长度规则 / Kickoff Echo Length Rules
 
 例如：
 
@@ -158,7 +158,7 @@ owner: core
   可以回一段更完整的执行拆解
 - 不要把用户简短输入反复润色成长段复述
 
-### 5.3 反问阈值规则
+### 5.3 反问阈值规则 / Clarification Threshold Rules
 
 例如遇到这些情况时不应默认继续：
 
@@ -167,7 +167,7 @@ owner: core
 - 范围变更明显但不够明确
 - 当前短输入无法唯一映射到上一轮任务
 
-### 5.4 用户可见进度规则
+### 5.4 用户可见进度规则 / User-Visible Progress Rules
 
 例如：
 
@@ -177,7 +177,7 @@ owner: core
 
 这部分和本项目的中间 `commentary` 更新习惯是对应的。
 
-## 6. 一个完整例子
+## 6. 一个完整例子 / A Complete Example
 
 下面这段交互很典型：
 
@@ -201,7 +201,7 @@ owner: core
 
 真正关键的是这里的“判断和续接”，而不是“说得更像人”。
 
-### 6.1 示例截图
+### 6.1 示例截图 / Example Screenshot
 
 下面这个截图展示了一个真实的 interaction harness 界面表现：
 
@@ -217,7 +217,7 @@ owner: core
 - 执行启动回显：在真正干活前明确说出“先做什么”
 - 用户可见透明度：让用户有机会在执行早期就发现理解偏差
 
-## 7. 对本项目有什么启发
+## 7. 对本项目有什么启发 / What This Suggests For This Project
 
 对 `Claude_Code_MVP` 来说，这层虽然还没有被单独实现成模块，但在理念上已经很重要。
 
@@ -232,7 +232,7 @@ owner: core
 
 否则系统会默认把“对话入口行为”当成模型自然发挥的一部分，后面就很难稳定。
 
-## 8. 和其他 Harness 模块的边界
+## 8. 和其他 Harness 模块的边界 / Boundaries With Other Harness Modules
 
 这层不负责：
 
@@ -256,7 +256,7 @@ owner: core
 
 - 执行中的智能内核
 
-## 9. 可以直接记住的术语
+## 9. 可以直接记住的术语 / Terms Worth Remembering
 
 如果后续要在项目里反复讨论这层，推荐统一用这些词：
 
@@ -269,7 +269,7 @@ owner: core
 - `Clarification Threshold`
   决定什么时候必须反问，而不是默认继续
 
-## 10. 一句话结论
+## 10. 一句话结论 / One-Line Conclusion
 
 像“把 `好` 理解成继续上一轮任务，并在执行前回显下一步动作”这类能力，属于 Harness 的交互入口层。
 

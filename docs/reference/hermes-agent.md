@@ -4,13 +4,13 @@ status: active
 owner: core
 ---
 
-# Hermes Agent Reference
+# Hermes Agent Reference / Hermes Agent 参考
 
-## 仓库链接
+## 仓库链接 / Repository Link
 
 - GitHub: [nousresearch/hermes-agent](https://github.com/nousresearch/hermes-agent)
 
-## 这份文档的用途
+## 这份文档的用途 / Purpose Of This Note
 
 这不是本项目的实现文档，而是一份外部参考说明。
 
@@ -19,11 +19,11 @@ owner: core
 - `hermes-agent` 值得我们看什么
 - 它和 `Claude_Code_MVP` 当前处于什么关系
 
-## 一句话定位
+## 一句话定位 / One-Line Positioning
 
 `hermes-agent` 更像一个更完整、更产品化的 Harness 平台；`Claude_Code_MVP` 更像一个更小、更聚焦 coding workflow 的 Harness MVP 内核。
 
-## Hermes Agent 值得关注的点
+## Hermes Agent 值得关注的点 / What Is Worth Studying In Hermes Agent
 
 基于其 GitHub 仓库首页和 README，可以重点关注这些能力：
 
@@ -37,9 +37,9 @@ owner: core
 
 这说明它不只是一个 coding CLI，而是一个更完整的 Agent Harness 产品面。
 
-## 和本项目的差异
+## 和本项目的差异 / Differences From This Project
 
-### 我们已经有的
+### 我们已经有的 / What We Already Have
 
 `Claude_Code_MVP` 现在已经具备：
 
@@ -52,7 +52,7 @@ owner: core
 - `.env` provider 配置
 - Harness 架构文档
 
-### Hermes 更完整的
+### Hermes 更完整的 / What Hermes Has More Completely
 
 相较之下，`hermes-agent` 更接近成熟 Harness 平台，尤其体现在：
 
@@ -65,11 +65,11 @@ owner: core
 - scheduling / cron tasks
 - 多 backend 执行环境
 
-## 对我们的启发
+## 对我们的启发 / What It Suggests For Us
 
 如果从工程演进角度看，`hermes-agent` 对我们最有参考价值的点有三类：
 
-### 1. 技能与记忆
+### 1. 技能与记忆 / Skills And Memory
 
 这部分对应我们未来还没补上的：
 
@@ -77,7 +77,7 @@ owner: core
 - skills system
 - context growth management
 
-### 2. 更厚的工具与运行时抽象
+### 2. 更厚的工具与运行时抽象 / Thicker Tooling And Runtime Abstractions
 
 这部分对应我们未来可能继续演进的：
 
@@ -86,21 +86,21 @@ owner: core
 - 多 execution backends
 - richer runtime surface
 
-### 3. 多入口产品形态
+### 3. 多入口产品形态 / Multi-Entrypoint Product Shape
 
 这部分对应我们从当前 CLI-first MVP 继续往上长之后可能出现的方向：
 
 - 不只终端入口
 - 也可能有 messaging / gateway / remote control 入口
 
-## 对本项目的结论
+## 对本项目的结论 / Conclusion For This Project
 
 如果要用一句话说明两者关系，可以这样说：
 
 `Claude_Code_MVP` 适合讲清 Harness 的基本骨架；
 `hermes-agent` 适合参考当 Harness 长成完整产品后会是什么样。
 
-## 推荐阅读方式
+## 推荐阅读方式 / Recommended Reading Order
 
 阅读顺序建议是：
 
@@ -110,7 +110,7 @@ owner: core
 
 这样不会把本项目和外部参考混在一起。
 
-## 说明
+## 说明 / Notes
 
 这份总结基于 `2026-04-10` 对 `https://github.com/nousresearch/hermes-agent` 的仓库首页与 README 的阅读。
 它是架构参考说明，不是逐行源码分析，也不是兼容性承诺。

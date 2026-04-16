@@ -4,35 +4,35 @@ status: active
 owner: core
 ---
 
-# Architecture Boundaries
+# Architecture Boundaries / 架构边界
 
-## Layer Intent
+## Layer Intent / 分层意图
 
-### `app/cli`
+### `app/cli` / CLI 层
 - Owns argument parsing and terminal output.
 - Should not contain business logic beyond presentation orchestration.
 
-### `app/agent`
+### `app/agent` / Agent 层
 - Owns planning, repo context construction, and loop orchestration.
 - May call runtime, evals, and superpowers.
 
-### `app/runtime`
+### `app/runtime` / Runtime 层
 - Owns command execution, file mutation, provider integration, and git-facing primitives.
 - Must stay reusable and independent from CLI and agent planning logic.
 
-### `app/superpowers`
+### `app/superpowers` / Superpowers 层
 - Owns retry and repair behavior.
 - Must remain reusable by any future loop implementation.
 
-### `app/evals`
+### `app/evals` / Evals 层
 - Owns replay and lightweight scoring.
 - Should not become a dependency source for runtime internals.
 
-### `app/core`
+### `app/core` / Core 层
 - Owns shared models, specs, schema validation, and memory storage helpers.
 - Safe for other layers to depend on.
 
-## Import Rules
+## Import Rules / 导入规则
 
 The intended dependency direction is:
 
@@ -51,7 +51,7 @@ Forbidden patterns:
 - `app/agent` importing from `app/cli`
 - lower layers depending on CLI presentation concerns
 
-## Why These Rules Exist
+## Why These Rules Exist / 为什么有这些规则
 
 These rules keep the harness portable:
 
@@ -59,7 +59,7 @@ These rules keep the harness portable:
 - agent logic stays independent from terminal presentation
 - future middleware or daemon modes can reuse the same internals
 
-## Enforcement
+## Enforcement / 执行方式
 
 Boundary checks are implemented by:
 

@@ -4,12 +4,12 @@ status: active
 owner: core
 ---
 
-# Architecture Overview
+# Architecture Overview / 架构概览
 
-## System Goal
+## System Goal / 系统目标
 Claude Code MVP is a harness-oriented coding agent that helps developers inspect repositories, plan work, apply code changes, verify results, and review the resulting patch.
 
-## Primary Flow
+## Primary Flow / 主流程
 
 1. CLI receives a developer request
 2. Context builder gathers repo and git context
@@ -20,7 +20,7 @@ Claude Code MVP is a harness-oriented coding agent that helps developers inspect
 7. Replay persists a trajectory
 8. Git review and commit summary help the developer inspect the result
 
-## Main Packages
+## Main Packages / 主要包
 
 - `app/cli`
   Terminal-first user entrypoint.
@@ -37,7 +37,7 @@ Claude Code MVP is a harness-oriented coding agent that helps developers inspect
 - `specs`
   Constraint-oriented task and agent definitions retained from the original starter.
 
-## Harness Perspective
+## Harness Perspective / Harness 视角
 
 This repository intentionally separates:
 
@@ -49,7 +49,7 @@ That separation is the current foundation for evolving the project toward a stro
 
 For a fuller Chinese walkthrough of how this repository maps to harness concepts, read [`harness-explained.md`](./harness-explained.md).
 
-## External Architectural Reference
+## External Architectural Reference / 外部架构参考
 
 This project also uses the following repository as a conceptual reference for Claude Code style harness thinking:
 
