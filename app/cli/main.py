@@ -6,7 +6,7 @@ from pathlib import Path
 
 from app.agent.loop import CodingAgentLoop
 from app.agent.policies import ExecutionPolicy, PermissionPipeline
-from app.core.env_loader import load_project_env
+from app.core.env_loader import load_project_env, resolve_auth_loading_policy
 from app.core.memory_store import MemoryStore
 from app.core.spec_loader import SpecLoader
 from app.runtime.adapter_factory import build_runtime_adapter
@@ -18,6 +18,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("prompt", nargs="?", default="", help='Developer request, for example: cc "fix failing tests"')
     parser.add_argument("--repo", default=".", help="Repository path to operate on")
     parser.add_argument("--provider", default=None, help="Runtime provider: local, claude_code, codex_cli")
+    parser.add_argument(
+        "--auth-source",
+        default="auto",
+        choices=("auto", "cli", "env"),
+        help="How provider auth-related env vars should be loaded: auto, cli, or env",
+    )
     parser.add_argument("--task-type", default=None, help="Optional explicit task type override")
     parser.add_argument("--json", action="store_true", help="Print full JSON result")
     parser.add_argument("--show-status", action="store_true", help="Show git status before running")
@@ -55,10 +61,11 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     repo_path = Path(args.repo).resolve()
-    load_project_env(repo_path)
+    selected_provider, excluded_prefixes = resolve_auth_loading_policy(repo_path, args.provider, args.auth_source)
+    load_project_env(repo_path, exclude_prefixes=excluded_prefixes)
     spec_root = Path(__file__).resolve().parents[2] / "specs"
     loader = SpecLoader(spec_root)
-    adapter = build_runtime_adapter(args.provider)
+    adapter = build_runtime_adapter(selected_provider)
     provider_info = adapter.provider_info()
     git_tool = GitTool(adapter)
     policy = ExecutionPolicy(
