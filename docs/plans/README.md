@@ -12,6 +12,7 @@ Current documents:
 
 - [`current-sprint.md`](./current-sprint.md)
 - [`harness-hardening-pr-plan.md`](./harness-hardening-pr-plan.md)
+- [`release-notes.md`](./release-notes.md)
 
 Use these docs when you want to know:
 
