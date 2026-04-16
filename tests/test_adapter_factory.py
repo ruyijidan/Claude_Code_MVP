@@ -10,6 +10,8 @@ class AdapterFactoryTests(unittest.TestCase):
         self.assertEqual(build_runtime_adapter().provider_name, "local")
         self.assertEqual(build_runtime_adapter("claude_code").provider_name, "claude_code")
         self.assertEqual(build_runtime_adapter("codex_cli").provider_name, "codex_cli")
+        self.assertEqual(build_runtime_adapter("anthropic_api").provider_name, "anthropic_api")
+        self.assertEqual(build_runtime_adapter("glm5").provider_name, "glm5")
 
 
 if __name__ == "__main__":

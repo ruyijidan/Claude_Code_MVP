@@ -139,6 +139,34 @@ class CliMainTests(unittest.TestCase):
             self.assertEqual(exit_code, 0)
             load_env.assert_called_once_with(repo_path.resolve(), exclude_prefixes=())
 
+    def test_cli_can_delegate_to_glm5_provider(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            repo_path = Path(tmp_dir)
+            stream = io.StringIO()
+            fake_adapter = MagicMock()
+            fake_adapter.provider_name = "glm5"
+            fake_adapter.provider_info.return_value = {"provider": "glm5", "available": True, "delegates_prompt": True}
+            fake_adapter.can_delegate_prompt.return_value = True
+            fake_adapter.execute_prompt.return_value = (0, '{"result":"MODEL_OK"}', ["POST", "https://example.test/v1/messages"])
+            with patch("app.cli.main.load_project_env", return_value=(None, {})) as load_env:
+                with patch("app.cli.main.build_runtime_adapter", return_value=fake_adapter):
+                    with redirect_stdout(stream):
+                        exit_code = main(
+                            [
+                                "Reply with exactly MODEL_OK",
+                                "--repo",
+                                str(repo_path),
+                                "--provider",
+                                "glm5",
+                                "--delegate-to-provider",
+                                "--auto-approve",
+                                "--json",
+                            ]
+                        )
+            self.assertEqual(exit_code, 0)
+            load_env.assert_called_once_with(repo_path.resolve(), exclude_prefixes=())
+            self.assertIn('"provider": "glm5"', stream.getvalue())
+
     def test_cli_can_show_post_review_summary(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
             repo_path = Path(tmp_dir)

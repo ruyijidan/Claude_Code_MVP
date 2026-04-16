@@ -17,7 +17,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="cc", description="Claude Code MVP CLI")
     parser.add_argument("prompt", nargs="?", default="", help='Developer request, for example: cc "fix failing tests"')
     parser.add_argument("--repo", default=".", help="Repository path to operate on")
-    parser.add_argument("--provider", default=None, help="Runtime provider: local, claude_code, codex_cli")
+    parser.add_argument("--provider", default=None, help="Runtime provider: local, claude_code, codex_cli, anthropic_api, glm5")
     parser.add_argument(
         "--auth-source",
         default="auto",

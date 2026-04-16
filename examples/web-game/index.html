@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>星际闪避战</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="page-shell">
+      <section class="hero-panel">
+        <p class="eyebrow">Claude Code MVP Demo</p>
+        <h1>星际闪避战</h1>
+        <p class="summary">
+          用方向键或 A/D 控制飞船，躲开陨石，拾取能量星。分数越高，速度越快。
+        </p>
+        <div class="controls">
+          <span>键盘：← → / A D</span>
+          <span>移动端：拖动底部滑块</span>
+          <span>空格：重新开始</span>
+        </div>
+      </section>
+
+      <section class="game-panel">
+        <div class="hud">
+          <div class="stat-card">
+            <span class="label">分数</span>
+            <strong id="score">0</strong>
+          </div>
+          <div class="stat-card">
+            <span class="label">生命</span>
+            <strong id="lives">3</strong>
+          </div>
+          <div class="stat-card">
+            <span class="label">等级</span>
+            <strong id="level">1</strong>
+          </div>
+        </div>
+
+        <div class="canvas-frame">
+          <canvas id="gameCanvas" width="420" height="640" aria-label="星际闪避战游戏画布"></canvas>
+          <div class="overlay" id="overlay">
+            <div class="overlay-card">
+              <p class="overlay-tag">Ready</p>
+              <h2 id="overlayTitle">按开始按钮进入宇宙</h2>
+              <p id="overlayText">躲开红色陨石，吃到金色能量星，尽量活得更久。</p>
+              <button id="startButton" type="button">开始游戏</button>
+            </div>
+          </div>
+        </div>
+
+        <label class="touch-bar" for="touchControl">
+          <span>触屏控制</span>
+          <input id="touchControl" type="range" min="0" max="100" value="50" />
+        </label>
+      </section>
+    </main>
+
+    <script src="./game.js"></script>
+  </body>
+</html>
