@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from app.agent.loop import CodingAgentLoop
+from app.agent.policies import ExecutionPolicy, PermissionPipeline, make_command_guard
 from app.core.env_loader import load_project_env, resolve_auth_loading_policy
 from app.core.memory_store import MemoryStore
 from app.core.spec_loader import SpecLoader
@@ -22,6 +23,9 @@ def run_task(
     spec_root = Path(__file__).resolve().parents[1] / "specs"
     loader = SpecLoader(spec_root)
     adapter = build_runtime_adapter(selected_provider)
+    policy = ExecutionPolicy()
+    permission_pipeline = PermissionPipeline()
+    adapter.configure_command_guard(make_command_guard(permission_pipeline, policy, provider_info=adapter.provider_info()))
     loop = CodingAgentLoop(
         spec_loader=loader,
         memory_store=MemoryStore(repo_path / ".claude-code" / "trajectories"),

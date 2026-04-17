@@ -62,6 +62,11 @@ class CliMainTests(unittest.TestCase):
             output = stream.getvalue()
             self.assertEqual(exit_code, 0)
             self.assertIn("permissions", output)
+            self.assertIn("operations", output)
+            self.assertIn("command_profiles", output)
+            self.assertIn("local_loop", output)
+            self.assertIn("delegated_provider", output)
+            self.assertIn("dangerous_remove", output)
 
     def test_cli_blocks_delegated_provider_without_explicit_approval(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -82,6 +87,31 @@ class CliMainTests(unittest.TestCase):
             output = stream.getvalue()
             self.assertEqual(exit_code, 1)
             self.assertIn("permission_denied", output)
+
+    def test_cli_blocks_delegated_provider_when_provider_is_unavailable(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            repo_path = Path(tmp_dir)
+            stream = io.StringIO()
+            fake_adapter = MagicMock()
+            fake_adapter.provider_name = "codex_cli"
+            fake_adapter.provider_info.return_value = {"provider": "codex_cli", "available": False, "delegates_prompt": False}
+            with patch("app.cli.main.build_runtime_adapter", return_value=fake_adapter):
+                with redirect_stdout(stream):
+                    exit_code = main(
+                        [
+                            "fix failing tests",
+                            "--repo",
+                            str(repo_path),
+                            "--provider",
+                            "codex_cli",
+                            "--delegate-to-provider",
+                            "--auto-approve",
+                            "--json",
+                        ]
+                    )
+            output = stream.getvalue()
+            self.assertEqual(exit_code, 1)
+            self.assertIn("provider_unavailable", output)
 
     def test_cli_defaults_claude_code_to_cli_auth_loading(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:

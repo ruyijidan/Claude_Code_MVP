@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 
 from app.agent.loop import CodingAgentLoop
-from app.agent.policies import ExecutionPolicy, PermissionPipeline
+from app.agent.policies import ExecutionPolicy, PermissionPipeline, make_command_guard
 from app.core.env_loader import load_project_env, resolve_auth_loading_policy
 from app.core.memory_store import MemoryStore
 from app.core.spec_loader import SpecLoader
@@ -73,6 +73,7 @@ def main(argv: list[str] | None = None) -> int:
         dangerously_skip_confirmation=bool(args.dangerously_skip_confirmation),
     )
     permission_pipeline = PermissionPipeline()
+    adapter.configure_command_guard(make_command_guard(permission_pipeline, policy, provider_info=provider_info))
 
     if not args.prompt and not (
         args.show_status or args.show_diff or args.show_changed_files or args.show_review or args.show_commit_summary or args.show_permissions
@@ -80,12 +81,17 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("a prompt is required unless a git inspection flag is used")
 
     if args.show_permissions:
-        inspect_decision = permission_pipeline.assess("inspect", policy, provider_info=provider_info)
+        permissions_snapshot = {
+            "policy_mode": policy.mode,
+            "provider": provider_info,
+            "operations": permission_pipeline.inspect_all(policy, provider_info=provider_info),
+            "command_profiles": permission_pipeline.inspect_command_profiles(policy, provider_info=provider_info),
+        }
         if args.json:
-            print(json.dumps({"permissions": inspect_decision.to_dict()}, indent=2))
+            print(json.dumps({"permissions": permissions_snapshot}, indent=2))
         else:
             print("permissions:")
-            print(json.dumps(inspect_decision.to_dict(), indent=2))
+            print(json.dumps(permissions_snapshot, indent=2))
 
     if args.show_status:
         status = git_tool.status(repo_path)

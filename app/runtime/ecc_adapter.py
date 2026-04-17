@@ -3,6 +3,7 @@ from __future__ import annotations
 import sys
 from shutil import which
 from pathlib import Path
+from typing import Callable
 
 from app.runtime.command_executor import CommandExecutor
 from app.runtime.patch_applier import PatchApplier
@@ -15,9 +16,21 @@ class ECCAdapter:
     def __init__(self) -> None:
         self.command_executor = CommandExecutor()
         self.patch_applier = PatchApplier()
+        self.command_guard: Callable[[list[str]], dict] | None = None
 
     def run_command(self, cmd: list[str], cwd: Path) -> tuple[int, str]:
+        if self.command_guard is not None:
+            decision = self.command_guard(cmd)
+            if not decision.get("approved", False):
+                message = (
+                    "permission denied before execution: "
+                    f"{decision.get('reason', 'command blocked')}"
+                )
+                return 126, message
         return self.command_executor.run(cmd, cwd)
+
+    def configure_command_guard(self, guard: Callable[[list[str]], dict] | None) -> None:
+        self.command_guard = guard
 
     def edit_file(self, path: Path, content: str) -> None:
         self.patch_applier.write_text(path, content)
