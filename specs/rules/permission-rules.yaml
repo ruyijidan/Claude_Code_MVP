@@ -1,0 +1,19 @@
+{
+  "name": "permission_rules_v1",
+  "runtime_artifact_dirs": [
+    ".claude-code",
+    "logs"
+  ],
+  "standard_repo_dirs": [
+    "app",
+    "tests",
+    "docs",
+    "specs",
+    "scripts",
+    "sample_app",
+    "reports"
+  ],
+  "protected_dirs": [
+    ".git"
+  ]
+}

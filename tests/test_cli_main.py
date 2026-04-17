@@ -69,6 +69,9 @@ class CliMainTests(unittest.TestCase):
             self.assertIn("delegated_provider", output)
             self.assertIn("dangerous_remove", output)
             self.assertIn("git_metadata", output)
+            self.assertIn("runtime_trajectory", output)
+            self.assertIn("runtime_log_file", output)
+            self.assertIn("unclassified_tmp_file", output)
 
     def test_cli_blocks_delegated_provider_without_explicit_approval(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:

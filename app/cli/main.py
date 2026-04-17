@@ -68,11 +68,12 @@ def main(argv: list[str] | None = None) -> int:
     adapter = build_runtime_adapter(selected_provider)
     provider_info = adapter.provider_info()
     git_tool = GitTool(adapter)
+    permission_rules = loader.load_permission_rules()
     policy = ExecutionPolicy(
         auto_approve=bool(args.auto_approve),
         dangerously_skip_confirmation=bool(args.dangerously_skip_confirmation),
     )
-    permission_pipeline = PermissionPipeline()
+    permission_pipeline = PermissionPipeline(permission_rules)
     adapter.configure_command_guard(make_command_guard(permission_pipeline, policy, provider_info=provider_info))
 
     if not args.prompt and not (
@@ -86,7 +87,7 @@ def main(argv: list[str] | None = None) -> int:
             "provider": provider_info,
             "operations": permission_pipeline.inspect_all(policy, provider_info=provider_info),
             "command_profiles": permission_pipeline.inspect_command_profiles(policy, provider_info=provider_info),
-            "write_profiles": permission_pipeline.inspect_write_profiles(repo_path),
+            "write_profiles": permission_pipeline.inspect_write_profiles(repo_path, policy),
         }
         if args.json:
             print(json.dumps({"permissions": permissions_snapshot}, indent=2))
@@ -192,11 +193,12 @@ def main(argv: list[str] | None = None) -> int:
         return 0 if code == 0 else code
 
     permission = permission_pipeline.assess("local_loop", policy, provider_info=provider_info)
-    adapter.configure_file_guard(make_file_write_guard(permission_pipeline, repo_root=repo_path))
+    adapter.configure_file_guard(make_file_write_guard(permission_pipeline, repo_root=repo_path, policy=policy))
     loop = CodingAgentLoop(
         spec_loader=loader,
         memory_store=MemoryStore(repo_path / ".claude-code" / "trajectories"),
         adapter=adapter,
+        permission_pipeline=permission_pipeline,
     )
     try:
         result = loop.run(repo_path=repo_path, prompt=args.prompt, task_name=args.task_type)

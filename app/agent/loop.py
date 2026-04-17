@@ -28,10 +28,12 @@ class CodingAgentLoop:
         spec_loader: SpecLoader,
         memory_store: MemoryStore,
         adapter: ECCAdapter,
+        permission_pipeline: PermissionPipeline | None = None,
     ) -> None:
         self.spec_loader = spec_loader
         self.memory_store = memory_store
         self.adapter = adapter
+        self.permission_pipeline = permission_pipeline or PermissionPipeline()
         self.context_builder = RepoContextBuilder(adapter)
         self.planner = LightweightPlanner()
         self.completion_contracts = CompletionContractRegistry()
@@ -44,7 +46,8 @@ class CodingAgentLoop:
         self.replay_logger = ReplayLogger(memory_store)
 
     def run(self, repo_path: Path, prompt: str, task_name: str | None = None) -> dict:
-        self.adapter.configure_file_guard(make_file_write_guard(PermissionPipeline(), repo_root=repo_path))
+        if self.adapter.file_guard is None:
+            self.adapter.configure_file_guard(make_file_write_guard(self.permission_pipeline, repo_root=repo_path))
         task_type = task_name or self.planner.infer_task_type(prompt)
         task_spec = self.spec_loader.load_task(task_type)
         workflow_name = self.planner.workflow_name_for_task_type(task_type)

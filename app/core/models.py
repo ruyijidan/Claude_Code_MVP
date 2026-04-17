@@ -48,6 +48,14 @@ class RuleSpec:
 
 
 @dataclass(slots=True)
+class PermissionRulesSpec:
+    name: str
+    runtime_artifact_dirs: list[str]
+    standard_repo_dirs: list[str]
+    protected_dirs: list[str]
+
+
+@dataclass(slots=True)
 class PlanStep:
     id: str
     description: str

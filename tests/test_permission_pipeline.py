@@ -1,13 +1,44 @@
 from __future__ import annotations
 
+import json
 import tempfile
 import unittest
 from pathlib import Path
 
 from app.agent.policies import ExecutionPolicy, PermissionPipeline
+from app.core.spec_loader import SpecLoader
 
 
 class PermissionPipelineTests(unittest.TestCase):
+    def test_permission_pipeline_can_read_directory_tiers_from_spec(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            spec_root = Path(tmp_dir) / "specs"
+            rules_dir = spec_root / "rules"
+            rules_dir.mkdir(parents=True)
+            (rules_dir / "permission-rules.yaml").write_text(
+                json.dumps(
+                    {
+                        "name": "custom_rules",
+                        "runtime_artifact_dirs": ["artifacts"],
+                        "standard_repo_dirs": ["src"],
+                        "protected_dirs": [".meta"],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            rules = SpecLoader(spec_root).load_permission_rules()
+            pipeline = PermissionPipeline(rules)
+
+            repo_root = Path(tmp_dir) / "repo"
+            repo_root.mkdir()
+            src_decision = pipeline.assess_file_write(repo_root / "src" / "main.py", repo_root)
+            artifact_decision = pipeline.assess_file_write(repo_root / "artifacts" / "run.json", repo_root)
+            protected_decision = pipeline.assess_file_write(repo_root / ".meta" / "state.json", repo_root)
+
+        self.assertEqual(src_decision.boundary, "repository_managed_write")
+        self.assertEqual(artifact_decision.boundary, "runtime_artifact_directory")
+        self.assertEqual(protected_decision.boundary, "protected_repository_directory")
+
     def test_inspect_is_always_allowed(self) -> None:
         pipeline = PermissionPipeline()
         decision = pipeline.assess("inspect", ExecutionPolicy())
@@ -106,6 +137,41 @@ class PermissionPipelineTests(unittest.TestCase):
             decision = pipeline.assess_file_write(repo_root / "sample_app" / "tool_router.py", repo_root)
         self.assertTrue(decision.approved)
         self.assertEqual(decision.boundary, "repository_managed_write")
+        self.assertFalse(decision.requires_confirmation)
+
+    def test_runtime_artifact_write_is_allowed_with_artifact_scope(self) -> None:
+        pipeline = PermissionPipeline()
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            repo_root = Path(tmp_dir)
+            decision = pipeline.assess_file_write(repo_root / ".claude-code" / "trajectories" / "run.json", repo_root)
+        self.assertTrue(decision.approved)
+        self.assertEqual(decision.scope, "runtime_artifact")
+        self.assertEqual(decision.boundary, "runtime_artifact_directory")
+        self.assertEqual(decision.risk, "low")
+
+    def test_unclassified_repo_directory_requires_confirmation_by_default(self) -> None:
+        pipeline = PermissionPipeline()
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            repo_root = Path(tmp_dir)
+            decision = pipeline.assess_file_write(repo_root / "tmp" / "scratch.txt", repo_root)
+        self.assertFalse(decision.approved)
+        self.assertTrue(decision.requires_confirmation)
+        self.assertEqual(decision.decision, "require_confirmation")
+        self.assertEqual(decision.scope, "repo_workspace_unclassified")
+        self.assertEqual(decision.boundary, "repository_unclassified_directory")
+
+    def test_unclassified_repo_directory_is_allowed_in_auto_mode(self) -> None:
+        pipeline = PermissionPipeline()
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            repo_root = Path(tmp_dir)
+            decision = pipeline.assess_file_write(
+                repo_root / "tmp" / "scratch.txt",
+                repo_root,
+                ExecutionPolicy(auto_approve=True),
+            )
+        self.assertTrue(decision.approved)
+        self.assertFalse(decision.requires_confirmation)
+        self.assertEqual(decision.decision, "allow")
 
     def test_git_metadata_write_is_denied(self) -> None:
         pipeline = PermissionPipeline()
@@ -113,7 +179,7 @@ class PermissionPipelineTests(unittest.TestCase):
             repo_root = Path(tmp_dir)
             decision = pipeline.assess_file_write(repo_root / ".git" / "config", repo_root)
         self.assertFalse(decision.approved)
-        self.assertEqual(decision.boundary, "git_directory_protected")
+        self.assertEqual(decision.boundary, "protected_repository_directory")
 
     def test_outside_repo_write_is_denied(self) -> None:
         pipeline = PermissionPipeline()

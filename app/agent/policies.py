@@ -4,6 +4,8 @@ from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
+from app.core.models import PermissionRulesSpec
+
 
 @dataclass(slots=True)
 class ExecutionPolicy:
@@ -61,9 +63,11 @@ class CommandPermissionDecision:
 class FileWriteDecision:
     path: str
     repo_root: str
+    policy_mode: str
     decision: str
     risk: str
     approved: bool
+    requires_confirmation: bool
     scope: str
     boundary: str
     reason: str
@@ -78,6 +82,14 @@ class PermissionPipeline:
     READ_ONLY_GIT_COMMANDS = {"status", "diff", "branch", "log", "show"}
     MUTATING_GIT_COMMANDS = {"add", "commit", "reset", "checkout", "clean", "restore"}
     HIGH_RISK_COMMANDS = {"rm", "sudo", "chmod", "chown", "dd", "mkfs", "fdisk", "shutdown", "reboot", "killall"}
+
+    def __init__(self, permission_rules: PermissionRulesSpec | None = None) -> None:
+        self.permission_rules = permission_rules or PermissionRulesSpec(
+            name="permission_rules_builtin",
+            runtime_artifact_dirs=[".claude-code", "logs"],
+            standard_repo_dirs=["app", "tests", "docs", "specs", "scripts", "sample_app", "reports"],
+            protected_dirs=[".git"],
+        )
 
     def assess(self, operation: str, policy: ExecutionPolicy, *, provider_info: dict | None = None) -> PermissionDecision:
         provider_data = provider_info or {}
@@ -333,54 +345,129 @@ class PermissionPipeline:
             for name, command in profiles.items()
         }
 
-    def assess_file_write(self, path: Path, repo_root: Path) -> FileWriteDecision:
+    def assess_file_write(self, path: Path, repo_root: Path, policy: ExecutionPolicy | None = None) -> FileWriteDecision:
+        active_policy = policy or ExecutionPolicy()
         resolved_repo_root = repo_root.resolve()
         resolved_path = path.resolve(strict=False)
 
-        if resolved_path == resolved_repo_root / ".git" or (resolved_repo_root / ".git") in resolved_path.parents:
+        protected_dirs = {name for name in self.permission_rules.protected_dirs}
+        runtime_artifact_dirs = {name for name in self.permission_rules.runtime_artifact_dirs}
+        standard_repo_dirs = {name for name in self.permission_rules.standard_repo_dirs}
+
+        protected_roots = {resolved_repo_root / name for name in protected_dirs}
+
+        if any(resolved_path == protected_root or protected_root in resolved_path.parents for protected_root in protected_roots):
             return FileWriteDecision(
                 path=str(resolved_path),
                 repo_root=str(resolved_repo_root),
+                policy_mode=active_policy.mode,
                 decision="deny",
                 risk="critical",
                 approved=False,
+                requires_confirmation=True,
                 scope="git_metadata",
-                boundary="git_directory_protected",
-                reason="Writes inside .git metadata should be blocked by default.",
+                boundary="protected_repository_directory",
+                reason="Writes inside protected repository directories should be blocked by default.",
             )
 
         if resolved_path != resolved_repo_root and resolved_repo_root not in resolved_path.parents:
             return FileWriteDecision(
                 path=str(resolved_path),
                 repo_root=str(resolved_repo_root),
+                policy_mode=active_policy.mode,
                 decision="deny",
                 risk="high",
                 approved=False,
+                requires_confirmation=True,
                 scope="outside_repo",
                 boundary="repository_boundary_protected",
                 reason="Writes outside the target repository should be blocked by default.",
             )
 
+        relative_parts = resolved_path.relative_to(resolved_repo_root).parts
+        top_level = relative_parts[0] if relative_parts else ""
+
+        if top_level in protected_dirs:
+            return FileWriteDecision(
+                path=str(resolved_path),
+                repo_root=str(resolved_repo_root),
+                policy_mode=active_policy.mode,
+                decision="deny",
+                risk="critical",
+                approved=False,
+                requires_confirmation=True,
+                scope="protected_repo_dir",
+                boundary="protected_repository_directory",
+                reason="Writes inside protected repository directories should be blocked by default.",
+            )
+
+        if top_level in runtime_artifact_dirs:
+            return FileWriteDecision(
+                path=str(resolved_path),
+                repo_root=str(resolved_repo_root),
+                policy_mode=active_policy.mode,
+                decision="allow",
+                risk="low",
+                approved=True,
+                requires_confirmation=False,
+                scope="runtime_artifact",
+                boundary="runtime_artifact_directory",
+                reason="Harness runtime artifacts may be written inside dedicated artifact directories.",
+            )
+
+        if top_level in standard_repo_dirs or len(relative_parts) == 1:
+            return FileWriteDecision(
+                path=str(resolved_path),
+                repo_root=str(resolved_repo_root),
+                policy_mode=active_policy.mode,
+                decision="allow",
+                risk="medium",
+                approved=True,
+                requires_confirmation=False,
+                scope="repo_workspace",
+                boundary="repository_managed_write",
+                reason="Repository-local file writes are allowed inside the harness-managed workspace.",
+            )
+
+        if active_policy.requires_confirmation():
+            return FileWriteDecision(
+                path=str(resolved_path),
+                repo_root=str(resolved_repo_root),
+                policy_mode=active_policy.mode,
+                decision="require_confirmation",
+                risk="high",
+                approved=False,
+                requires_confirmation=True,
+                scope="repo_workspace_unclassified",
+                boundary="repository_unclassified_directory",
+                reason="Writes to unclassified repository directories require explicit approval.",
+            )
+
         return FileWriteDecision(
             path=str(resolved_path),
             repo_root=str(resolved_repo_root),
+            policy_mode=active_policy.mode,
             decision="allow",
             risk="medium",
             approved=True,
-            scope="repo_workspace",
-            boundary="repository_managed_write",
-            reason="Repository-local file writes are allowed inside the harness-managed workspace.",
+            requires_confirmation=False,
+            scope="repo_workspace_unclassified",
+            boundary="repository_unclassified_directory",
+            reason="Unclassified repository directories are allowed only because the active policy skips confirmation.",
         )
 
-    def inspect_write_profiles(self, repo_root: Path) -> dict[str, dict]:
+    def inspect_write_profiles(self, repo_root: Path, policy: ExecutionPolicy | None = None) -> dict[str, dict]:
         profiles = {
             "repo_source_file": repo_root / "sample_app" / "tool_router.py",
             "repo_test_file": repo_root / "tests" / "test_tool_router.py",
+            "runtime_trajectory": repo_root / ".claude-code" / "trajectories" / "run.json",
+            "runtime_log_file": repo_root / "logs" / "agent.log",
+            "unclassified_tmp_file": repo_root / "tmp" / "scratch.txt",
             "git_metadata": repo_root / ".git" / "config",
             "outside_repo_tmp": repo_root.parent / "outside.txt",
         }
         return {
-            name: self.assess_file_write(path, repo_root).to_dict()
+            name: self.assess_file_write(path, repo_root, policy).to_dict()
             for name, path in profiles.items()
         }
 
@@ -401,8 +488,9 @@ def make_file_write_guard(
     pipeline: PermissionPipeline,
     *,
     repo_root: Path,
+    policy: ExecutionPolicy | None = None,
 ) -> Callable[[Path], dict]:
     def guard(path: Path) -> dict:
-        return pipeline.assess_file_write(path, repo_root).to_dict()
+        return pipeline.assess_file_write(path, repo_root, policy).to_dict()
 
     return guard

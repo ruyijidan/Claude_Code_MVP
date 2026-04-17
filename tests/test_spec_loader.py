@@ -20,11 +20,14 @@ class SpecLoaderTests(unittest.TestCase):
 
         workflow = loader.load_workflow("bugfix")
         rule = loader.load_rule("surgical-changes")
+        permission_rules = loader.load_permission_rules()
         template = loader.load_template("plan-template")
 
         self.assertEqual(workflow.name, "bugfix")
         self.assertIn("tests must pass", workflow.verification)
         self.assertEqual(rule.name, "surgical_changes")
+        self.assertEqual(permission_rules.name, "permission_rules_v1")
+        self.assertIn(".claude-code", permission_rules.runtime_artifact_dirs)
         self.assertIn("smallest relevant change", rule.intent)
         self.assertIn("## Goal", template)
 

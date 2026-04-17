@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from app.core.models import AgentSpec, RuleSpec, TaskSpec, WorkflowSpec
+from app.core.models import AgentSpec, PermissionRulesSpec, RuleSpec, TaskSpec, WorkflowSpec
 
 
 class SpecLoader:
@@ -30,6 +30,10 @@ class SpecLoader:
     def load_rule(self, name: str) -> RuleSpec:
         data = self._load_json_document(self.spec_root / "rules" / f"{name}.yaml")
         return RuleSpec(**data)
+
+    def load_permission_rules(self, name: str = "permission-rules") -> PermissionRulesSpec:
+        data = self._load_json_document(self.spec_root / "rules" / f"{name}.yaml")
+        return PermissionRulesSpec(**data)
 
     def load_template(self, name: str) -> str:
         return (self.spec_root / "templates" / f"{name}.md").read_text(encoding="utf-8")

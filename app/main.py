@@ -24,12 +24,13 @@ def run_task(
     loader = SpecLoader(spec_root)
     adapter = build_runtime_adapter(selected_provider)
     policy = ExecutionPolicy()
-    permission_pipeline = PermissionPipeline()
+    permission_pipeline = PermissionPipeline(loader.load_permission_rules())
     adapter.configure_command_guard(make_command_guard(permission_pipeline, policy, provider_info=adapter.provider_info()))
     loop = CodingAgentLoop(
         spec_loader=loader,
         memory_store=MemoryStore(repo_path / ".claude-code" / "trajectories"),
         adapter=adapter,
+        permission_pipeline=permission_pipeline,
     )
     return loop.run(repo_path=repo_path, prompt=request_text, task_name=task_name)
 

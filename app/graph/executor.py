@@ -13,11 +13,16 @@ class GraphExecutor:
         self.memory_store = memory_store
         self.adapter = build_runtime_adapter(runtime_provider)
         policy = ExecutionPolicy()
-        permission_pipeline = PermissionPipeline()
+        permission_pipeline = PermissionPipeline(spec_loader.load_permission_rules())
         self.adapter.configure_command_guard(
             make_command_guard(permission_pipeline, policy, provider_info=self.adapter.provider_info())
         )
-        self.loop = CodingAgentLoop(spec_loader=spec_loader, memory_store=memory_store, adapter=self.adapter)
+        self.loop = CodingAgentLoop(
+            spec_loader=spec_loader,
+            memory_store=memory_store,
+            adapter=self.adapter,
+            permission_pipeline=permission_pipeline,
+        )
 
     def execute(self, initial_state: dict) -> dict:
         state = dict(initial_state)

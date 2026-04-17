@@ -82,6 +82,50 @@ class RuntimeCommandGuardTests(unittest.TestCase):
 
             self.assertEqual(target.read_text(encoding="utf-8"), "print('ok')\n")
 
+    def test_file_guard_allows_runtime_artifact_writes(self) -> None:
+        adapter = LocalRuntimeAdapter()
+        pipeline = PermissionPipeline()
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            repo_path = Path(tmp_dir)
+            target = repo_path / ".claude-code" / "trajectories" / "run.json"
+            adapter.configure_file_guard(make_file_write_guard(pipeline, repo_root=repo_path))
+
+            adapter.edit_file(target, "{\"ok\": true}\n")
+
+            self.assertEqual(target.read_text(encoding="utf-8"), "{\"ok\": true}\n")
+
+    def test_file_guard_blocks_unclassified_directory_writes_by_default(self) -> None:
+        adapter = LocalRuntimeAdapter()
+        pipeline = PermissionPipeline()
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            repo_path = Path(tmp_dir)
+            target = repo_path / "tmp" / "scratch.txt"
+            adapter.configure_file_guard(make_file_write_guard(pipeline, repo_root=repo_path))
+
+            with self.assertRaises(PermissionError):
+                adapter.edit_file(target, "blocked\n")
+
+    def test_file_guard_allows_unclassified_directory_writes_in_auto_mode(self) -> None:
+        adapter = LocalRuntimeAdapter()
+        pipeline = PermissionPipeline()
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            repo_path = Path(tmp_dir)
+            target = repo_path / "tmp" / "scratch.txt"
+            adapter.configure_file_guard(
+                make_file_write_guard(
+                    pipeline,
+                    repo_root=repo_path,
+                    policy=ExecutionPolicy(auto_approve=True),
+                )
+            )
+
+            adapter.edit_file(target, "allowed\n")
+
+            self.assertEqual(target.read_text(encoding="utf-8"), "allowed\n")
+
 
 if __name__ == "__main__":
     unittest.main()
