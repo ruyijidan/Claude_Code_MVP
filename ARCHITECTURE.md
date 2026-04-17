@@ -324,15 +324,19 @@ What it already has:
 - isolated verification script
 - repair and replay primitives
 - structured harness docs
+- first-wave hardening controls for completion, verification, scoped context, and repair policy
+- lightweight workflow, template, and rule asset boundaries under `specs/`
 
 What it does not yet fully have:
 
 - context compression
-- memory retrieval strategy
+- richer memory and retrieval strategy beyond replay storage
+- unified tool registry and schema abstraction layer
 - middleware or hook pipeline
 - browser or CDP-based application legibility
 - logs and metrics query tools
 - subagent orchestration
+- richer workflow execution engine beyond simple task-to-workflow mapping
 - full production-grade policy engine
 
 ## Design Position

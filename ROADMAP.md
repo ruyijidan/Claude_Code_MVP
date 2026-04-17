@@ -25,9 +25,17 @@
 - `.env` provider 配置
 - Harness 文档体系
 
+并且，第一波 harness hardening 已经完成：
+
+- `completion contracts` 和 `verification gates` 已落地
+- `scoped context selection` 已落地
+- `failure classification` 和 `repair policy` 已落地
+- `specs/workflows/`、`specs/templates/`、`specs/rules/` 已建立起资产层边界
+- workflow 资产已经开始以轻量方式影响 planning / verification / repair
+
 当前更准确的定位是：
 
-`Claude_Code_MVP` 已经是 Harness MVP，但还不是工业级 Harness。
+`Claude_Code_MVP` 已经是完成第一波控制面加固的 Harness MVP，但还不是工业级 Harness。
 
 ## P0 / P1 / P2 方向速览
 
@@ -35,10 +43,12 @@
 
 ### P0：控制面与安全面先做厚
 
+- 增加 `context compression` 与 token 预算感知
 - 补 `import / layer guardrails`，用明确层级规则 + CI 强制守卫
 - 增加危险命令确认与路径约束，形成更细风险分级 + 稳定 `--show-permissions` 输出
 - 增加结构化验证摘要（通过/失败/原因/风险级别）
 - 让 replay / trace 能解释发生了什么、为什么失败、下一步怎么修
+- 建立统一 tool registry / schema abstraction
 
 ### P1：让 Harness 更像真实可用的 coding agent
 
@@ -63,7 +73,7 @@
 | 模式 | 覆盖情况 | 当前对应 |
 |---|---|---|
 | 持久指令文件（CLAUDE.md） | 部分 | `AGENTS.md` 与文档层，但缺少强制注入的持久指令层 |
-| 作用域上下文组装 | 部分 | `app/agent/context_builder.py`（尚缺目录级规则与动态组装策略） |
+| 作用域上下文组装 | 部分 | 已有 scoped context selection，但尚缺目录级规则与更动态的组装策略 |
 | 分层内存（三层设计） | 缺失 | 仅有 replay 轨迹，没有短/工/长期记忆体系 |
 | 梦境整合（AutoDream） | 缺失 | 暂无后台内存整理/压缩流程 |
 | 渐进式上下文压缩 | 缺失 | 已在 P0 规划中（上下文压缩体系） |
@@ -73,7 +83,7 @@
 | 最小权限范围 | 部分 | 风险分级存在，但未形成阶段式最小权限工具集 |
 | 工具适配器层 | 已有 | `app/runtime` 适配器与 provider 抽象 |
 | 无头批处理模式 | 部分 | 有 CLI + CI 验证脚本，但缺少专用 batch 运行模式 |
-| 自愈循环 | 部分 | `app/superpowers/self_repair.py` + replay，但修复策略仍偏轻量 |
+| 自愈循环 | 部分 | 已有 failure classifier + repair policy + replay，但恢复策略仍不是更完整的阶段化恢复系统 |
 
 ## P0：必须补的 Harness 基础层
 

@@ -286,6 +286,23 @@ Harness 这种东西只看代码很难真正吃透，因为很多关键价值体
 6. [`docs/plans/current-sprint.md`](./docs/plans/current-sprint.md)：理解项目下一步要补什么
 7. [`docs/reference/README.md`](./docs/reference/README.md)：扩展到更完整的 Harness 参考
 
+## 当前状态：已经做到哪一步
+
+如果只看当前仓库状态，而不是最早期目标，这个项目已经不只是“能跑起来的单 loop MVP”了。
+
+第一波 harness hardening 已经完成，当前仓库已经具备：
+
+- `completion contracts` 和 `verification gates`
+- `scoped context selection`
+- `failure classification` 和 `repair policy`
+- `specs/workflows/`、`specs/templates/`、`specs/rules/` 这一层可复用资产边界
+- `scripts/agent_verify.sh` 提供的 worktree-based verification
+
+这意味着它现在更准确的定位是：
+
+- 一个已经完成第一波控制面加固的 Harness MVP
+- 一个开始进入 asset-driven harness 阶段的学习与演进基座
+
 ## 下一步：P0 / P1 / P2 应该补什么
 
 如果把“做好 Harness”拆成三阶段，这个项目下一步的重点可以这样理解。
@@ -294,10 +311,12 @@ Harness 这种东西只看代码很难真正吃透，因为很多关键价值体
 
 这一层不是追求更多能力，而是让系统更可控、更可信：
 
+- 增加 `context compression` 与 token 预算感知，避免长任务上下文失控
 - 补 `import / layer guardrails`，用明确层级规则 + CI 强制守卫
 - 增加危险命令确认与路径约束，形成更细风险分级 + 稳定 `--show-permissions` 输出
 - 增加结构化验证摘要（通过/失败/原因/风险级别）
 - 让 replay / trace 能解释发生了什么、为什么失败、下一步怎么修
+- 建立更统一的工具注册与 schema 抽象，降低后续扩展成本
 
 ### P1：让 Harness 更像真实可用的 coding agent
 
@@ -316,6 +335,7 @@ Harness 这种东西只看代码很难真正吃透，因为很多关键价值体
 - 增加 session memory（短期/工作/长期 + 摘要）
 - 增加 API / daemon 模式
 - 增加 trajectory viewer / dashboard
+- 增加 application legibility：浏览器、DOM、截图、日志、指标读取
 - 增强 skills / hooks / middleware 资产体系
 - 增加成本、缓存、隔离等工业级能力
 
