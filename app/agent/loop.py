@@ -8,6 +8,7 @@ from app.agents.router_agent import RouterAgent
 from app.agents.verifier_agent import VerifierAgent
 from app.agent.completion_contracts import CompletionContractRegistry
 from app.agent.context_builder import RepoContextBuilder
+from app.agent.policies import PermissionPipeline, make_file_write_guard
 from app.agent.planner import LightweightPlanner
 from app.agent.verification_gates import VerificationGateRunner
 from app.core.memory_store import MemoryStore
@@ -43,6 +44,7 @@ class CodingAgentLoop:
         self.replay_logger = ReplayLogger(memory_store)
 
     def run(self, repo_path: Path, prompt: str, task_name: str | None = None) -> dict:
+        self.adapter.configure_file_guard(make_file_write_guard(PermissionPipeline(), repo_root=repo_path))
         task_type = task_name or self.planner.infer_task_type(prompt)
         task_spec = self.spec_loader.load_task(task_type)
         workflow_name = self.planner.workflow_name_for_task_type(task_type)

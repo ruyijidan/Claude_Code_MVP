@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import tempfile
 import unittest
+from pathlib import Path
 
 from app.agent.policies import ExecutionPolicy, PermissionPipeline
 
@@ -96,6 +98,31 @@ class PermissionPipelineTests(unittest.TestCase):
         self.assertIn("delegated_provider", snapshot)
         self.assertEqual(snapshot["git_status"]["category"], "git_read")
         self.assertEqual(snapshot["dangerous_remove"]["decision"], "deny")
+
+    def test_repo_local_file_write_is_allowed(self) -> None:
+        pipeline = PermissionPipeline()
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            repo_root = Path(tmp_dir)
+            decision = pipeline.assess_file_write(repo_root / "sample_app" / "tool_router.py", repo_root)
+        self.assertTrue(decision.approved)
+        self.assertEqual(decision.boundary, "repository_managed_write")
+
+    def test_git_metadata_write_is_denied(self) -> None:
+        pipeline = PermissionPipeline()
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            repo_root = Path(tmp_dir)
+            decision = pipeline.assess_file_write(repo_root / ".git" / "config", repo_root)
+        self.assertFalse(decision.approved)
+        self.assertEqual(decision.boundary, "git_directory_protected")
+
+    def test_outside_repo_write_is_denied(self) -> None:
+        pipeline = PermissionPipeline()
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            repo_root = Path(tmp_dir)
+            outside = repo_root.parent / "outside.txt"
+            decision = pipeline.assess_file_write(outside, repo_root)
+        self.assertFalse(decision.approved)
+        self.assertEqual(decision.boundary, "repository_boundary_protected")
 
 
 if __name__ == "__main__":

@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from app.agent.policies import ExecutionPolicy, PermissionPipeline, make_command_guard
+from app.agent.policies import ExecutionPolicy, PermissionPipeline, make_command_guard, make_file_write_guard
 from app.runtime.local_runtime import LocalRuntimeAdapter
 
 
@@ -43,6 +43,44 @@ class RuntimeCommandGuardTests(unittest.TestCase):
 
         self.assertEqual(code, 0)
         self.assertIn("OK", output)
+
+    def test_file_guard_blocks_writes_outside_repo(self) -> None:
+        adapter = LocalRuntimeAdapter()
+        pipeline = PermissionPipeline()
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            repo_path = Path(tmp_dir) / "repo"
+            repo_path.mkdir()
+            outside_path = Path(tmp_dir) / "outside.txt"
+            adapter.configure_file_guard(make_file_write_guard(pipeline, repo_root=repo_path))
+
+            with self.assertRaises(PermissionError):
+                adapter.edit_file(outside_path, "blocked\n")
+
+    def test_file_guard_blocks_writes_to_git_metadata(self) -> None:
+        adapter = LocalRuntimeAdapter()
+        pipeline = PermissionPipeline()
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            repo_path = Path(tmp_dir)
+            (repo_path / ".git").mkdir()
+            adapter.configure_file_guard(make_file_write_guard(pipeline, repo_root=repo_path))
+
+            with self.assertRaises(PermissionError):
+                adapter.edit_file(repo_path / ".git" / "config", "blocked\n")
+
+    def test_file_guard_allows_repo_local_writes(self) -> None:
+        adapter = LocalRuntimeAdapter()
+        pipeline = PermissionPipeline()
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            repo_path = Path(tmp_dir)
+            target = repo_path / "sample_app" / "tool_router.py"
+            adapter.configure_file_guard(make_file_write_guard(pipeline, repo_root=repo_path))
+
+            adapter.edit_file(target, "print('ok')\n")
+
+            self.assertEqual(target.read_text(encoding="utf-8"), "print('ok')\n")
 
 
 if __name__ == "__main__":

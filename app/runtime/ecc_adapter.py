@@ -17,6 +17,7 @@ class ECCAdapter:
         self.command_executor = CommandExecutor()
         self.patch_applier = PatchApplier()
         self.command_guard: Callable[[list[str]], dict] | None = None
+        self.file_guard: Callable[[Path], dict] | None = None
 
     def run_command(self, cmd: list[str], cwd: Path) -> tuple[int, str]:
         if self.command_guard is not None:
@@ -33,7 +34,17 @@ class ECCAdapter:
         self.command_guard = guard
 
     def edit_file(self, path: Path, content: str) -> None:
+        if self.file_guard is not None:
+            decision = self.file_guard(path)
+            if not decision.get("approved", False):
+                raise PermissionError(
+                    "permission denied before file write: "
+                    f"{decision.get('reason', 'write blocked')}"
+                )
         self.patch_applier.write_text(path, content)
+
+    def configure_file_guard(self, guard: Callable[[Path], dict] | None) -> None:
+        self.file_guard = guard
 
     def read_file(self, path: Path) -> str:
         return path.read_text(encoding="utf-8")

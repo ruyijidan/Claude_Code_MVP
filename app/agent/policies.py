@@ -57,6 +57,21 @@ class CommandPermissionDecision:
         return asdict(self)
 
 
+@dataclass(slots=True)
+class FileWriteDecision:
+    path: str
+    repo_root: str
+    decision: str
+    risk: str
+    approved: bool
+    scope: str
+    boundary: str
+    reason: str
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+
 class PermissionPipeline:
     """A minimal permission pipeline for harness-oriented execution decisions."""
 
@@ -318,6 +333,57 @@ class PermissionPipeline:
             for name, command in profiles.items()
         }
 
+    def assess_file_write(self, path: Path, repo_root: Path) -> FileWriteDecision:
+        resolved_repo_root = repo_root.resolve()
+        resolved_path = path.resolve(strict=False)
+
+        if resolved_path == resolved_repo_root / ".git" or (resolved_repo_root / ".git") in resolved_path.parents:
+            return FileWriteDecision(
+                path=str(resolved_path),
+                repo_root=str(resolved_repo_root),
+                decision="deny",
+                risk="critical",
+                approved=False,
+                scope="git_metadata",
+                boundary="git_directory_protected",
+                reason="Writes inside .git metadata should be blocked by default.",
+            )
+
+        if resolved_path != resolved_repo_root and resolved_repo_root not in resolved_path.parents:
+            return FileWriteDecision(
+                path=str(resolved_path),
+                repo_root=str(resolved_repo_root),
+                decision="deny",
+                risk="high",
+                approved=False,
+                scope="outside_repo",
+                boundary="repository_boundary_protected",
+                reason="Writes outside the target repository should be blocked by default.",
+            )
+
+        return FileWriteDecision(
+            path=str(resolved_path),
+            repo_root=str(resolved_repo_root),
+            decision="allow",
+            risk="medium",
+            approved=True,
+            scope="repo_workspace",
+            boundary="repository_managed_write",
+            reason="Repository-local file writes are allowed inside the harness-managed workspace.",
+        )
+
+    def inspect_write_profiles(self, repo_root: Path) -> dict[str, dict]:
+        profiles = {
+            "repo_source_file": repo_root / "sample_app" / "tool_router.py",
+            "repo_test_file": repo_root / "tests" / "test_tool_router.py",
+            "git_metadata": repo_root / ".git" / "config",
+            "outside_repo_tmp": repo_root.parent / "outside.txt",
+        }
+        return {
+            name: self.assess_file_write(path, repo_root).to_dict()
+            for name, path in profiles.items()
+        }
+
 
 def make_command_guard(
     pipeline: PermissionPipeline,
@@ -327,5 +393,16 @@ def make_command_guard(
 ) -> Callable[[list[str]], dict]:
     def guard(command: list[str]) -> dict:
         return pipeline.assess_command(command, policy, provider_info=provider_info).to_dict()
+
+    return guard
+
+
+def make_file_write_guard(
+    pipeline: PermissionPipeline,
+    *,
+    repo_root: Path,
+) -> Callable[[Path], dict]:
+    def guard(path: Path) -> dict:
+        return pipeline.assess_file_write(path, repo_root).to_dict()
 
     return guard

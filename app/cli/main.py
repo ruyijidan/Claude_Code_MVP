@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 
 from app.agent.loop import CodingAgentLoop
-from app.agent.policies import ExecutionPolicy, PermissionPipeline, make_command_guard
+from app.agent.policies import ExecutionPolicy, PermissionPipeline, make_command_guard, make_file_write_guard
 from app.core.env_loader import load_project_env, resolve_auth_loading_policy
 from app.core.memory_store import MemoryStore
 from app.core.spec_loader import SpecLoader
@@ -86,6 +86,7 @@ def main(argv: list[str] | None = None) -> int:
             "provider": provider_info,
             "operations": permission_pipeline.inspect_all(policy, provider_info=provider_info),
             "command_profiles": permission_pipeline.inspect_command_profiles(policy, provider_info=provider_info),
+            "write_profiles": permission_pipeline.inspect_write_profiles(repo_path),
         }
         if args.json:
             print(json.dumps({"permissions": permissions_snapshot}, indent=2))
@@ -191,6 +192,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0 if code == 0 else code
 
     permission = permission_pipeline.assess("local_loop", policy, provider_info=provider_info)
+    adapter.configure_file_guard(make_file_write_guard(permission_pipeline, repo_root=repo_path))
     loop = CodingAgentLoop(
         spec_loader=loader,
         memory_store=MemoryStore(repo_path / ".claude-code" / "trajectories"),
