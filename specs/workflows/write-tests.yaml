@@ -13,6 +13,10 @@
     "test_targets",
     "git_summary"
   ],
+  "clarification_fields": [
+    "target",
+    "success_criteria"
+  ],
   "steps": [
     "inspect the target module and current test surface",
     "add the minimum test coverage needed for the request",

@@ -13,6 +13,10 @@
     "test_targets",
     "git_summary"
   ],
+  "clarification_fields": [
+    "target",
+    "success_criteria"
+  ],
   "steps": [
     "inspect context and identify the smallest feature surface",
     "apply implementation changes",

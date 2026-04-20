@@ -1,0 +1,15 @@
+{
+  "system_summary": "Claude Code MVP currently provides a terminal-first harness with explicit policy, verification, replay, and release acceptance layers.",
+  "provider_risks": [
+    "Live provider acceptance still depends on valid local credentials or configured API tokens.",
+    "Delegated CLI providers may vary by installed binary version and local login state.",
+    "Long unattended acceptance tasks are best suited for delegated providers rather than single-shot HTTP transports."
+  ],
+  "live_acceptance_configured": false,
+  "acceptance_status": "NEEDS_REVIEW",
+  "evidence": [
+    "python3 -m unittest discover -s tests passed",
+    "bash scripts/agent_verify.sh passed",
+    "Live provider checks require explicit opt-in environment variables."
+  ]
+}

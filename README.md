@@ -177,6 +177,119 @@ bash scripts/agent_verify.sh
 
 当你真正跑过这些命令，再回头看代码，就会更容易理解 Harness 不是抽象概念，而是“入口、规则、执行、验证、修复”一起工作的系统。
 
+### 发布前验收 / Pre-Release Acceptance
+
+日常开发阶段，仓库主要依赖本地单元测试和 mocked integration tests 来保持反馈快速稳定。
+
+但如果改动影响了真实 provider 执行路径，例如：
+
+- `claude_code`
+- `codex_cli`
+- `anthropic_api`
+- `glm5`
+- auth loading
+- delegated execution
+- live prompt transport
+
+那么在把工作视为“最终完成”之前，建议额外跑一轮 live provider 验收。
+
+推荐最小清单：
+
+```bash
+cd /data/ji/code/Claude_Code_MVP
+python3 -m unittest discover -s tests
+bash scripts/agent_verify.sh
+```
+
+如果你想把发布前验收统一成一个入口，可以直接运行：
+
+```bash
+cd /data/ji/code/Claude_Code_MVP
+bash scripts/release_acceptance.sh
+```
+
+如果要验真实 API provider：
+
+```bash
+cd /data/ji/code/Claude_Code_MVP
+CC_RUN_LIVE_PROVIDER_TESTS=1 \
+CC_LIVE_API_PROVIDER=glm5 \
+ANTHROPIC_BASE_URL="https://your-endpoint" \
+ANTHROPIC_AUTH_TOKEN="your-token" \
+ANTHROPIC_MODEL="glm-5" \
+python3 -m unittest tests.test_live_provider_integration
+```
+
+如果要验真实 delegated CLI provider：
+
+```bash
+cd /data/ji/code/Claude_Code_MVP
+CC_RUN_LIVE_PROVIDER_TESTS=1 \
+CC_LIVE_CLI_PROVIDER=claude_code \
+python3 -m unittest tests.test_live_provider_integration
+```
+
+live 验收测试默认不会进入普通 `unittest discover`。它们的作用不是替代日常快测，而是确认：
+
+- 真实凭证和认证路径可用
+- 真实 provider 可达
+- 最小 prompt 可以跑通
+- Harness 的真实执行入口没有偏离预期
+
+更完整的测试分层说明见 [`docs/conventions/testing.md`](./docs/conventions/testing.md)。
+
+如果要把最终验收提升到更接近真实交付的级别，还可以开启一个最多 10 分钟、无需人工干预的 live acceptance task。推荐用于：
+
+- `claude_code`
+- `codex_cli`
+- 其他支持 delegated prompt execution 的真实 provider 路径
+
+示例：
+
+```bash
+cd /data/ji/code/Claude_Code_MVP
+CC_RUN_LIVE_PROVIDER_TESTS=1 \
+CC_RUN_LIVE_ACCEPTANCE_TASK=1 \
+CC_LIVE_CLI_PROVIDER=claude_code \
+CC_ACCEPTANCE_PROVIDER=claude_code \
+CC_ACCEPTANCE_TIMEOUT_SECONDS=600 \
+bash scripts/release_acceptance.sh
+```
+
+这个脚本会：
+
+- 先跑默认本地验收
+- 再跑 live provider integration tests
+- 最后在一个临时仓库副本中执行一个 autonomous acceptance task
+
+长任务的默认目标是让 provider 在临时副本里生成：
+
+- `.claude-code/acceptance/final_acceptance_report.md`
+- `.claude-code/acceptance/final_acceptance_report.json`
+
+这样可以做到：
+
+- 全程无需人工干预
+- 最长运行约 10 分钟
+- 不污染当前工作区
+- 能留下可检查的真实验收产物
+
+默认长任务 prompt 已经抽到模板文件里：
+
+- [`specs/templates/acceptance-task-template.md`](./specs/templates/acceptance-task-template.md)
+
+所以后续如果要调整验收任务目标，优先改模板，而不是直接改脚本。
+
+长任务生成的 JSON 报告现在也有一个最小固定契约，详见：
+
+- [`docs/design/acceptance-report.md`](./docs/design/acceptance-report.md)
+
+`release_acceptance.sh` 会在长任务结束后校验：
+
+- JSON 可解析
+- 必需字段存在
+- `acceptance_status` 必须是 `READY`、`NEEDS_REVIEW`、或 `BLOCKED`
+
 ### 第四步：把它当成对照样本，而不是标准答案
 
 `Claude_Code_MVP` 现在是 Harness MVP，不是完整工业级实现。它更适合用来学习：

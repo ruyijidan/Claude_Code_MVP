@@ -4,6 +4,7 @@ import argparse
 import json
 from pathlib import Path
 
+from app.agent.intent_clarifier import IntentClarifier
 from app.agent.loop import CodingAgentLoop
 from app.agent.policies import ExecutionPolicy, PermissionPipeline, make_command_guard, make_file_write_guard
 from app.core.env_loader import load_project_env, resolve_auth_loading_policy
@@ -68,6 +69,7 @@ def main(argv: list[str] | None = None) -> int:
     adapter = build_runtime_adapter(selected_provider)
     provider_info = adapter.provider_info()
     git_tool = GitTool(adapter)
+    clarifier = IntentClarifier(loader)
     permission_rules = loader.load_permission_rules()
     policy = ExecutionPolicy(
         auto_approve=bool(args.auto_approve),
@@ -141,6 +143,30 @@ def main(argv: list[str] | None = None) -> int:
     if not args.prompt:
         return 0
 
+    clarification = clarifier.clarify(args.prompt, repo_path, explicit_task_type=args.task_type)
+    effective_prompt = clarification.normalized_prompt or args.prompt
+    effective_task_type = args.task_type or clarification.inferred_task_type
+
+    if clarification.status == "needs_clarification":
+        payload = {
+            "status": "needs_clarification",
+            "clarification": clarification.to_dict(),
+        }
+        if args.json:
+            print(json.dumps(payload, indent=2))
+        else:
+            print("mode: clarification")
+            print("status: needs_clarification")
+            if clarification.inferred_task_type:
+                print(f"task_hint: {clarification.inferred_task_type}")
+            print("missing:")
+            for item in clarification.missing_constraints:
+                print(f"- {item}")
+            print("questions:")
+            for question in clarification.questions:
+                print(f"- {question.question}")
+        return 1
+
     if args.delegate_to_provider:
         permission = permission_pipeline.assess("delegated_provider", policy, provider_info=provider_info)
         if not permission.approved:
@@ -164,7 +190,7 @@ def main(argv: list[str] | None = None) -> int:
             return 1
 
         code, output, command = adapter.execute_prompt(
-            args.prompt,
+            effective_prompt,
             repo_path,
             auto_approve=bool(args.auto_approve or args.dangerously_skip_confirmation),
         )
@@ -176,6 +202,7 @@ def main(argv: list[str] | None = None) -> int:
                         "provider": adapter.provider_name,
                         "provider_info": provider_info,
                         "permission": permission.to_dict(),
+                        "clarification": clarification.to_dict(),
                         "command": command,
                         "returncode": code,
                         "output": output,
@@ -201,7 +228,7 @@ def main(argv: list[str] | None = None) -> int:
         permission_pipeline=permission_pipeline,
     )
     try:
-        result = loop.run(repo_path=repo_path, prompt=args.prompt, task_name=args.task_type)
+        result = loop.run(repo_path=repo_path, prompt=effective_prompt, task_name=effective_task_type)
     except OSError as exc:
         payload = {
             "error": "local_loop_failed",
@@ -224,6 +251,7 @@ def main(argv: list[str] | None = None) -> int:
         result = {
             **result,
             "permission": permission.to_dict(),
+            "clarification": clarification.to_dict(),
         }
         if args.show_post_review:
             post_review = git_tool.review_summary(repo_path)

@@ -12,6 +12,10 @@
     "likely_relevant_files",
     "git_summary"
   ],
+  "clarification_fields": [
+    "target",
+    "success_criteria"
+  ],
   "steps": [
     "inspect the relevant repo surface and identify likely issue boundaries",
     "produce a written investigation artifact",

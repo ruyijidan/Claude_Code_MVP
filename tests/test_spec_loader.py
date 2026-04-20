@@ -24,6 +24,7 @@ class SpecLoaderTests(unittest.TestCase):
         template = loader.load_template("plan-template")
 
         self.assertEqual(workflow.name, "bugfix")
+        self.assertIn("target", workflow.clarification_fields)
         self.assertIn("tests must pass", workflow.verification)
         self.assertEqual(rule.name, "surgical_changes")
         self.assertEqual(permission_rules.name, "permission_rules_v1")

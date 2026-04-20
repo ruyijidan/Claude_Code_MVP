@@ -11,6 +11,39 @@ from app.cli.main import main
 
 
 class CliMainTests(unittest.TestCase):
+    def test_cli_stops_for_ambiguous_request(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            repo_path = Path(tmp_dir)
+            stream = io.StringIO()
+            with redirect_stdout(stream):
+                exit_code = main(["fix it", "--repo", str(repo_path), "--json"])
+            output = stream.getvalue()
+            self.assertEqual(exit_code, 1)
+            self.assertIn("needs_clarification", output)
+            self.assertIn("target", output)
+
+    def test_cli_passes_normalized_prompt_to_loop(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            repo_path = Path(tmp_dir)
+            target = repo_path / "planner.py"
+            target.write_text("print('ok')\n", encoding="utf-8")
+            stream = io.StringIO()
+            fake_result = {
+                "runtime_provider": "local",
+                "task_spec": type("TaskSpecStub", (), {"name": "write_tests"})(),
+                "test_result": "passed",
+                "changed_files": [],
+                "repo_context": {"git": {}},
+                "trajectory_path": str(repo_path / "traj.json"),
+            }
+            with patch("app.cli.main.CodingAgentLoop.run", return_value=fake_result) as run_loop:
+                with redirect_stdout(stream):
+                    exit_code = main(["  write tests for planner.py  ", "--repo", str(repo_path)])
+            self.assertEqual(exit_code, 0)
+            run_loop.assert_called_once()
+            self.assertEqual(run_loop.call_args.kwargs["prompt"], "write tests for planner.py")
+            self.assertEqual(run_loop.call_args.kwargs["task_name"], "write_tests")
+
     def test_cli_runs_prompt_and_prints_summary(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
             repo_path = Path(tmp_dir)

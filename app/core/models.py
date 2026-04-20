@@ -36,6 +36,7 @@ class WorkflowSpec:
     steps: list[str]
     verification: list[str]
     stop_conditions: list[str]
+    clarification_fields: list[str] = field(default_factory=list)
 
 
 @dataclass(slots=True)
@@ -74,3 +75,35 @@ class TrajectoryEvent:
 class RunContext:
     repo_path: Path
     task_name: str
+
+
+@dataclass(slots=True)
+class ClarificationQuestion:
+    key: str
+    question: str
+    reason: str
+
+    def to_dict(self) -> dict[str, str]:
+        return {
+            "key": self.key,
+            "question": self.question,
+            "reason": self.reason,
+        }
+
+
+@dataclass(slots=True)
+class IntentClarificationResult:
+    status: str
+    normalized_prompt: str
+    inferred_task_type: str | None = None
+    missing_constraints: list[str] = field(default_factory=list)
+    questions: list[ClarificationQuestion] = field(default_factory=list)
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "status": self.status,
+            "normalized_prompt": self.normalized_prompt,
+            "inferred_task_type": self.inferred_task_type,
+            "missing_constraints": list(self.missing_constraints),
+            "questions": [question.to_dict() for question in self.questions],
+        }

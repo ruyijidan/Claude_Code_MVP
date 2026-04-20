@@ -13,6 +13,10 @@
     "test_targets",
     "git_summary"
   ],
+  "clarification_fields": [
+    "target",
+    "success_criteria"
+  ],
   "steps": [
     "inspect repo context and identify likely bug surface",
     "describe the smallest intended fix",

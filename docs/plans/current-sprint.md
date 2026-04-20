@@ -72,6 +72,7 @@ It is now:
 
 - Continue turning workflow, template, and rule assets into behavior-shaping harness inputs
 - Improve application legibility foundations so the harness can inspect more than repository files
+- Keep final acceptance expectations explicit for live provider paths instead of relying only on mocked tests
 
 ### Not Started / 未开始
 
@@ -99,6 +100,21 @@ It is now:
 - Add context compression foundations
 - Add thicker permission and safety guardrails
 - Continue turning workflow, template, and rule assets into behavior-shaping harness inputs
+- Keep live provider acceptance as an explicit release check for provider-facing changes
+
+## Acceptance Notes / 验收备注
+
+For ordinary development, fast local verification remains the default:
+
+- `python3 -m unittest discover -s tests`
+- `bash scripts/agent_verify.sh`
+
+For changes that affect real provider execution paths, release acceptance should also include:
+
+- `tests/test_live_provider_integration.py`
+- `scripts/release_acceptance.sh`
+
+This live layer should stay explicit and opt-in rather than being mixed into the default fast suite.
 
 ## Later / 稍后
 
