@@ -43,6 +43,7 @@ class CliMainTests(unittest.TestCase):
             run_loop.assert_called_once()
             self.assertEqual(run_loop.call_args.kwargs["prompt"], "write tests for planner.py")
             self.assertEqual(run_loop.call_args.kwargs["task_name"], "write_tests")
+            self.assertIn("kickoff: I'll inspect planner.py first", stream.getvalue())
 
     def test_cli_runs_prompt_and_prints_summary(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -52,9 +53,37 @@ class CliMainTests(unittest.TestCase):
                 exit_code = main(["fix failing tests", "--repo", str(repo_path)])
             output = stream.getvalue()
             self.assertEqual(exit_code, 0)
+            self.assertIn("kickoff:", output)
             self.assertIn("provider: local", output)
             self.assertIn("task: fix_bug", output)
             self.assertIn("mode: local_loop", output)
+
+    def test_cli_continuation_reuses_latest_trajectory_summary(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            repo_path = Path(tmp_dir)
+            (repo_path / "planner.py").write_text("print('ok')\n", encoding="utf-8")
+            trajectories = repo_path / ".claude-code" / "trajectories"
+            trajectories.mkdir(parents=True)
+            (trajectories / "20260420T080000Z.json").write_text(
+                '{"task":"write_tests","request_prompt":"write tests for planner.py","changed_files":["planner.py"],"plan":[{"description":"Inspect planner and add tests"}]}',
+                encoding="utf-8",
+            )
+            stream = io.StringIO()
+            fake_result = {
+                "runtime_provider": "local",
+                "task_spec": type("TaskSpecStub", (), {"name": "write_tests"})(),
+                "test_result": "passed",
+                "changed_files": [],
+                "repo_context": {"git": {}},
+                "trajectory_path": str(repo_path / "traj.json"),
+            }
+            with patch("app.cli.main.CodingAgentLoop.run", return_value=fake_result) as run_loop:
+                with redirect_stdout(stream):
+                    exit_code = main(["继续", "--repo", str(repo_path)])
+            self.assertEqual(exit_code, 0)
+            self.assertEqual(run_loop.call_args.kwargs["prompt"], "write tests for planner.py")
+            self.assertEqual(run_loop.call_args.kwargs["task_name"], "write_tests")
+            self.assertIn("kickoff: I'll continue the previous task", stream.getvalue())
 
     def test_cli_can_show_git_status_only(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:

@@ -6,7 +6,7 @@ Navigation:
 - [`AGENTS.md`](./AGENTS.md): agent navigation and repository working rules
 - [`docs/README.md`](./docs/README.md): documentation map and recommended reading paths
 - [`docs/architecture/README.md`](./docs/architecture/README.md): architecture-specific reading order
-- [`docs/architecture/interaction-harness.md`](./docs/architecture/interaction-harness.md): interaction entry layer, intent normalization, and kickoff visibility
+- [`docs/architecture/interaction-harness.md`](./docs/architecture/interaction-harness.md): a harness-oriented abstraction for interaction entry behavior, continuation, and kickoff visibility
 - [`docs/patterns/README.md`](./docs/patterns/README.md): stable architectural patterns and reusable harness concepts
 - [`docs/guides/README.md`](./docs/guides/README.md): contributor playbooks for extending workflows and assets
 - [`docs/`](./docs): detailed architecture constraints, conventions, and plans
@@ -52,7 +52,7 @@ Responsibilities:
 
 - explain repository purpose
 - define architecture boundaries
-- document interaction entry behavior and continuation rules
+- document a harness-oriented abstraction for interaction entry behavior and continuation rules
 - expose reusable workflow, template, and rule assets
 - document conventions and plans
 - give the agent a stable navigation map

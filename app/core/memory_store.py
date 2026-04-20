@@ -15,6 +15,16 @@ class MemoryStore:
         path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
         return path
 
+    def read_latest(self) -> dict[str, Any] | None:
+        candidates = sorted(self.root.glob("*.json"))
+        if not candidates:
+            return None
+        latest = candidates[-1]
+        try:
+            return json.loads(latest.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            return None
+
     def _ensure_writable_root(self, root: Path) -> Path:
         try:
             root.mkdir(parents=True, exist_ok=True)

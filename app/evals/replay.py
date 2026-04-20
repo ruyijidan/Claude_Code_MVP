@@ -16,6 +16,8 @@ class ReplayLogger:
             "workflow": state.get("workflow_spec").name if state.get("workflow_spec") is not None else None,
             "runtime_provider": state.get("runtime_provider"),
             "provider_info": state.get("provider_info", {}),
+            "request_prompt": state.get("request", {}).get("feature_request"),
+            "request_repo_path": state.get("request", {}).get("repo_path"),
             "plan": state.get("plan", []),
             "changed_files": state.get("changed_files", []),
             "test_result": state.get("test_result"),

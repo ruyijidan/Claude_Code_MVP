@@ -34,12 +34,12 @@ The intended flow is:
 
 `CLI -> permission pipeline -> intent clarifier -> context builder / planner -> execution loop`
 
-This keeps the feature aligned with the interaction harness direction described in:
+This keeps the feature aligned with the interaction harness abstraction described in:
 
 - [`docs/architecture/interaction-harness.md`](../architecture/interaction-harness.md)
 - [`ARCHITECTURE.md`](../../ARCHITECTURE.md)
 
-The clarifier is part of the interaction entry layer, not part of runtime execution.
+The clarifier is part of the interaction entry layer in this project's architecture, not part of runtime execution.
 
 ## Responsibilities / 职责
 The first-version clarifier is responsible for:

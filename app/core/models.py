@@ -96,6 +96,8 @@ class IntentClarificationResult:
     status: str
     normalized_prompt: str
     inferred_task_type: str | None = None
+    continuation_target: str | None = None
+    kickoff_message: str | None = None
     missing_constraints: list[str] = field(default_factory=list)
     questions: list[ClarificationQuestion] = field(default_factory=list)
 
@@ -104,6 +106,8 @@ class IntentClarificationResult:
             "status": self.status,
             "normalized_prompt": self.normalized_prompt,
             "inferred_task_type": self.inferred_task_type,
+            "continuation_target": self.continuation_target,
+            "kickoff_message": self.kickoff_message,
             "missing_constraints": list(self.missing_constraints),
             "questions": [question.to_dict() for question in self.questions],
         }

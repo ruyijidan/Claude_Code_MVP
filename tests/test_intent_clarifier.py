@@ -19,6 +19,8 @@ class IntentClarifierTests(unittest.TestCase):
         self.assertEqual(result.status, "ready")
         self.assertEqual(result.inferred_task_type, "fix_bug")
         self.assertEqual(result.missing_constraints, [])
+        self.assertIsNotNone(result.kickoff_message)
+        self.assertIn("smallest fix", result.kickoff_message)
 
     def test_needs_clarification_when_target_is_missing(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -46,6 +48,10 @@ class IntentClarifierTests(unittest.TestCase):
             result = self.clarifier.clarify("  write tests for planner.py  ", repo_path)
         self.assertEqual(result.status, "normalized")
         self.assertEqual(result.normalized_prompt, "write tests for planner.py")
+        self.assertEqual(
+            result.kickoff_message,
+            "I'll inspect planner.py first, then add focused test coverage and run verification.",
+        )
 
     def test_uses_workflow_clarification_fields(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -55,6 +61,37 @@ class IntentClarifierTests(unittest.TestCase):
             result = self.clarifier.clarify("planner.py", repo_path, explicit_task_type="write_tests")
         self.assertEqual(result.status, "needs_clarification")
         self.assertIn("success_criteria", result.missing_constraints)
+
+    def test_to_dict_includes_interaction_fields(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            repo_path = Path(tmp_dir)
+            target = repo_path / "planner.py"
+            target.write_text("print('ok')\n", encoding="utf-8")
+            result = self.clarifier.clarify("write tests for planner.py", repo_path)
+        payload = result.to_dict()
+        self.assertIn("continuation_target", payload)
+        self.assertIn("kickoff_message", payload)
+        self.assertIsNone(payload["continuation_target"])
+        self.assertIsNotNone(payload["kickoff_message"])
+
+    def test_short_continuation_reuses_recent_run_summary(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            repo_path = Path(tmp_dir)
+            (repo_path / "planner.py").write_text("print('ok')\n", encoding="utf-8")
+            result = self.clarifier.clarify_with_context(
+                "继续",
+                repo_path,
+                recent_run_summary={
+                    "task": "write_tests",
+                    "request_prompt": "write tests for planner.py",
+                    "changed_files": ["planner.py"],
+                },
+            )
+        self.assertEqual(result.status, "normalized")
+        self.assertEqual(result.inferred_task_type, "write_tests")
+        self.assertEqual(result.normalized_prompt, "write tests for planner.py")
+        self.assertEqual(result.continuation_target, "write tests for planner.py")
+        self.assertIn("continue the previous task", result.kickoff_message)
 
 
 if __name__ == "__main__":

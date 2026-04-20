@@ -49,13 +49,27 @@ class IntentClarifier:
         self.spec_loader = spec_loader
 
     def clarify(self, prompt: str, repo_path: Path, explicit_task_type: str | None = None) -> IntentClarificationResult:
+        return self.clarify_with_context(prompt, repo_path, explicit_task_type=explicit_task_type)
+
+    def clarify_with_context(
+        self,
+        prompt: str,
+        repo_path: Path,
+        explicit_task_type: str | None = None,
+        recent_run_summary: dict | None = None,
+    ) -> IntentClarificationResult:
         normalized_prompt = " ".join(prompt.split())
-        inferred_task_type = explicit_task_type or self._infer_task_type(normalized_prompt)
+        continuation_target = self._infer_continuation_target(normalized_prompt, recent_run_summary)
+        effective_prompt = self._normalize_continuation_prompt(normalized_prompt, recent_run_summary, continuation_target)
+        inferred_task_type = explicit_task_type or self._infer_task_type(
+            effective_prompt,
+            recent_run_summary if continuation_target is not None else None,
+        )
         missing_constraints: list[str] = []
         questions: list[ClarificationQuestion] = []
         required_fields = self._required_fields_for_task_type(inferred_task_type)
 
-        if normalized_prompt.lower() in self.SHORT_CONTINUATIONS:
+        if normalized_prompt.lower() in self.SHORT_CONTINUATIONS and continuation_target is None:
             missing_constraints.append("continuation_context")
             questions.append(
                 ClarificationQuestion(
@@ -65,7 +79,7 @@ class IntentClarifier:
                 )
             )
 
-        referenced_paths = self._extract_path_references(normalized_prompt)
+        referenced_paths = self._extract_path_references(effective_prompt)
         missing_paths = [path for path in referenced_paths if not (repo_path / path).exists()]
         if missing_paths:
             missing_constraints.append("repo_target")
@@ -77,7 +91,7 @@ class IntentClarifier:
                 )
             )
 
-        if "target" in required_fields and not self._has_target_signal(normalized_prompt, repo_path, inferred_task_type):
+        if "target" in required_fields and not self._has_target_signal(effective_prompt, repo_path, inferred_task_type):
             missing_constraints.append("target")
             questions.append(
                 ClarificationQuestion(
@@ -87,7 +101,7 @@ class IntentClarifier:
                 )
             )
 
-        if "success_criteria" in required_fields and not self._has_success_signal(normalized_prompt, inferred_task_type):
+        if "success_criteria" in required_fields and not self._has_success_signal(effective_prompt, inferred_task_type):
             missing_constraints.append("success_criteria")
             questions.append(
                 ClarificationQuestion(
@@ -100,21 +114,35 @@ class IntentClarifier:
         if missing_constraints:
             return IntentClarificationResult(
                 status="needs_clarification",
-                normalized_prompt=normalized_prompt,
+                normalized_prompt=effective_prompt,
                 inferred_task_type=inferred_task_type,
                 missing_constraints=self._dedupe(missing_constraints),
                 questions=self._dedupe_questions(questions),
             )
 
         status = "normalized" if normalized_prompt != prompt else "ready"
+        if continuation_target is not None:
+            status = "normalized"
         return IntentClarificationResult(
             status=status,
-            normalized_prompt=normalized_prompt,
+            normalized_prompt=effective_prompt,
             inferred_task_type=inferred_task_type,
+            continuation_target=continuation_target,
+            kickoff_message=self._build_kickoff_message(
+                effective_prompt,
+                inferred_task_type,
+                repo_path,
+                recent_run_summary=recent_run_summary,
+                continuation_target=continuation_target,
+            ),
         )
 
-    def _infer_task_type(self, prompt: str) -> str:
+    def _infer_task_type(self, prompt: str, recent_run_summary: dict | None = None) -> str:
         lowered = prompt.lower()
+        if lowered in self.SHORT_CONTINUATIONS and recent_run_summary:
+            recent_task = recent_run_summary.get("task")
+            if isinstance(recent_task, str) and recent_task:
+                return recent_task
         if "write tests" in lowered:
             return "write_tests"
         if "investigate" in lowered or "debug why" in lowered or "error" in lowered:
@@ -247,3 +275,83 @@ class IntentClarifier:
             seen.add(question.key)
             ordered.append(question)
         return ordered
+
+    def _infer_continuation_target(self, prompt: str, recent_run_summary: dict | None = None) -> str | None:
+        if prompt.lower() in self.SHORT_CONTINUATIONS and recent_run_summary:
+            recent_prompt = recent_run_summary.get("request_prompt")
+            if isinstance(recent_prompt, str) and recent_prompt.strip():
+                return recent_prompt.strip()
+        return None
+
+    def _build_kickoff_message(
+        self,
+        prompt: str,
+        task_type: str | None,
+        repo_path: Path,
+        recent_run_summary: dict | None = None,
+        continuation_target: str | None = None,
+    ) -> str | None:
+        if continuation_target is not None and recent_run_summary is not None:
+            summary = self._continuation_summary(recent_run_summary)
+            if summary:
+                return f"I'll continue the previous task by picking up {summary}."
+            return "I'll continue the previous task from the latest confirmed execution context."
+        target_hint = self._kickoff_target_hint(prompt, repo_path)
+        if task_type == "fix_bug":
+            if target_hint:
+                return f"I'll inspect {target_hint} first, then apply the smallest fix and verify the result."
+            return "I'll inspect the failing path first, then apply the smallest fix and verify the result."
+        if task_type == "write_tests":
+            if target_hint:
+                return f"I'll inspect {target_hint} first, then add focused test coverage and run verification."
+            return "I'll inspect the target area first, then add focused test coverage and run verification."
+        if task_type == "investigate_issue":
+            if target_hint:
+                return f"I'll inspect {target_hint} first, then narrow down the cause before proposing or applying a fix."
+            return "I'll inspect the reported issue first, then narrow down the cause before proposing or applying a fix."
+        if target_hint:
+            return f"I'll inspect {target_hint} first, then implement the requested change and verify the outcome."
+        if prompt:
+            return "I'll inspect the relevant code path first, then implement the request and verify the outcome."
+        return None
+
+    def _normalize_continuation_prompt(
+        self,
+        prompt: str,
+        recent_run_summary: dict | None,
+        continuation_target: str | None,
+    ) -> str:
+        if continuation_target is None or recent_run_summary is None:
+            return prompt
+        recent_prompt = recent_run_summary.get("request_prompt")
+        if isinstance(recent_prompt, str) and recent_prompt.strip():
+            return recent_prompt.strip()
+        return prompt
+
+    def _continuation_summary(self, recent_run_summary: dict) -> str | None:
+        changed_files = recent_run_summary.get("changed_files")
+        if isinstance(changed_files, list) and changed_files:
+            return f"the last edited path around {changed_files[0]}"
+        plan = recent_run_summary.get("plan")
+        if isinstance(plan, list) and plan:
+            first_step = plan[0]
+            if isinstance(first_step, dict):
+                description = first_step.get("description")
+                if isinstance(description, str) and description:
+                    return description
+        recent_prompt = recent_run_summary.get("request_prompt")
+        if isinstance(recent_prompt, str) and recent_prompt.strip():
+            return f"the request '{recent_prompt.strip()}'"
+        return None
+
+    def _kickoff_target_hint(self, prompt: str, repo_path: Path) -> str | None:
+        referenced_paths = self._extract_path_references(prompt)
+        if referenced_paths:
+            return referenced_paths[0]
+
+        lowered = prompt.lower()
+        repo_names = self._repo_name_signals(repo_path)
+        for token in self._meaningful_tokens(lowered):
+            if token in repo_names:
+                return token
+        return None

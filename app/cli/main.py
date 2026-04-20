@@ -70,6 +70,8 @@ def main(argv: list[str] | None = None) -> int:
     provider_info = adapter.provider_info()
     git_tool = GitTool(adapter)
     clarifier = IntentClarifier(loader)
+    memory_store = MemoryStore(repo_path / ".claude-code" / "trajectories")
+    recent_run_summary = memory_store.read_latest()
     permission_rules = loader.load_permission_rules()
     policy = ExecutionPolicy(
         auto_approve=bool(args.auto_approve),
@@ -143,7 +145,12 @@ def main(argv: list[str] | None = None) -> int:
     if not args.prompt:
         return 0
 
-    clarification = clarifier.clarify(args.prompt, repo_path, explicit_task_type=args.task_type)
+    clarification = clarifier.clarify_with_context(
+        args.prompt,
+        repo_path,
+        explicit_task_type=args.task_type,
+        recent_run_summary=recent_run_summary,
+    )
     effective_prompt = clarification.normalized_prompt or args.prompt
     effective_task_type = args.task_type or clarification.inferred_task_type
 
@@ -166,6 +173,9 @@ def main(argv: list[str] | None = None) -> int:
             for question in clarification.questions:
                 print(f"- {question.question}")
         return 1
+
+    if clarification.kickoff_message and not args.json:
+        print(f"kickoff: {clarification.kickoff_message}")
 
     if args.delegate_to_provider:
         permission = permission_pipeline.assess("delegated_provider", policy, provider_info=provider_info)
@@ -223,7 +233,7 @@ def main(argv: list[str] | None = None) -> int:
     adapter.configure_file_guard(make_file_write_guard(permission_pipeline, repo_root=repo_path, policy=policy))
     loop = CodingAgentLoop(
         spec_loader=loader,
-        memory_store=MemoryStore(repo_path / ".claude-code" / "trajectories"),
+        memory_store=memory_store,
         adapter=adapter,
         permission_pipeline=permission_pipeline,
     )

@@ -8,6 +8,31 @@ owner: core
 
 ## 2026-04-20
 
+### Continuation-Aware Intent Clarifier Flow / 续轮感知意图澄清流
+
+Included commit:
+
+- pending local commit for continuation-aware clarification and kickoff flow
+
+Highlights:
+
+- extended `intent clarifier` with `kickoff_message` and `continuation_target`
+- taught the CLI to print a short kickoff summary before execution starts
+- persisted replay request summaries so short continuation inputs can reuse the latest task context
+- allowed inputs such as `继续` to resolve to the latest trajectory summary when the target is unambiguous
+- kept continuation behavior covered by focused CLI and clarifier tests
+
+Verification:
+
+- `python3 -m unittest tests.test_intent_clarifier`
+- `python3 -m unittest tests.test_cli_main`
+
+Impact:
+
+- short continuation input no longer always stops at clarification when recent replay context is sufficient
+- execution-start behavior is now more visible and more consistent across clarified requests
+- the interaction entry layer now has a clearer first engineering footprint in code
+
 ### Intent Clarification And Release Acceptance Flow / 意图澄清与发布验收流
 
 Included commit:

@@ -33,6 +33,7 @@ After the first hardening wave and the follow-on asset work, the repository now 
 - workflow assets already shape plan and verification behavior
 - rule assets have started to shape critic behavior
 - pre-execution `intent clarification` now exists as an explicit CLI control point
+- short continuation inputs can now reuse recent replay summaries and emit kickoff messages
 - release acceptance now has a single scripted entrypoint plus optional live provider checks
 
 In practical terms, the project has moved from:
@@ -71,6 +72,7 @@ It is now:
 - Rule assets have started to shape critic behavior
 - Worktree-based verification already exists through `scripts/agent_verify.sh`
 - `intent clarifier` is now wired into the CLI before execution
+- replay artifacts now carry enough request context for continuation-aware clarification
 - `scripts/release_acceptance.sh` now exists as a single release acceptance entrypoint
 - live provider acceptance expectations are now documented and backed by opt-in tests
 

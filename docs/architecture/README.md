@@ -26,7 +26,7 @@ This directory answers one question:
 - [`harness-explained.md`](./harness-explained.md)
   Chinese mental-model walkthrough of the harness.
 - [`interaction-harness.md`](./interaction-harness.md)
-  Input normalization, turn continuation, and kickoff visibility.
+  A harness-oriented abstraction for input normalization, turn continuation, and kickoff visibility.
 
 ## Use This Directory When / 适用场景
 
