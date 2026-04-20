@@ -133,6 +133,12 @@ bash scripts/release_acceptance.sh
 
 This acceptance script runs the fast suite first, then optional live provider checks, and finally an isolated long-running provider task that should complete without manual intervention.
 
+If you want to keep the temporary acceptance workspace and generated artifacts after the run, add:
+
+```bash
+CC_ACCEPTANCE_KEEP_ARTIFACTS=1
+```
+
 The long acceptance task uses a dedicated template:
 
 - `specs/templates/acceptance-task-template.md`

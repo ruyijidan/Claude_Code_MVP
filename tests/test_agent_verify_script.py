@@ -38,7 +38,13 @@ class AgentVerifyScriptTests(unittest.TestCase):
         self.assertIn("final_acceptance_report.json", content)
         self.assertIn("acceptance-task-template.md", content)
         self.assertIn("validate_acceptance_report_json", content)
-        self.assertIn("invalid acceptance_status", content)
+        self.assertIn("app.acceptance.report_runner", content)
+        self.assertIn("app.acceptance.report_validator", content)
+        self.assertIn("CC_ACCEPTANCE_KEEP_ARTIFACTS", content)
+        self.assertIn("Keeping acceptance artifacts", content)
+        self.assertIn("write_acceptance_git_snapshots", content)
+        self.assertIn('status --short', content)
+        self.assertIn('diff --stat', content)
 
     def test_git_hook_install_script_sets_hooks_path(self) -> None:
         root = Path(__file__).resolve().parents[1]

@@ -8,31 +8,6 @@ owner: core
 
 ## 2026-04-20
 
-### Continuation-Aware Intent Clarifier Flow / 续轮感知意图澄清流
-
-Included commit:
-
-- pending local commit for continuation-aware clarification and kickoff flow
-
-Highlights:
-
-- extended `intent clarifier` with `kickoff_message` and `continuation_target`
-- taught the CLI to print a short kickoff summary before execution starts
-- persisted replay request summaries so short continuation inputs can reuse the latest task context
-- allowed inputs such as `继续` to resolve to the latest trajectory summary when the target is unambiguous
-- kept continuation behavior covered by focused CLI and clarifier tests
-
-Verification:
-
-- `python3 -m unittest tests.test_intent_clarifier`
-- `python3 -m unittest tests.test_cli_main`
-
-Impact:
-
-- short continuation input no longer always stops at clarification when recent replay context is sufficient
-- execution-start behavior is now more visible and more consistent across clarified requests
-- the interaction entry layer now has a clearer first engineering footprint in code
-
 ### Intent Clarification And Release Acceptance Flow / 意图澄清与发布验收流
 
 Included commit:
@@ -59,6 +34,32 @@ Impact:
 - the harness now has an explicit preflight clarification control point before execution
 - provider-facing release validation is now documented and runnable from a single script entrypoint
 - unattended acceptance runs can leave both human-readable and machine-readable artifacts for later review or automation
+
+### GLM5 Local Acceptance Reporting / GLM5 本地验收报告
+
+Included pending change set:
+
+- current working tree after `04f53d3`, focused on API-backed acceptance execution and artifact reporting
+
+Highlights:
+
+- added a local `app/acceptance` runner and `app/models` client layer so `glm5` and other Anthropic-compatible API providers can generate acceptance artifacts without requiring a delegated CLI runtime
+- moved acceptance report validation into a reusable Python module and kept shell-level release acceptance as the single entrypoint
+- reduced acceptance prompt size through summarized context slices and added git snapshot fallbacks so isolated acceptance workspaces still carry useful repository state
+- added an artifact-retention flag so long acceptance runs can keep their temporary workspace for later inspection
+- confirmed a real unattended `glm5` acceptance run can now produce validated markdown and JSON acceptance artifacts
+
+Verification:
+
+- unit and integration suite passed locally: `107 tests OK`
+- default `bash scripts/release_acceptance.sh` path passed
+- real `glm5` release acceptance path produced validated artifacts and completed successfully
+
+Impact:
+
+- API-backed providers are no longer limited to single-shot live probes for acceptance use cases
+- `glm5` can now participate in unattended release acceptance runs through a local harness-controlled execution path
+- release acceptance artifacts can be validated and optionally retained for audit and debugging
 
 ## 2026-04-16
 

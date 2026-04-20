@@ -263,6 +263,12 @@ CC_ACCEPTANCE_TIMEOUT_SECONDS=600 \
 bash scripts/release_acceptance.sh
 ```
 
+如果你希望真实验收完成后保留临时验收目录和产物，可以额外加上：
+
+```bash
+CC_ACCEPTANCE_KEEP_ARTIFACTS=1
+```
+
 这个脚本会：
 
 - 先跑默认本地验收
@@ -280,6 +286,8 @@ bash scripts/release_acceptance.sh
 - 最长运行约 10 分钟
 - 不污染当前工作区
 - 能留下可检查的真实验收产物
+
+默认情况下，临时验收目录会在脚本退出时清理；开启 `CC_ACCEPTANCE_KEEP_ARTIFACTS=1` 后会保留。
 
 默认长任务 prompt 已经抽到模板文件里：
 

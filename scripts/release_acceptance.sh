@@ -4,6 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 RUN_LIVE_TESTS="${CC_RUN_LIVE_PROVIDER_TESTS:-0}"
 RUN_LONG_TASK="${CC_RUN_LIVE_ACCEPTANCE_TASK:-0}"
+KEEP_ARTIFACTS="${CC_ACCEPTANCE_KEEP_ARTIFACTS:-0}"
 LIVE_TIMEOUT_SECONDS="${CC_ACCEPTANCE_TIMEOUT_SECONDS:-600}"
 LIVE_CLI_PROVIDER="${CC_LIVE_CLI_PROVIDER:-}"
 LIVE_API_PROVIDER="${CC_LIVE_API_PROVIDER:-}"
@@ -13,6 +14,8 @@ TASK_TEMPLATE_PATH="${CC_ACCEPTANCE_TEMPLATE_PATH:-$ROOT_DIR/specs/templates/acc
 TASK_PROMPT="${CC_ACCEPTANCE_PROMPT:-}"
 REPORT_MARKDOWN_RELATIVE_PATH=".claude-code/acceptance/final_acceptance_report.md"
 REPORT_JSON_RELATIVE_PATH=".claude-code/acceptance/final_acceptance_report.json"
+GIT_STATUS_SNAPSHOT_RELATIVE_PATH=".claude-code/acceptance/context/git_status.txt"
+GIT_DIFF_STAT_SNAPSHOT_RELATIVE_PATH=".claude-code/acceptance/context/git_diff_stat.txt"
 
 run_with_optional_timeout() {
   local seconds="$1"
@@ -33,6 +36,13 @@ prepare_acceptance_workspace() {
     --exclude '__pycache__' \
     --exclude 'logs' \
     "$ROOT_DIR"/ "$target_dir"/ >/dev/null
+}
+
+write_acceptance_git_snapshots() {
+  local target_repo="$1"
+  mkdir -p "$target_repo/.claude-code/acceptance/context"
+  git -C "$ROOT_DIR" status --short > "$target_repo/$GIT_STATUS_SNAPSHOT_RELATIVE_PATH" || true
+  git -C "$ROOT_DIR" diff --stat > "$target_repo/$GIT_DIFF_STAT_SNAPSHOT_RELATIVE_PATH" || true
 }
 
 render_acceptance_prompt() {
@@ -62,36 +72,10 @@ validate_acceptance_report_json() {
   local json_path="$1"
   python3 - "$json_path" <<'PY'
 from pathlib import Path
-import json
 import sys
+from app.acceptance.report_validator import validate_acceptance_report_file
 
-json_path = Path(sys.argv[1])
-payload = json.loads(json_path.read_text(encoding="utf-8"))
-required_keys = {
-    "system_summary": str,
-    "provider_risks": list,
-    "live_acceptance_configured": bool,
-    "acceptance_status": str,
-    "evidence": list,
-}
-
-for key, expected_type in required_keys.items():
-    if key not in payload:
-        raise SystemExit(f"missing required key: {key}")
-    if not isinstance(payload[key], expected_type):
-        raise SystemExit(f"invalid type for {key}: expected {expected_type.__name__}")
-
-for list_key in ("provider_risks", "evidence"):
-    if not all(isinstance(item, str) for item in payload[list_key]):
-        raise SystemExit(f"{list_key} must contain only strings")
-
-allowed_statuses = {"READY", "NEEDS_REVIEW", "BLOCKED"}
-if payload["acceptance_status"] not in allowed_statuses:
-    raise SystemExit(
-        "invalid acceptance_status: "
-        f"{payload['acceptance_status']!r}; expected one of {sorted(allowed_statuses)}"
-    )
-
+payload = validate_acceptance_report_file(Path(sys.argv[1]))
 print(f"validated acceptance report: {payload['acceptance_status']}")
 PY
 }
@@ -116,28 +100,45 @@ if [[ "$RUN_LONG_TASK" == "1" || "$RUN_LONG_TASK" == "true" || "$RUN_LONG_TASK" 
 
   ACCEPTANCE_DIR="/tmp/claude-code-mvp-release-acceptance-$(date +%s)"
   mkdir -p "$ACCEPTANCE_DIR"
-  trap 'rm -rf "$ACCEPTANCE_DIR"' EXIT
+  if [[ "$KEEP_ARTIFACTS" == "1" || "$KEEP_ARTIFACTS" == "true" || "$KEEP_ARTIFACTS" == "yes" || "$KEEP_ARTIFACTS" == "on" ]]; then
+    echo "==> Keeping acceptance artifacts after completion: $ACCEPTANCE_DIR"
+  else
+    trap 'rm -rf "$ACCEPTANCE_DIR"' EXIT
+  fi
 
   echo "==> Preparing isolated acceptance workspace: $ACCEPTANCE_DIR"
   prepare_acceptance_workspace "$ACCEPTANCE_DIR/repo"
+  write_acceptance_git_snapshots "$ACCEPTANCE_DIR/repo"
 
   if [[ -z "$TASK_PROMPT" ]]; then
     TASK_PROMPT="$(render_acceptance_prompt "$TASK_TEMPLATE_PATH" "$LIVE_TIMEOUT_SECONDS")"
   fi
 
   echo "==> Running autonomous live acceptance task with provider: $TASK_PROVIDER"
-  (
-    cd "$ROOT_DIR"
-    run_with_optional_timeout "$LIVE_TIMEOUT_SECONDS" \
-      python3 -m app.cli.main "$TASK_PROMPT" \
-      --repo "$ACCEPTANCE_DIR/repo" \
-      --provider "$TASK_PROVIDER" \
-      --auth-source "$TASK_AUTH_SOURCE" \
-      --delegate-to-provider \
-      --auto-approve \
-      --dangerously-skip-confirmation \
-      --json > "$ACCEPTANCE_DIR/live_acceptance_result.json"
-  )
+  if [[ "$TASK_PROVIDER" == "glm5" || "$TASK_PROVIDER" == "anthropic_api" ]]; then
+    (
+      cd "$ROOT_DIR"
+      run_with_optional_timeout "$LIVE_TIMEOUT_SECONDS" \
+        python3 -m app.acceptance.report_runner \
+        --repo "$ACCEPTANCE_DIR/repo" \
+        --provider "$TASK_PROVIDER" \
+        --auth-source "$TASK_AUTH_SOURCE" \
+        --output-dir "$ACCEPTANCE_DIR/repo/.claude-code/acceptance" > "$ACCEPTANCE_DIR/live_acceptance_result.json"
+    )
+  else
+    (
+      cd "$ROOT_DIR"
+      run_with_optional_timeout "$LIVE_TIMEOUT_SECONDS" \
+        python3 -m app.cli.main "$TASK_PROMPT" \
+        --repo "$ACCEPTANCE_DIR/repo" \
+        --provider "$TASK_PROVIDER" \
+        --auth-source "$TASK_AUTH_SOURCE" \
+        --delegate-to-provider \
+        --auto-approve \
+        --dangerously-skip-confirmation \
+        --json > "$ACCEPTANCE_DIR/live_acceptance_result.json"
+    )
+  fi
 
   REPORT_PATH="$ACCEPTANCE_DIR/repo/$REPORT_MARKDOWN_RELATIVE_PATH"
   REPORT_JSON_PATH="$ACCEPTANCE_DIR/repo/$REPORT_JSON_RELATIVE_PATH"
@@ -147,6 +148,9 @@ if [[ "$RUN_LONG_TASK" == "1" || "$RUN_LONG_TASK" == "true" || "$RUN_LONG_TASK" 
     echo "$REPORT_JSON_PATH"
     echo "==> Validating acceptance JSON contract"
     validate_acceptance_report_json "$REPORT_JSON_PATH"
+    if [[ "$KEEP_ARTIFACTS" == "1" || "$KEEP_ARTIFACTS" == "true" || "$KEEP_ARTIFACTS" == "yes" || "$KEEP_ARTIFACTS" == "on" ]]; then
+      echo "==> Acceptance artifacts retained at: $ACCEPTANCE_DIR"
+    fi
   else
     echo "❌ Expected acceptance artifacts were not created"
     echo "Markdown path: $REPORT_PATH"
