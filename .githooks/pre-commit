@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+STAGED_FILES="$(git diff --cached --name-only)"
+
+if [[ -z "$STAGED_FILES" ]]; then
+  exit 0
+fi
+
+requires_release_note_update=0
+while IFS= read -r path; do
+  [[ -z "$path" ]] && continue
+  case "$path" in
+    docs/*|README.md|README.en.md|AGENTS.md|ROADMAP.md)
+      ;;
+    *)
+      requires_release_note_update=1
+      break
+      ;;
+  esac
+done <<< "$STAGED_FILES"
+
+if [[ "$requires_release_note_update" -eq 0 ]]; then
+  exit 0
+fi
+
+if git diff --cached --name-only -- docs/plans/release-notes.md | grep -q "docs/plans/release-notes.md"; then
+  exit 0
+fi
+
+cat <<'EOF'
+pre-commit check failed:
+
+This repository requires a project-doc record before committing code changes.
+
+Expected:
+- update docs/plans/release-notes.md with a short summary of the completed change
+- update docs/plans/current-sprint.md as well when the change affects current status or acceptance expectations
+
+Then stage the doc updates and retry the commit.
+EOF
+
+exit 1

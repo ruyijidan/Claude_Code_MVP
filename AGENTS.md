@@ -52,3 +52,5 @@ These are expected to be enforced by scripts, tests, or CI:
 - Keep prompts, plans, and outputs short and task-oriented.
 - Prefer stable conventions over clever one-off implementations.
 - Add new harness behavior as reusable infrastructure, not one-off CLI branching.
+- Before creating a commit, update the project documentation with a short record of the completed change and its verification status. Prefer `docs/plans/release-notes.md`, and update `docs/plans/current-sprint.md` as well when the change affects the current implementation status.
+- Install and keep the repository git hooks active via `bash scripts/install_git_hooks.sh` so the commit workflow rule is enforced before each commit.

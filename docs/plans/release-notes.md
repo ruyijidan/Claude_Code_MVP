@@ -1,10 +1,39 @@
 ---
-last_updated: 2026-04-16
+last_updated: 2026-04-20
 status: active
 owner: core
 ---
 
 # Release Notes / 发布说明
+
+## 2026-04-20
+
+### Intent Clarification And Release Acceptance Flow / 意图澄清与发布验收流
+
+Included commit:
+
+- `efc81d9` `feat: add intent clarification and release acceptance flow`
+
+Highlights:
+
+- added a pre-execution `intent clarifier` that can normalize clear requests and block ambiguous ones with structured clarification output
+- connected workflow-level `clarification_fields` so clarification requirements can be shaped by workflow assets
+- added live provider acceptance test scaffolding under [`tests/test_live_provider_integration.py`](../../tests/test_live_provider_integration.py)
+- added a unified release acceptance entrypoint via [`scripts/release_acceptance.sh`](../../scripts/release_acceptance.sh)
+- added an unattended long-running live acceptance task path with a dedicated prompt template under [`specs/templates/acceptance-task-template.md`](../../specs/templates/acceptance-task-template.md)
+- added an acceptance report contract plus example markdown and JSON artifacts under [`docs/design`](../../docs/design)
+- added lightweight acceptance JSON validation, including `acceptance_status` enum checks
+
+Verification:
+
+- unit test suite passed: `96 tests OK`
+- default release acceptance flow passed through [`scripts/release_acceptance.sh`](../../scripts/release_acceptance.sh)
+
+Impact:
+
+- the harness now has an explicit preflight clarification control point before execution
+- provider-facing release validation is now documented and runnable from a single script entrypoint
+- unattended acceptance runs can leave both human-readable and machine-readable artifacts for later review or automation
 
 ## 2026-04-16
 

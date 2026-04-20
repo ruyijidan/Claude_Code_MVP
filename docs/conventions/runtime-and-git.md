@@ -1,5 +1,5 @@
 ---
-last_updated: 2026-04-10
+last_updated: 2026-04-20
 status: active
 owner: core
 ---
@@ -28,6 +28,15 @@ owner: core
 - Use `GitTool` as the single place for git status, diff, review, and commit summary helpers.
 - CLI should present git information; runtime should gather it.
 - Commit suggestions are advisory, not authoritative.
+- Before creating a commit, record the completed change in project docs.
+- Prefer updating `docs/plans/release-notes.md` with the commit-level summary.
+- Also update `docs/plans/current-sprint.md` when the change affects current delivery status, acceptance expectations, or next-step planning.
+- The preferred order is:
+  - implement and verify
+  - update project docs with the completed change
+  - create the commit
+- Install repository hooks with `bash scripts/install_git_hooks.sh`.
+- The tracked pre-commit hook blocks commits that stage non-doc changes without also staging `docs/plans/release-notes.md`.
 
 ## Safety Rules / 安全规则
 

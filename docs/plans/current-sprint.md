@@ -1,5 +1,5 @@
 ---
-last_updated: 2026-04-16
+last_updated: 2026-04-20
 status: active
 owner: core
 ---
@@ -32,6 +32,8 @@ After the first hardening wave and the follow-on asset work, the repository now 
 - workflow, template, and rule assets now exist under `specs/`
 - workflow assets already shape plan and verification behavior
 - rule assets have started to shape critic behavior
+- pre-execution `intent clarification` now exists as an explicit CLI control point
+- release acceptance now has a single scripted entrypoint plus optional live provider checks
 
 In practical terms, the project has moved from:
 
@@ -52,6 +54,7 @@ It is now:
 - a harness learning base with a hardened first control plane
 - an emerging asset-driven harness with reusable workflow/template/rule boundaries
 - a project that can delegate through both CLI-backed providers and a configured `GLM-5` compatible endpoint
+- a project with an explicit release acceptance path for provider-facing changes
 
 ## Delivery Board / 交付看板
 
@@ -67,6 +70,9 @@ It is now:
 - Workflow assets already shape planning and verification behavior in a lightweight way
 - Rule assets have started to shape critic behavior
 - Worktree-based verification already exists through `scripts/agent_verify.sh`
+- `intent clarifier` is now wired into the CLI before execution
+- `scripts/release_acceptance.sh` now exists as a single release acceptance entrypoint
+- live provider acceptance expectations are now documented and backed by opt-in tests
 
 ### In Progress / 进行中
 

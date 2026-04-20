@@ -175,6 +175,13 @@ python3 -m app.cli.main --repo . --show-permissions
 bash scripts/agent_verify.sh
 ```
 
+安装仓库 git hooks：
+
+```bash
+cd /data/ji/code/Claude_Code_MVP
+bash scripts/install_git_hooks.sh
+```
+
 当你真正跑过这些命令，再回头看代码，就会更容易理解 Harness 不是抽象概念，而是“入口、规则、执行、验证、修复”一起工作的系统。
 
 ### 发布前验收 / Pre-Release Acceptance

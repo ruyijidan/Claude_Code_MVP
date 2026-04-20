@@ -40,6 +40,13 @@ class AgentVerifyScriptTests(unittest.TestCase):
         self.assertIn("validate_acceptance_report_json", content)
         self.assertIn("invalid acceptance_status", content)
 
+    def test_git_hook_install_script_sets_hooks_path(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        script = root / "scripts" / "install_git_hooks.sh"
+        content = script.read_text(encoding="utf-8")
+        self.assertIn("core.hooksPath .githooks", content)
+        self.assertIn(".githooks/pre-commit", content)
+
     def test_acceptance_task_template_has_expected_placeholders(self) -> None:
         root = Path(__file__).resolve().parents[1]
         template = root / "specs" / "templates" / "acceptance-task-template.md"
@@ -69,6 +76,13 @@ class AgentVerifyScriptTests(unittest.TestCase):
         self.assertIn('"provider_risks"', json_content)
         self.assertIn('"live_acceptance_configured"', json_content)
         self.assertIn('"evidence"', json_content)
+
+    def test_pre_commit_hook_requires_release_notes_for_code_changes(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        hook = root / ".githooks" / "pre-commit"
+        content = hook.read_text(encoding="utf-8")
+        self.assertIn("docs/plans/release-notes.md", content)
+        self.assertIn("pre-commit check failed", content)
 
 
 if __name__ == "__main__":
