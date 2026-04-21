@@ -1,5 +1,5 @@
 ---
-last_updated: 2026-04-20
+last_updated: 2026-04-21
 status: active
 owner: core
 ---
@@ -33,6 +33,7 @@ After the first hardening wave and the follow-on asset work, the repository now 
 - workflow assets already shape plan and verification behavior
 - rule assets have started to shape critic behavior
 - pre-execution `intent clarification` now exists as an explicit CLI control point
+- continuation-aware clarification now distinguishes between a single recent task and multiple ambiguous recent tasks
 - release acceptance now has a single scripted entrypoint plus optional live provider checks
 - API-backed providers can now run local acceptance reporting through `app/acceptance` and `app/models`
 
@@ -76,6 +77,7 @@ It is now:
 - `scripts/release_acceptance.sh` now exists as a single release acceptance entrypoint
 - live provider acceptance expectations are now documented and backed by opt-in tests
 - `glm5` local acceptance runs can now generate validated markdown and JSON acceptance artifacts
+- short continuation inputs now stop for clarification when more than one recent task is a plausible continuation target
 
 ### In Progress / 进行中
 

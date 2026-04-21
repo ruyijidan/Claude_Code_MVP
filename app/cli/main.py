@@ -72,6 +72,7 @@ def main(argv: list[str] | None = None) -> int:
     clarifier = IntentClarifier(loader)
     memory_store = MemoryStore(repo_path / ".claude-code" / "trajectories")
     recent_run_summary = memory_store.read_latest()
+    recent_run_summaries = memory_store.read_recent()
     permission_rules = loader.load_permission_rules()
     policy = ExecutionPolicy(
         auto_approve=bool(args.auto_approve),
@@ -150,6 +151,7 @@ def main(argv: list[str] | None = None) -> int:
         repo_path,
         explicit_task_type=args.task_type,
         recent_run_summary=recent_run_summary,
+        recent_run_summaries=recent_run_summaries,
     )
     effective_prompt = clarification.normalized_prompt or args.prompt
     effective_task_type = args.task_type or clarification.inferred_task_type

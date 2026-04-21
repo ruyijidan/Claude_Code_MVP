@@ -25,6 +25,18 @@ class MemoryStore:
         except (OSError, json.JSONDecodeError):
             return None
 
+    def read_recent(self, limit: int = 5) -> list[dict[str, Any]]:
+        candidates = sorted(self.root.glob("*.json"))
+        payloads: list[dict[str, Any]] = []
+        for path in reversed(candidates[-limit:]):
+            try:
+                payload = json.loads(path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                continue
+            if isinstance(payload, dict):
+                payloads.append(payload)
+        return payloads
+
     def _ensure_writable_root(self, root: Path) -> Path:
         try:
             root.mkdir(parents=True, exist_ok=True)

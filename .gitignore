@@ -28,3 +28,6 @@ workspace/
 workspace_fix_bug/
 workspace_investigate/
 logs
+
+# Local helper binaries
+bin/feishu-cli

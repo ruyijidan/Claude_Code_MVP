@@ -57,17 +57,34 @@ class IntentClarifier:
         repo_path: Path,
         explicit_task_type: str | None = None,
         recent_run_summary: dict | None = None,
+        recent_run_summaries: list[dict] | None = None,
     ) -> IntentClarificationResult:
         normalized_prompt = " ".join(prompt.split())
-        continuation_target = self._infer_continuation_target(normalized_prompt, recent_run_summary)
-        effective_prompt = self._normalize_continuation_prompt(normalized_prompt, recent_run_summary, continuation_target)
+        continuation_summary = self._select_continuation_summary(
+            normalized_prompt,
+            repo_path,
+            recent_run_summary=recent_run_summary,
+            recent_run_summaries=recent_run_summaries,
+        )
+        continuation_target = self._infer_continuation_target(normalized_prompt, continuation_summary)
+        effective_prompt = self._normalize_continuation_prompt(normalized_prompt, continuation_summary, continuation_target)
         inferred_task_type = explicit_task_type or self._infer_task_type(
             effective_prompt,
-            recent_run_summary if continuation_target is not None else None,
+            continuation_summary if continuation_target is not None else None,
         )
         missing_constraints: list[str] = []
         questions: list[ClarificationQuestion] = []
         required_fields = self._required_fields_for_task_type(inferred_task_type)
+
+        if self._has_ambiguous_continuation(normalized_prompt, repo_path, recent_run_summaries):
+            missing_constraints.append("continuation_context")
+            questions.append(
+                ClarificationQuestion(
+                    key="continuation_context",
+                    question="I found multiple recent tasks in this repository. Which one should continue?",
+                    reason="Short continuation input matches more than one recent task, so continuing automatically would be ambiguous.",
+                )
+            )
 
         if normalized_prompt.lower() in self.SHORT_CONTINUATIONS and continuation_target is None:
             missing_constraints.append("continuation_context")
@@ -132,7 +149,7 @@ class IntentClarifier:
                 effective_prompt,
                 inferred_task_type,
                 repo_path,
-                recent_run_summary=recent_run_summary,
+                recent_run_summary=continuation_summary,
                 continuation_target=continuation_target,
             ),
         )
@@ -282,6 +299,59 @@ class IntentClarifier:
             if isinstance(recent_prompt, str) and recent_prompt.strip():
                 return recent_prompt.strip()
         return None
+
+    def _select_continuation_summary(
+        self,
+        prompt: str,
+        repo_path: Path,
+        recent_run_summary: dict | None = None,
+        recent_run_summaries: list[dict] | None = None,
+    ) -> dict | None:
+        if prompt.lower() not in self.SHORT_CONTINUATIONS:
+            return recent_run_summary
+        candidates = self._continuation_candidates(repo_path, recent_run_summary, recent_run_summaries)
+        if len(candidates) == 1:
+            return candidates[0]
+        return None
+
+    def _has_ambiguous_continuation(
+        self,
+        prompt: str,
+        repo_path: Path,
+        recent_run_summaries: list[dict] | None,
+    ) -> bool:
+        if prompt.lower() not in self.SHORT_CONTINUATIONS:
+            return False
+        return len(self._continuation_candidates(repo_path, None, recent_run_summaries)) > 1
+
+    def _continuation_candidates(
+        self,
+        repo_path: Path,
+        recent_run_summary: dict | None,
+        recent_run_summaries: list[dict] | None,
+    ) -> list[dict]:
+        raw_candidates: list[dict] = []
+        if recent_run_summaries:
+            raw_candidates.extend(summary for summary in recent_run_summaries if isinstance(summary, dict))
+        elif recent_run_summary:
+            raw_candidates.append(recent_run_summary)
+
+        normalized_repo_path = str(repo_path)
+        unique_candidates: list[dict] = []
+        seen_prompts: set[str] = set()
+        for summary in raw_candidates:
+            request_prompt = summary.get("request_prompt")
+            request_repo_path = summary.get("request_repo_path")
+            if not isinstance(request_prompt, str) or not request_prompt.strip():
+                continue
+            if isinstance(request_repo_path, str) and request_repo_path and request_repo_path != normalized_repo_path:
+                continue
+            prompt_key = request_prompt.strip()
+            if prompt_key in seen_prompts:
+                continue
+            seen_prompts.add(prompt_key)
+            unique_candidates.append(summary)
+        return unique_candidates
 
     def _build_kickoff_message(
         self,

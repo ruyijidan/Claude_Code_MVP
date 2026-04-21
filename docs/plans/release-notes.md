@@ -1,10 +1,37 @@
 ---
-last_updated: 2026-04-20
+last_updated: 2026-04-21
 status: active
 owner: core
 ---
 
 # Release Notes / 发布说明
+
+## 2026-04-21
+
+### Continuation Ambiguity Handling / 续轮歧义处理
+
+Included pending change set:
+
+- current working tree after `85799f3`, focused on safer continuation handling for short follow-up inputs
+
+Highlights:
+
+- extended `intent clarifier` to inspect multiple recent replay summaries instead of only the latest run
+- added ambiguity detection for short continuation inputs such as `继续` so the harness now stops for clarification when multiple recent tasks are plausible
+- kept the continuation path automatic when there is only one clear recent task candidate
+- added replay-store helpers for reading multiple recent trajectory summaries
+- ignored the local `bin/feishu-cli` helper binary so local tooling noise no longer pollutes release acceptance git status
+
+Verification:
+
+- relevant test suite passed locally, including full unit test discovery
+- default `bash scripts/release_acceptance.sh` path passed before this follow-up commit
+
+Impact:
+
+- short continuation inputs are now safer and more predictable in multi-task repository sessions
+- release acceptance conclusions are less likely to be skewed by local untracked helper binaries
+- the interaction-harness path now better distinguishes between “continue automatically” and “stop because continuation is ambiguous”
 
 ## 2026-04-20
 

@@ -93,6 +93,31 @@ class IntentClarifierTests(unittest.TestCase):
         self.assertEqual(result.continuation_target, "write tests for planner.py")
         self.assertIn("continue the previous task", result.kickoff_message)
 
+    def test_short_continuation_requires_clarification_when_multiple_candidates_exist(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            repo_path = Path(tmp_dir)
+            (repo_path / "planner.py").write_text("print('ok')\n", encoding="utf-8")
+            (repo_path / "router.py").write_text("print('ok')\n", encoding="utf-8")
+            result = self.clarifier.clarify_with_context(
+                "继续",
+                repo_path,
+                recent_run_summaries=[
+                    {
+                        "task": "write_tests",
+                        "request_prompt": "write tests for planner.py",
+                        "request_repo_path": str(repo_path),
+                    },
+                    {
+                        "task": "investigate_issue",
+                        "request_prompt": "investigate router.py error path",
+                        "request_repo_path": str(repo_path),
+                    },
+                ],
+            )
+        self.assertEqual(result.status, "needs_clarification")
+        self.assertIn("continuation_context", result.missing_constraints)
+        self.assertTrue(any("multiple recent tasks" in question.question for question in result.questions))
+
 
 if __name__ == "__main__":
     unittest.main()

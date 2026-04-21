@@ -85,6 +85,33 @@ class CliMainTests(unittest.TestCase):
             self.assertEqual(run_loop.call_args.kwargs["task_name"], "write_tests")
             self.assertIn("kickoff: I'll continue the previous task", stream.getvalue())
 
+    def test_cli_continuation_stops_when_multiple_recent_candidates_exist(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            repo_path = Path(tmp_dir)
+            (repo_path / "planner.py").write_text("print('ok')\n", encoding="utf-8")
+            (repo_path / "router.py").write_text("print('ok')\n", encoding="utf-8")
+            trajectories = repo_path / ".claude-code" / "trajectories"
+            trajectories.mkdir(parents=True)
+            (trajectories / "20260420T080000Z.json").write_text(
+                '{"task":"write_tests","request_prompt":"write tests for planner.py","request_repo_path":"'
+                + str(repo_path)
+                + '"}',
+                encoding="utf-8",
+            )
+            (trajectories / "20260420T090000Z.json").write_text(
+                '{"task":"investigate_issue","request_prompt":"investigate router.py error path","request_repo_path":"'
+                + str(repo_path)
+                + '"}',
+                encoding="utf-8",
+            )
+            stream = io.StringIO()
+            with redirect_stdout(stream):
+                exit_code = main(["继续", "--repo", str(repo_path), "--json"])
+            output = stream.getvalue()
+            self.assertEqual(exit_code, 1)
+            self.assertIn("needs_clarification", output)
+            self.assertIn("continuation_context", output)
+
     def test_cli_can_show_git_status_only(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
             repo_path = Path(tmp_dir)
