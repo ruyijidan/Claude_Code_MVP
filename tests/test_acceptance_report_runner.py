@@ -31,6 +31,8 @@ class AcceptanceReportRunnerTests(unittest.TestCase):
         self.assertIn("ARCHITECTURE_SUMMARY", prompt)
         self.assertIn("GIT_DIFF_STAT_SUMMARY", prompt)
         self.assertIn("keep system_summary concise", prompt)
+        self.assertIn("treat GIT_STATUS_SUMMARY and GIT_DIFF_STAT_SUMMARY as authoritative", prompt)
+        self.assertIn("do not treat missing .git itself as a release risk", prompt)
 
     def test_writes_markdown_and_json_reports(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:

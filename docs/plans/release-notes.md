@@ -8,6 +8,27 @@ owner: core
 
 ## 2026-04-22
 
+### Acceptance Prompt Git Snapshot Guidance / 验收提示词 Git 快照指引
+
+Included pending change set:
+
+- current working tree after `2a3121a`, focused on reducing false-positive git-environment noise in isolated live acceptance workspaces
+
+Highlights:
+
+- updated the local acceptance prompt in [`app/acceptance/report_runner.py`](../../app/acceptance/report_runner.py) so `GIT_STATUS_SUMMARY` and `GIT_DIFF_STAT_SUMMARY` are treated as authoritative repository-state inputs
+- clarified that isolated acceptance workspaces may intentionally omit `.git` metadata and that this alone should not be reported as a release risk when git summaries are already present
+- added prompt regression coverage in [`tests/test_acceptance_report_runner.py`](../../tests/test_acceptance_report_runner.py)
+
+Verification:
+
+- targeted acceptance runner tests should confirm the new prompt guidance is present
+
+Impact:
+
+- real acceptance reports should be less likely to include environment-specific “missing .git” noise
+- release reviewers should see repository-state conclusions derived from the supplied git snapshots rather than from isolation mechanics
+
 ### GLM5 Acceptance Retry Hardening / GLM5 验收重试加固
 
 Included pending change set:

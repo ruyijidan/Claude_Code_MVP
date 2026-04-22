@@ -32,6 +32,8 @@ def build_acceptance_prompt(context: dict[str, str]) -> str:
         "- acceptance_status\n"
         "- evidence\n\n"
         "Rules:\n"
+        "- treat GIT_STATUS_SUMMARY and GIT_DIFF_STAT_SUMMARY as authoritative repository-state inputs\n"
+        "- the acceptance workspace may omit .git metadata intentionally; if git summaries are present, do not treat missing .git itself as a release risk\n"
         "- acceptance_status must be READY, NEEDS_REVIEW, or BLOCKED\n"
         "- provider_risks must be a list of concise strings\n"
         "- evidence must be a list of concise strings\n"
