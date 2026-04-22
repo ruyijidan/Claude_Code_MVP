@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import time
 from pathlib import Path
 
 from app.acceptance.context_builder import build_acceptance_context
@@ -50,13 +52,56 @@ def _extract_json_payload(model_output: str) -> dict:
     return json.loads(text)
 
 
+def _parse_runtime_error_payload(exc: RuntimeError) -> dict | None:
+    text = str(exc).strip()
+    if not text:
+        return None
+    try:
+        payload = json.loads(text)
+    except json.JSONDecodeError:
+        return None
+    return payload if isinstance(payload, dict) else None
+
+
+def _is_retryable_acceptance_error(exc: RuntimeError) -> bool:
+    payload = _parse_runtime_error_payload(exc)
+    if payload is not None:
+        status = payload.get("status")
+        if status in {502, 503, 504}:
+            return True
+        error_text = str(payload.get("error", "")).lower()
+        if any(token in error_text for token in ("time-out", "timed out", "timeout", "temporarily unavailable")):
+            return True
+    message = str(exc).lower()
+    return any(token in message for token in ("time-out", "timed out", "timeout", "temporarily unavailable"))
+
+
+def _generate_with_retry(client, prompt: str) -> str:
+    max_retries = int(os.getenv("CC_ACCEPTANCE_API_RETRIES", "1"))
+    retry_delay_seconds = float(os.getenv("CC_ACCEPTANCE_API_RETRY_DELAY_SECONDS", "2"))
+    attempt = 0
+    last_error: RuntimeError | None = None
+    while attempt <= max_retries:
+        try:
+            return client.generate(prompt)
+        except RuntimeError as exc:
+            last_error = exc
+            if attempt >= max_retries or not _is_retryable_acceptance_error(exc):
+                raise
+            time.sleep(retry_delay_seconds)
+            attempt += 1
+    if last_error is not None:
+        raise last_error
+    raise RuntimeError("acceptance generation failed without a specific error")
+
+
 def run_acceptance_report(repo_path: Path, model_provider: str, output_dir: Path, auth_source: str = "auto") -> dict:
     selected_provider, excluded_prefixes = resolve_auth_loading_policy(repo_path, model_provider, auth_source)
     load_project_env(repo_path, exclude_prefixes=excluded_prefixes)
     context = build_acceptance_context(repo_path)
     prompt = build_acceptance_prompt(context)
     client = build_model_client(selected_provider)
-    raw_output = client.generate(prompt)
+    raw_output = _generate_with_retry(client, prompt)
     report = _extract_json_payload(raw_output)
     validate_acceptance_report(report)
 

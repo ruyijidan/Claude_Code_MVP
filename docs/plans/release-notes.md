@@ -1,10 +1,37 @@
 ---
-last_updated: 2026-04-21
+last_updated: 2026-04-22
 status: active
 owner: core
 ---
 
 # Release Notes / 发布说明
+
+## 2026-04-22
+
+### GLM5 Acceptance Retry Hardening / GLM5 验收重试加固
+
+Included pending change set:
+
+- current working tree after `599a7fa`, focused on making live `glm5` acceptance more resilient to transient gateway timeouts
+
+Highlights:
+
+- added retry classification in [`app/acceptance/report_runner.py`](../../app/acceptance/report_runner.py) for transient provider failures such as `502`, `503`, `504`, and timeout-shaped runtime errors
+- added configurable retry controls through `CC_ACCEPTANCE_API_RETRIES` and `CC_ACCEPTANCE_API_RETRY_DELAY_SECONDS`
+- kept non-retryable failures such as auth or validation errors as immediate hard failures so the acceptance result still reflects real release risk
+- added regression coverage in [`tests/test_acceptance_report_runner.py`](../../tests/test_acceptance_report_runner.py) for retry-on-timeout behavior and retryability classification
+
+Verification:
+
+- full unit test discovery passed locally: `113 tests OK`
+- default `bash scripts/release_acceptance.sh` path passed
+- real unattended `glm5` acceptance completed successfully after the retry hardening, producing validated markdown and JSON artifacts
+
+Impact:
+
+- long-running live acceptance runs are less likely to fail due to one transient provider-side timeout
+- release acceptance remains strict on real blocking issues while becoming more stable against flaky network edges
+- the `glm5` release path is now closer to the intended unattended final acceptance workflow
 
 ## 2026-04-21
 
