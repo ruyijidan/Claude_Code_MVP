@@ -39,6 +39,7 @@ After the first hardening wave and the follow-on asset work, the repository now 
 - API-backed providers can now run local acceptance reporting through `app/acceptance` and `app/models`
 - live `glm5` acceptance now has transient timeout retry handling so unattended final acceptance is less fragile
 - release acceptance now keeps fast unit verification isolated from opt-in live provider flags
+- acceptance artifact creation prompts can reference new output paths without being blocked by repo-target clarification
 - isolated live acceptance reports now have explicit prompt guidance to rely on git snapshots instead of flagging missing `.git` metadata as a release issue
 
 In practical terms, the project has moved from:
@@ -85,6 +86,7 @@ It is now:
 - continuation clarification now surfaces bounded candidate choices and supports label-based selection such as `recent_task_1`
 - transient `glm5` gateway timeout failures can now be retried automatically during local acceptance reporting
 - release acceptance fast checks now unset live-test flags before unit discovery so 600-second preflight remains deterministic
+- delegated live acceptance can now create required `.claude-code/acceptance` artifacts from a fresh isolated workspace
 
 ### In Progress / 进行中
 

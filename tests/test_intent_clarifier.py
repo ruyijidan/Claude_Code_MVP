@@ -41,6 +41,14 @@ class IntentClarifierTests(unittest.TestCase):
         self.assertEqual(result.status, "needs_clarification")
         self.assertIn("repo_target", result.missing_constraints)
 
+    def test_allows_new_artifact_paths_for_creation_requests(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            result = self.clarifier.clarify(
+                "Create `.claude-code/acceptance/final_acceptance_report.md` and write a JSON artifact.",
+                Path(tmp_dir),
+            )
+        self.assertNotIn("repo_target", result.missing_constraints)
+
     def test_normalized_when_whitespace_is_trimmed(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
             repo_path = Path(tmp_dir)

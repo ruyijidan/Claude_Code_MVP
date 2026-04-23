@@ -29,6 +29,26 @@ Impact:
 - today’s 600-second acceptance run has a cleaner preflight path: fast checks remain fast, and live provider checks happen only in the intended live phase
 - transient live provider failures are less likely to be misreported as ordinary unit-test failures
 
+### Acceptance Artifact Path Clarification / 验收产物路径澄清
+
+Included pending change set:
+
+- current working tree after `5098fbc`, focused on unblocking the delegated 600-second acceptance task prompt
+
+Highlights:
+
+- allowed explicit artifact creation prompts to reference not-yet-existing output paths such as `.claude-code/acceptance/final_acceptance_report.md`
+- kept missing existing repo targets protected, so requests like `write tests for missing_module.py` still stop for clarification
+- added regression coverage for creation-oriented artifact paths
+
+Verification:
+
+- targeted intent clarifier, CLI, and script tests passed locally: `38 tests OK`
+
+Impact:
+
+- delegated live acceptance prompts can now reach the provider instead of being blocked by repo-target clarification before artifact creation begins
+
 ### Continuation Candidate Selection / 续跑候选选择
 
 Included pending change set:

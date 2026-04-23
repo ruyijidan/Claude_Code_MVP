@@ -115,7 +115,9 @@ class IntentClarifier:
 
         if not needs_continuation_context:
             referenced_paths = self._extract_path_references(effective_prompt)
-            missing_paths = [path for path in referenced_paths if not (repo_path / path).exists()]
+            missing_paths = []
+            if not self._allows_new_path_references(effective_prompt):
+                missing_paths = [path for path in referenced_paths if not (repo_path / path).exists()]
             if missing_paths:
                 missing_constraints.append("repo_target")
                 questions.append(
@@ -214,6 +216,21 @@ class IntentClarifier:
     def _extract_path_references(self, prompt: str) -> list[str]:
         matches = re.findall(r"(?<!\w)([\w./-]+\.[A-Za-z0-9]+)", prompt)
         return [match.strip("./") for match in matches if "/" in match or "." in match]
+
+    def _allows_new_path_references(self, prompt: str) -> bool:
+        lowered = prompt.lower()
+        return any(
+            token in lowered
+            for token in (
+                "create ",
+                "generate ",
+                "produce ",
+                "save ",
+                "output ",
+                "artifact",
+                "artifacts",
+            )
+        )
 
     def _has_target_signal(self, prompt: str, repo_path: Path, task_type: str | None) -> bool:
         lowered = prompt.lower()
