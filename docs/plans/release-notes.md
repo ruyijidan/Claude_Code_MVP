@@ -8,6 +8,29 @@ owner: core
 
 ## 2026-04-23
 
+### Long Task Game Visible Upgrade / 长任务小游戏可见升级
+
+Included pending change set:
+
+- current working tree, focused on documenting the visible upgrade produced by the 600-second delegated game task
+
+Highlights:
+
+- added `examples/long-task-game`, a dependency-free browser game that opens directly from `index.html`
+- upgraded the game with first-open visible systems: mission select, difficulty choices, modifiers, power-up legend, in-game status strip, power-up drops, and a detailed results screen
+- documented the upgrade in [`docs/design/long-task-game-upgrade.md`](../design/long-task-game-upgrade.md)
+- kept the existing `examples/web-game` demo untouched
+
+Verification:
+
+- `node --check examples/long-task-game/game.js` passed
+- static checks confirmed local `./styles.css` and `./game.js` references, visible mission / power-up / results UI markers, and no external URLs
+
+Impact:
+
+- the repository now has a concrete product-facing artifact from a long delegated coding task
+- the upgrade record distinguishes real visible product changes from hidden implementation polish
+
 ### Live Acceptance Fast-Test Isolation / Live 验收快速测试隔离
 
 Included pending change set:

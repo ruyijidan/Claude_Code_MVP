@@ -115,10 +115,12 @@ Use this directory when the question is:
 Lightweight templates for future feature/design writeups.
 
 - [`design/template.md`](./design/template.md)
+- [`design/long-task-game-upgrade.md`](./design/long-task-game-upgrade.md)
 
 Use this directory when the question is:
 
 - where is the draft design template?
+- where is a product-level upgrade record for the long-task game demo?
 
 ## Recommended Reading Paths / 推荐阅读路径
 
