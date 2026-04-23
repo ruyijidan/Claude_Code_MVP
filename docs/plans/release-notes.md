@@ -1,10 +1,34 @@
 ---
-last_updated: 2026-04-22
+last_updated: 2026-04-23
 status: active
 owner: core
 ---
 
 # Release Notes / 发布说明
+
+## 2026-04-23
+
+### Continuation Candidate Selection / 续跑候选选择
+
+Included pending change set:
+
+- current working tree, focused on making ambiguous short continuation prompts actionable instead of only blocking execution
+
+Highlights:
+
+- added structured continuation candidates to clarification results, including stable labels, task type hints, optional timestamps, original prompts, and summaries
+- updated CLI clarification output to show candidate summaries, bounded choices, and a concrete rerun hint such as `cc recent_task_1 --repo ...`
+- allowed label-based follow-up prompts such as `recent_task_1` to continue the selected recent task directly
+- kept ambiguous continuation clarification focused on selecting a continuation target instead of also asking unrelated target and success-criteria questions
+
+Verification:
+
+- targeted continuation and CLI tests passed locally: `29 passed`
+
+Impact:
+
+- short prompts such as `继续` now produce a clearer recovery path when multiple recent tasks are available
+- users can resolve ambiguity with a stable candidate label instead of rewriting the original task prompt
 
 ## 2026-04-22
 

@@ -95,7 +95,7 @@ class CliMainTests(unittest.TestCase):
             (trajectories / "20260420T080000Z.json").write_text(
                 '{"task":"write_tests","request_prompt":"write tests for planner.py","request_repo_path":"'
                 + str(repo_path)
-                + '"}',
+                + '","completed_at":"2026-04-20T08:00:00Z"}',
                 encoding="utf-8",
             )
             (trajectories / "20260420T090000Z.json").write_text(
@@ -111,6 +111,76 @@ class CliMainTests(unittest.TestCase):
             self.assertEqual(exit_code, 1)
             self.assertIn("needs_clarification", output)
             self.assertIn("continuation_context", output)
+            self.assertIn("continuation_candidates", output)
+
+    def test_cli_continuation_text_output_shows_candidate_summaries(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            repo_path = Path(tmp_dir)
+            (repo_path / "planner.py").write_text("print('ok')\n", encoding="utf-8")
+            (repo_path / "router.py").write_text("print('ok')\n", encoding="utf-8")
+            trajectories = repo_path / ".claude-code" / "trajectories"
+            trajectories.mkdir(parents=True)
+            (trajectories / "20260420T080000Z.json").write_text(
+                '{"task":"write_tests","request_prompt":"write tests for planner.py","request_repo_path":"'
+                + str(repo_path)
+                + '","completed_at":"2026-04-20T08:00:00Z"}',
+                encoding="utf-8",
+            )
+            (trajectories / "20260420T090000Z.json").write_text(
+                '{"task":"investigate_issue","request_prompt":"investigate router.py error path","request_repo_path":"'
+                + str(repo_path)
+                + '"}',
+                encoding="utf-8",
+            )
+            stream = io.StringIO()
+            with redirect_stdout(stream):
+                exit_code = main(["继续", "--repo", str(repo_path)])
+            output = stream.getvalue()
+            self.assertEqual(exit_code, 1)
+            self.assertIn("status: needs_clarification", output)
+            self.assertIn("continuation candidates:", output)
+            self.assertIn("hint: rerun with one label", output)
+            self.assertIn("choices: recent_task_1, recent_task_2", output)
+            self.assertIn("2026-04-20T08:00:00Z", output)
+            self.assertIn("[write_tests]", output)
+            self.assertIn("[investigate_issue]", output)
+            self.assertIn("write tests for planner.py", output)
+            self.assertIn("investigate router.py error path", output)
+
+    def test_cli_continuation_label_runs_selected_candidate(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            repo_path = Path(tmp_dir)
+            (repo_path / "planner.py").write_text("print('ok')\n", encoding="utf-8")
+            (repo_path / "router.py").write_text("print('ok')\n", encoding="utf-8")
+            trajectories = repo_path / ".claude-code" / "trajectories"
+            trajectories.mkdir(parents=True)
+            (trajectories / "20260420T080000Z.json").write_text(
+                '{"task":"write_tests","request_prompt":"write tests for planner.py","request_repo_path":"'
+                + str(repo_path)
+                + '"}',
+                encoding="utf-8",
+            )
+            (trajectories / "20260420T090000Z.json").write_text(
+                '{"task":"investigate_issue","request_prompt":"investigate router.py error path","request_repo_path":"'
+                + str(repo_path)
+                + '"}',
+                encoding="utf-8",
+            )
+            stream = io.StringIO()
+            fake_result = {
+                "runtime_provider": "local",
+                "task_spec": type("TaskSpecStub", (), {"name": "investigate_issue"})(),
+                "test_result": "passed",
+                "changed_files": [],
+                "repo_context": {"git": {}},
+                "trajectory_path": str(repo_path / "traj.json"),
+            }
+            with patch("app.cli.main.CodingAgentLoop.run", return_value=fake_result) as run_loop:
+                with redirect_stdout(stream):
+                    exit_code = main(["recent_task_1", "--repo", str(repo_path)])
+            self.assertEqual(exit_code, 0)
+            self.assertEqual(run_loop.call_args.kwargs["prompt"], "investigate router.py error path")
+            self.assertEqual(run_loop.call_args.kwargs["task_name"], "investigate_issue")
 
     def test_cli_can_show_git_status_only(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:

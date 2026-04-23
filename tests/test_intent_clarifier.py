@@ -32,7 +32,8 @@ class IntentClarifierTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp_dir:
             result = self.clarifier.clarify("好", Path(tmp_dir))
         self.assertEqual(result.status, "needs_clarification")
-        self.assertIn("continuation_context", result.missing_constraints)
+        self.assertIsNone(result.inferred_task_type)
+        self.assertEqual(result.missing_constraints, ["continuation_context"])
 
     def test_needs_clarification_when_repo_target_is_missing(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -71,6 +72,7 @@ class IntentClarifierTests(unittest.TestCase):
         payload = result.to_dict()
         self.assertIn("continuation_target", payload)
         self.assertIn("kickoff_message", payload)
+        self.assertIn("continuation_candidates", payload)
         self.assertIsNone(payload["continuation_target"])
         self.assertIsNotNone(payload["kickoff_message"])
 
@@ -106,6 +108,7 @@ class IntentClarifierTests(unittest.TestCase):
                         "task": "write_tests",
                         "request_prompt": "write tests for planner.py",
                         "request_repo_path": str(repo_path),
+                        "completed_at": "2026-04-20T08:00:00Z",
                     },
                     {
                         "task": "investigate_issue",
@@ -115,8 +118,60 @@ class IntentClarifierTests(unittest.TestCase):
                 ],
             )
         self.assertEqual(result.status, "needs_clarification")
-        self.assertIn("continuation_context", result.missing_constraints)
+        self.assertIsNone(result.inferred_task_type)
+        self.assertEqual(result.missing_constraints, ["continuation_context"])
         self.assertTrue(any("multiple recent tasks" in question.question for question in result.questions))
+        self.assertTrue(any("recent_task_1" in question.question for question in result.questions))
+        self.assertEqual(len(result.continuation_candidates), 2)
+        self.assertEqual(result.continuation_candidates[0].label, "recent_task_1")
+        self.assertEqual(result.continuation_candidates[0].task_type, "write_tests")
+        self.assertEqual(result.continuation_candidates[0].timestamp, "2026-04-20T08:00:00Z")
+        self.assertEqual(result.continuation_candidates[1].task_type, "investigate_issue")
+
+    def test_continuation_label_selects_matching_recent_candidate(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            repo_path = Path(tmp_dir)
+            (repo_path / "planner.py").write_text("print('ok')\n", encoding="utf-8")
+            (repo_path / "router.py").write_text("print('ok')\n", encoding="utf-8")
+            result = self.clarifier.clarify_with_context(
+                "recent_task_2",
+                repo_path,
+                recent_run_summaries=[
+                    {
+                        "task": "write_tests",
+                        "request_prompt": "write tests for planner.py",
+                        "request_repo_path": str(repo_path),
+                    },
+                    {
+                        "task": "investigate_issue",
+                        "request_prompt": "investigate router.py error path",
+                        "request_repo_path": str(repo_path),
+                    },
+                ],
+            )
+        self.assertEqual(result.status, "normalized")
+        self.assertEqual(result.inferred_task_type, "investigate_issue")
+        self.assertEqual(result.normalized_prompt, "investigate router.py error path")
+        self.assertEqual(result.continuation_target, "investigate router.py error path")
+
+    def test_continuation_candidates_are_limited(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            repo_path = Path(tmp_dir)
+            result = self.clarifier.clarify_with_context(
+                "继续",
+                repo_path,
+                recent_run_summaries=[
+                    {
+                        "task": "implement_feature",
+                        "request_prompt": f"add feature {index}",
+                        "request_repo_path": str(repo_path),
+                    }
+                    for index in range(7)
+                ],
+            )
+        self.assertEqual(result.status, "needs_clarification")
+        self.assertEqual(len(result.continuation_candidates), 5)
+        self.assertEqual(result.continuation_candidates[-1].label, "recent_task_5")
 
 
 if __name__ == "__main__":

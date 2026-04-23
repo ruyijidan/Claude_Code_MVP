@@ -1,5 +1,5 @@
 ---
-last_updated: 2026-04-22
+last_updated: 2026-04-23
 status: active
 owner: core
 ---
@@ -34,6 +34,7 @@ After the first hardening wave and the follow-on asset work, the repository now 
 - rule assets have started to shape critic behavior
 - pre-execution `intent clarification` now exists as an explicit CLI control point
 - continuation-aware clarification now distinguishes between a single recent task and multiple ambiguous recent tasks
+- ambiguous continuation prompts now return actionable continuation candidate labels that can be selected on the next CLI run
 - release acceptance now has a single scripted entrypoint plus optional live provider checks
 - API-backed providers can now run local acceptance reporting through `app/acceptance` and `app/models`
 - live `glm5` acceptance now has transient timeout retry handling so unattended final acceptance is less fragile
@@ -80,6 +81,7 @@ It is now:
 - live provider acceptance expectations are now documented and backed by opt-in tests
 - `glm5` local acceptance runs can now generate validated markdown and JSON acceptance artifacts
 - short continuation inputs now stop for clarification when more than one recent task is a plausible continuation target
+- continuation clarification now surfaces bounded candidate choices and supports label-based selection such as `recent_task_1`
 - transient `glm5` gateway timeout failures can now be retried automatically during local acceptance reporting
 
 ### In Progress / 进行中

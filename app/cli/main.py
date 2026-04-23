@@ -174,6 +174,19 @@ def main(argv: list[str] | None = None) -> int:
             print("questions:")
             for question in clarification.questions:
                 print(f"- {question.question}")
+            if clarification.continuation_candidates:
+                print("continuation candidates:")
+                for candidate in clarification.continuation_candidates:
+                    summary = candidate.summary or candidate.request_prompt or candidate.label
+                    timestamp = f" ({candidate.timestamp})" if candidate.timestamp else ""
+                    if candidate.task_type:
+                        print(f"- {candidate.label}{timestamp} [{candidate.task_type}]: {summary}")
+                    else:
+                        print(f"- {candidate.label}{timestamp}: {summary}")
+                labels = ", ".join(candidate.label for candidate in clarification.continuation_candidates)
+                example_label = clarification.continuation_candidates[0].label
+                print(f"hint: rerun with one label, for example: cc {example_label} --repo {repo_path}")
+                print(f"choices: {labels}")
         return 1
 
     if clarification.kickoff_message and not args.json:

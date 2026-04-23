@@ -3,11 +3,13 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from app.core.models import ClarificationQuestion, IntentClarificationResult
+from app.core.models import ClarificationQuestion, ContinuationCandidate, IntentClarificationResult
 from app.core.spec_loader import SpecLoader
 
 
 class IntentClarifier:
+    MAX_CONTINUATION_CANDIDATES = 5
+
     SHORT_CONTINUATIONS = {
         "ok",
         "okay",
@@ -66,6 +68,11 @@ class IntentClarifier:
             recent_run_summary=recent_run_summary,
             recent_run_summaries=recent_run_summaries,
         )
+        continuation_candidates = self._build_continuation_candidates(
+            repo_path,
+            recent_run_summary=recent_run_summary,
+            recent_run_summaries=recent_run_summaries,
+        )
         continuation_target = self._infer_continuation_target(normalized_prompt, continuation_summary)
         effective_prompt = self._normalize_continuation_prompt(normalized_prompt, continuation_summary, continuation_target)
         inferred_task_type = explicit_task_type or self._infer_task_type(
@@ -75,18 +82,28 @@ class IntentClarifier:
         missing_constraints: list[str] = []
         questions: list[ClarificationQuestion] = []
         required_fields = self._required_fields_for_task_type(inferred_task_type)
+        needs_continuation_context = False
 
         if self._has_ambiguous_continuation(normalized_prompt, repo_path, recent_run_summaries):
+            needs_continuation_context = True
+            candidate_labels = ", ".join(candidate.label for candidate in continuation_candidates)
             missing_constraints.append("continuation_context")
             questions.append(
                 ClarificationQuestion(
                     key="continuation_context",
-                    question="I found multiple recent tasks in this repository. Which one should continue?",
-                    reason="Short continuation input matches more than one recent task, so continuing automatically would be ambiguous.",
+                    question=(
+                        "I found multiple recent tasks in this repository. "
+                        f"Which one should continue? Reply with one of: {candidate_labels}."
+                    ),
+                    reason=(
+                        "Short continuation input matches more than one recent task, "
+                        "so continuing automatically would be ambiguous."
+                    ),
                 )
             )
 
         if normalized_prompt.lower() in self.SHORT_CONTINUATIONS and continuation_target is None:
+            needs_continuation_context = True
             missing_constraints.append("continuation_context")
             questions.append(
                 ClarificationQuestion(
@@ -96,43 +113,49 @@ class IntentClarifier:
                 )
             )
 
-        referenced_paths = self._extract_path_references(effective_prompt)
-        missing_paths = [path for path in referenced_paths if not (repo_path / path).exists()]
-        if missing_paths:
-            missing_constraints.append("repo_target")
-            questions.append(
-                ClarificationQuestion(
-                    key="repo_target",
-                    question=f"I could not find {missing_paths[0]!r} in the repository. Which existing file or module should be changed instead?",
-                    reason="The request refers to a repo target that lightweight inspection could not find.",
+        if not needs_continuation_context:
+            referenced_paths = self._extract_path_references(effective_prompt)
+            missing_paths = [path for path in referenced_paths if not (repo_path / path).exists()]
+            if missing_paths:
+                missing_constraints.append("repo_target")
+                questions.append(
+                    ClarificationQuestion(
+                        key="repo_target",
+                        question=(
+                            f"I could not find {missing_paths[0]!r} in the repository. "
+                            "Which existing file or module should be changed instead?"
+                        ),
+                        reason="The request refers to a repo target that lightweight inspection could not find.",
+                    )
                 )
-            )
 
-        if "target" in required_fields and not self._has_target_signal(effective_prompt, repo_path, inferred_task_type):
-            missing_constraints.append("target")
-            questions.append(
-                ClarificationQuestion(
-                    key="target",
-                    question="Which file, module, feature, or failing behavior should this change focus on?",
-                    reason="The request names an action but not a stable target for the first implementation pass.",
+            if "target" in required_fields and not self._has_target_signal(effective_prompt, repo_path, inferred_task_type):
+                missing_constraints.append("target")
+                questions.append(
+                    ClarificationQuestion(
+                        key="target",
+                        question="Which file, module, feature, or failing behavior should this change focus on?",
+                        reason="The request names an action but not a stable target for the first implementation pass.",
+                    )
                 )
-            )
 
-        if "success_criteria" in required_fields and not self._has_success_signal(effective_prompt, inferred_task_type):
-            missing_constraints.append("success_criteria")
-            questions.append(
-                ClarificationQuestion(
-                    key="success_criteria",
-                    question="What should count as success for this request?",
-                    reason="The request does not yet describe a clear completion shape for planning and verification.",
+            if "success_criteria" in required_fields and not self._has_success_signal(effective_prompt, inferred_task_type):
+                missing_constraints.append("success_criteria")
+                questions.append(
+                    ClarificationQuestion(
+                        key="success_criteria",
+                        question="What should count as success for this request?",
+                        reason="The request does not yet describe a clear completion shape for planning and verification.",
+                    )
                 )
-            )
 
         if missing_constraints:
+            result_task_type = None if needs_continuation_context and explicit_task_type is None else inferred_task_type
             return IntentClarificationResult(
                 status="needs_clarification",
                 normalized_prompt=effective_prompt,
-                inferred_task_type=inferred_task_type,
+                inferred_task_type=result_task_type,
+                continuation_candidates=continuation_candidates,
                 missing_constraints=self._dedupe(missing_constraints),
                 questions=self._dedupe_questions(questions),
             )
@@ -152,6 +175,7 @@ class IntentClarifier:
                 recent_run_summary=continuation_summary,
                 continuation_target=continuation_target,
             ),
+            continuation_candidates=continuation_candidates,
         )
 
     def _infer_task_type(self, prompt: str, recent_run_summary: dict | None = None) -> str:
@@ -294,7 +318,7 @@ class IntentClarifier:
         return ordered
 
     def _infer_continuation_target(self, prompt: str, recent_run_summary: dict | None = None) -> str | None:
-        if prompt.lower() in self.SHORT_CONTINUATIONS and recent_run_summary:
+        if (prompt.lower() in self.SHORT_CONTINUATIONS or self._is_continuation_label(prompt)) and recent_run_summary:
             recent_prompt = recent_run_summary.get("request_prompt")
             if isinstance(recent_prompt, str) and recent_prompt.strip():
                 return recent_prompt.strip()
@@ -307,6 +331,14 @@ class IntentClarifier:
         recent_run_summary: dict | None = None,
         recent_run_summaries: list[dict] | None = None,
     ) -> dict | None:
+        if self._is_continuation_label(prompt):
+            for index, candidate in enumerate(
+                self._continuation_candidates(repo_path, recent_run_summary, recent_run_summaries),
+                start=1,
+            ):
+                if prompt.lower() == f"recent_task_{index}":
+                    return candidate
+            return None
         if prompt.lower() not in self.SHORT_CONTINUATIONS:
             return recent_run_summary
         candidates = self._continuation_candidates(repo_path, recent_run_summary, recent_run_summaries)
@@ -351,7 +383,43 @@ class IntentClarifier:
                 continue
             seen_prompts.add(prompt_key)
             unique_candidates.append(summary)
+            if len(unique_candidates) >= self.MAX_CONTINUATION_CANDIDATES:
+                break
         return unique_candidates
+
+    def _build_continuation_candidates(
+        self,
+        repo_path: Path,
+        recent_run_summary: dict | None,
+        recent_run_summaries: list[dict] | None,
+    ) -> list[ContinuationCandidate]:
+        candidates: list[ContinuationCandidate] = []
+        for index, summary in enumerate(
+            self._continuation_candidates(repo_path, recent_run_summary, recent_run_summaries),
+            start=1,
+        ):
+            request_prompt = summary.get("request_prompt")
+            task_type = summary.get("task")
+            candidates.append(
+                ContinuationCandidate(
+                    label=f"recent_task_{index}",
+                    task_type=task_type if isinstance(task_type, str) else None,
+                    request_prompt=request_prompt if isinstance(request_prompt, str) else None,
+                    summary=self._continuation_summary(summary),
+                    timestamp=self._continuation_timestamp(summary),
+                )
+            )
+        return candidates
+
+    def _is_continuation_label(self, prompt: str) -> bool:
+        return re.fullmatch(r"recent_task_[1-9]\d*", prompt.lower()) is not None
+
+    def _continuation_timestamp(self, recent_run_summary: dict) -> str | None:
+        for key in ("completed_at", "created_at", "started_at", "timestamp", "run_id"):
+            value = recent_run_summary.get(key)
+            if isinstance(value, str) and value.strip():
+                return value.strip()
+        return None
 
     def _build_kickoff_message(
         self,
