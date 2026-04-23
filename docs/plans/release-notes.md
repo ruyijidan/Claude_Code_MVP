@@ -8,6 +8,27 @@ owner: core
 
 ## 2026-04-23
 
+### Live Acceptance Fast-Test Isolation / Live 验收快速测试隔离
+
+Included pending change set:
+
+- current working tree after `62ab0dc`, focused on preparing the release flow for a 600-second unattended live acceptance run
+
+Highlights:
+
+- isolated default fast acceptance tests from `CC_RUN_LIVE_PROVIDER_TESTS` so release acceptance no longer runs live provider tests during the unit-test phase
+- applied the same environment isolation inside `scripts/agent_verify.sh` so unit verification stays deterministic even when the caller has live-test flags set
+- kept live provider checks in the dedicated `tests.test_live_provider_integration` phase where provider failures are easier to interpret
+
+Verification:
+
+- targeted script-structure tests should confirm both verification scripts unset the live-test flag for unit-test discovery
+
+Impact:
+
+- today’s 600-second acceptance run has a cleaner preflight path: fast checks remain fast, and live provider checks happen only in the intended live phase
+- transient live provider failures are less likely to be misreported as ordinary unit-test failures
+
 ### Continuation Candidate Selection / 续跑候选选择
 
 Included pending change set:

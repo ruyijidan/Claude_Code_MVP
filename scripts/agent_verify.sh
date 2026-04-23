@@ -51,7 +51,7 @@ python3 scripts/check_architecture.py || {
 }
 
 echo "🧪 Running unit tests"
-python3 -m unittest discover -s tests || {
+env -u CC_RUN_LIVE_PROVIDER_TESTS python3 -m unittest discover -s tests || {
   echo "❌ Unit tests failed"
   exit 1
 }

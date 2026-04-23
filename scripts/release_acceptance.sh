@@ -81,8 +81,8 @@ PY
 }
 
 echo "==> Running default fast acceptance checks"
-python3 -m unittest discover -s "$ROOT_DIR/tests"
-bash "$ROOT_DIR/scripts/agent_verify.sh"
+env -u CC_RUN_LIVE_PROVIDER_TESTS python3 -m unittest discover -s "$ROOT_DIR/tests"
+env -u CC_RUN_LIVE_PROVIDER_TESTS bash "$ROOT_DIR/scripts/agent_verify.sh"
 
 if [[ "$RUN_LIVE_TESTS" == "1" || "$RUN_LIVE_TESTS" == "true" || "$RUN_LIVE_TESTS" == "yes" || "$RUN_LIVE_TESTS" == "on" ]]; then
   echo "==> Running live provider integration checks"
