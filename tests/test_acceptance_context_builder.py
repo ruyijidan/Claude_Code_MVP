@@ -33,6 +33,7 @@ class AcceptanceContextBuilderTests(unittest.TestCase):
         self.assertIn("sprint text", context["current_sprint"])
         self.assertIn("notes text", context["release_notes"])
         self.assertIn("??", context["git_status"])
+        self.assertIn("README.md", context["git_status_paths"])
 
     def test_truncates_large_documents(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -71,3 +72,5 @@ class AcceptanceContextBuilderTests(unittest.TestCase):
 
         self.assertIn("M README.md", context["git_status"])
         self.assertIn("README.md | 10", context["git_diff_stat"])
+        self.assertIn("README.md", context["git_status_paths"])
+        self.assertIn("README.md", context["git_diff_paths"])

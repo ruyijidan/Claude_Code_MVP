@@ -44,6 +44,9 @@ class AgentVerifyScriptTests(unittest.TestCase):
         self.assertIn("CC_ACCEPTANCE_KEEP_ARTIFACTS", content)
         self.assertIn("Keeping acceptance artifacts", content)
         self.assertIn("write_acceptance_git_snapshots", content)
+        self.assertIn("Acceptance mode: fast-only", content)
+        self.assertIn("Acceptance mode: live-provider", content)
+        self.assertIn("Use CC_RUN_LIVE_PROVIDER_TESTS=1 for provider-facing changes", content)
         self.assertIn('status --short', content)
         self.assertIn('diff --stat', content)
 

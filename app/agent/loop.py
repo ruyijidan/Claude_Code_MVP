@@ -74,7 +74,7 @@ class CodingAgentLoop:
         verifier = VerifierAgent(self.spec_loader.load_agent("verifier"), self.adapter)
         critic = CriticAgent(
             self.spec_loader.load_agent("critic"),
-            self.spec_loader.load_rule("surgical-changes"),
+            self.spec_loader.load_rules(),
         )
         router = RouterAgent(self.spec_loader.load_agent("router"))
 

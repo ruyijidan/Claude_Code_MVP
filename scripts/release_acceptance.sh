@@ -81,10 +81,13 @@ PY
 }
 
 echo "==> Running default fast acceptance checks"
+echo "==> Acceptance mode: fast-only"
+echo "==> Use CC_RUN_LIVE_PROVIDER_TESTS=1 for provider-facing changes"
 env -u CC_RUN_LIVE_PROVIDER_TESTS python3 -m unittest discover -s "$ROOT_DIR/tests"
 env -u CC_RUN_LIVE_PROVIDER_TESTS bash "$ROOT_DIR/scripts/agent_verify.sh"
 
 if [[ "$RUN_LIVE_TESTS" == "1" || "$RUN_LIVE_TESTS" == "true" || "$RUN_LIVE_TESTS" == "yes" || "$RUN_LIVE_TESTS" == "on" ]]; then
+  echo "==> Acceptance mode: live-provider"
   echo "==> Running live provider integration checks"
   (
     cd "$ROOT_DIR"
@@ -93,6 +96,7 @@ if [[ "$RUN_LIVE_TESTS" == "1" || "$RUN_LIVE_TESTS" == "true" || "$RUN_LIVE_TEST
 fi
 
 if [[ "$RUN_LONG_TASK" == "1" || "$RUN_LONG_TASK" == "true" || "$RUN_LONG_TASK" == "yes" || "$RUN_LONG_TASK" == "on" ]]; then
+  echo "==> Acceptance mode: long-live-task"
   if [[ -z "$TASK_PROVIDER" ]]; then
     echo "❌ CC_ACCEPTANCE_PROVIDER or CC_LIVE_CLI_PROVIDER is required for the long acceptance task"
     exit 1

@@ -1,10 +1,44 @@
 ---
-last_updated: 2026-04-23
+last_updated: 2026-04-24
 status: active
 owner: core
 ---
 
 # Release Notes / 发布说明
+
+## 2026-04-24
+
+### Permission Guardrails, Context Compression, And Acceptance Tightening / 权限护栏、上下文压缩与验收收口
+
+Included pending change set:
+
+- current working tree, focused on completing the first two-week execution pass across permission boundaries, context shaping, asset-driven behavior, and release guardrails
+
+Highlights:
+
+- added an explicit permission `action` model with stable `allow / confirm / deny` outputs across operation, command, and file-write decisions
+- extended command classification so network-shaped commands such as `curl` and `wget` now require explicit approval by default
+- improved CLI permission visibility with action-oriented summaries, clearer blocked-output details, and structured permission snapshots
+- added shared context compression utilities and reused them in both repo planning context and acceptance context assembly
+- added bounded prompt, path, file-content, and git-summary shaping so context assembly is shorter and more budget-aware
+- made workflow assets shape planning more explicitly through bounded context and clarification steps
+- made rule assets shape critic output more explicitly through structured rule-hit reporting and multi-rule loading
+- extended architecture checks with file-size guardrails for high-risk control-surface modules
+- tightened release acceptance messaging so fast-only and live-provider modes are surfaced more clearly
+- added provider risk categorization in local acceptance reporting for transient environment issues, setup/auth issues, and product-blocking issues
+
+Verification:
+
+- full unit test discovery passed locally: `126 tests OK, 2 skipped`
+- `bash scripts/agent_verify.sh` passed
+- default `bash scripts/release_acceptance.sh` path passed
+
+Impact:
+
+- the harness now exposes permission decisions in a clearer control-plane shape instead of relying on mixed approval booleans alone
+- context assembly is more compact and reusable across local planning and release acceptance flows
+- `specs/` assets now have stronger visible influence on plan construction and critic output
+- structural drift and provider-facing release expectations are easier to catch and interpret
 
 ## 2026-04-23
 

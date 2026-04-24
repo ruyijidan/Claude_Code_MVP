@@ -43,6 +43,7 @@ class PermissionPipelineTests(unittest.TestCase):
         pipeline = PermissionPipeline()
         decision = pipeline.assess("inspect", ExecutionPolicy())
         self.assertTrue(decision.approved)
+        self.assertEqual(decision.action, "allow")
         self.assertEqual(decision.decision, "allow")
         self.assertEqual(decision.risk, "low")
         self.assertEqual(decision.scope, "read_only")
@@ -51,9 +52,11 @@ class PermissionPipelineTests(unittest.TestCase):
         pipeline = PermissionPipeline()
         decision = pipeline.assess("local_loop", ExecutionPolicy())
         self.assertTrue(decision.approved)
-        self.assertEqual(decision.decision, "allow_with_confirmation")
+        self.assertEqual(decision.action, "allow")
+        self.assertEqual(decision.decision, "allow")
         self.assertEqual(decision.risk, "medium")
         self.assertEqual(decision.boundary, "harness_managed_repository")
+        self.assertFalse(decision.requires_confirmation)
 
     def test_delegated_provider_requires_explicit_approval_by_default(self) -> None:
         pipeline = PermissionPipeline()
@@ -64,7 +67,8 @@ class PermissionPipelineTests(unittest.TestCase):
         )
         self.assertFalse(decision.approved)
         self.assertTrue(decision.requires_confirmation)
-        self.assertEqual(decision.decision, "require_confirmation")
+        self.assertEqual(decision.action, "confirm")
+        self.assertEqual(decision.decision, "confirm")
         self.assertEqual(decision.recommended_flag, "--auto-approve")
 
     def test_delegated_provider_is_allowed_in_auto_mode(self) -> None:
@@ -75,6 +79,7 @@ class PermissionPipelineTests(unittest.TestCase):
             provider_info={"provider": "codex_cli", "available": True},
         )
         self.assertTrue(decision.approved)
+        self.assertEqual(decision.action, "allow")
         self.assertEqual(decision.decision, "allow")
         self.assertEqual(decision.risk, "high")
 
@@ -110,14 +115,31 @@ class PermissionPipelineTests(unittest.TestCase):
         decision = pipeline.assess_command(["git", "add", "README.md"], ExecutionPolicy())
         self.assertEqual(decision.category, "git_write")
         self.assertFalse(decision.approved)
-        self.assertEqual(decision.decision, "require_confirmation")
+        self.assertEqual(decision.action, "confirm")
+        self.assertEqual(decision.decision, "confirm")
 
     def test_high_risk_shell_command_is_denied(self) -> None:
         pipeline = PermissionPipeline()
         decision = pipeline.assess_command(["rm", "-rf", "/tmp/example"], ExecutionPolicy())
         self.assertEqual(decision.category, "high_risk_shell")
         self.assertFalse(decision.approved)
+        self.assertEqual(decision.action, "deny")
         self.assertEqual(decision.risk, "critical")
+
+    def test_network_command_requires_confirmation_by_default(self) -> None:
+        pipeline = PermissionPipeline()
+        decision = pipeline.assess_command(["curl", "https://example.com"], ExecutionPolicy())
+        self.assertEqual(decision.category, "network_access")
+        self.assertEqual(decision.action, "confirm")
+        self.assertFalse(decision.approved)
+        self.assertTrue(decision.requires_confirmation)
+
+    def test_network_command_is_allowed_in_auto_mode(self) -> None:
+        pipeline = PermissionPipeline()
+        decision = pipeline.assess_command(["curl", "https://example.com"], ExecutionPolicy(auto_approve=True))
+        self.assertEqual(decision.category, "network_access")
+        self.assertEqual(decision.action, "allow")
+        self.assertTrue(decision.approved)
 
     def test_command_profiles_include_representative_commands(self) -> None:
         pipeline = PermissionPipeline()
@@ -129,6 +151,7 @@ class PermissionPipelineTests(unittest.TestCase):
         self.assertIn("delegated_provider", snapshot)
         self.assertEqual(snapshot["git_status"]["category"], "git_read")
         self.assertEqual(snapshot["dangerous_remove"]["decision"], "deny")
+        self.assertEqual(snapshot["git_add"]["action"], "confirm")
 
     def test_repo_local_file_write_is_allowed(self) -> None:
         pipeline = PermissionPipeline()
@@ -156,7 +179,8 @@ class PermissionPipelineTests(unittest.TestCase):
             decision = pipeline.assess_file_write(repo_root / "tmp" / "scratch.txt", repo_root)
         self.assertFalse(decision.approved)
         self.assertTrue(decision.requires_confirmation)
-        self.assertEqual(decision.decision, "require_confirmation")
+        self.assertEqual(decision.action, "confirm")
+        self.assertEqual(decision.decision, "confirm")
         self.assertEqual(decision.scope, "repo_workspace_unclassified")
         self.assertEqual(decision.boundary, "repository_unclassified_directory")
 

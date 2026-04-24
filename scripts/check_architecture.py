@@ -27,6 +27,27 @@ RULES = [
     },
 ]
 
+SIZE_RULES = [
+    {
+        "path": ROOT / "app" / "cli" / "main.py",
+        "max_lines": 380,
+        "message": (
+            "❌ app/cli/main.py is too large for the CLI control surface.\n"
+            "✅ FIX: move reusable behavior into app/agent, app/core, or app/runtime helpers.\n"
+            "📖 See: docs/architecture/boundaries.md"
+        ),
+    },
+    {
+        "path": ROOT / "app" / "acceptance" / "report_runner.py",
+        "max_lines": 220,
+        "message": (
+            "❌ app/acceptance/report_runner.py is growing beyond a review-friendly size.\n"
+            "✅ FIX: split prompt building, retry policy, or result shaping into helpers.\n"
+            "📖 See: docs/architecture/boundaries.md"
+        ),
+    },
+]
+
 
 def iter_python_files(directory: Path) -> list[Path]:
     return [
@@ -36,21 +57,41 @@ def iter_python_files(directory: Path) -> list[Path]:
     ]
 
 
-def main() -> int:
+def find_import_violations(root: Path) -> list[str]:
     violations: list[str] = []
-
     for rule in RULES:
-        for file_path in iter_python_files(rule["source"]):
+        source = rule["source"]
+        for file_path in iter_python_files(source):
             text = file_path.read_text(encoding="utf-8")
             for forbidden in rule["forbidden"]:
                 if f"from {forbidden} " in text or f"import {forbidden}" in text:
-                    violations.append(f"{file_path.relative_to(ROOT)}\n{rule['message']}")
+                    violations.append(f"{file_path.relative_to(root)}\n{rule['message']}")
+    return violations
+
+
+def find_size_violations(root: Path) -> list[str]:
+    violations: list[str] = []
+    for rule in SIZE_RULES:
+        file_path = rule["path"]
+        if not file_path.exists():
+            continue
+        with file_path.open("r", encoding="utf-8") as handle:
+            line_count = sum(1 for _ in handle)
+        if line_count > rule["max_lines"]:
+            violations.append(
+                f"{file_path.relative_to(root)} ({line_count} lines > {rule['max_lines']})\n{rule['message']}"
+            )
+    return violations
+
+
+def main() -> int:
+    violations = find_import_violations(ROOT) + find_size_violations(ROOT)
 
     if violations:
         print("\n\n".join(violations))
         return 1
 
-    print("✅ Architecture boundary checks passed")
+    print("✅ Architecture boundary and size checks passed")
     return 0
 
 

@@ -10,6 +10,7 @@ from unittest.mock import patch
 from app.acceptance.report_runner import (
     _is_retryable_acceptance_error,
     build_acceptance_prompt,
+    classify_provider_risks,
     run_acceptance_report,
 )
 
@@ -30,8 +31,11 @@ class AcceptanceReportRunnerTests(unittest.TestCase):
         self.assertIn("README_SUMMARY", prompt)
         self.assertIn("ARCHITECTURE_SUMMARY", prompt)
         self.assertIn("GIT_DIFF_STAT_SUMMARY", prompt)
+        self.assertIn("GIT_STATUS_PATHS", prompt)
+        self.assertIn("GIT_DIFF_PATHS", prompt)
         self.assertIn("keep system_summary concise", prompt)
         self.assertIn("treat GIT_STATUS_SUMMARY and GIT_DIFF_STAT_SUMMARY as authoritative", prompt)
+        self.assertIn("transient environment issues", prompt)
         self.assertIn("do not treat missing .git itself as a release risk", prompt)
 
     def test_writes_markdown_and_json_reports(self) -> None:
@@ -62,6 +66,7 @@ class AcceptanceReportRunnerTests(unittest.TestCase):
                         result = run_acceptance_report(repo_path, "glm5", output_dir)
 
             self.assertEqual(result["acceptance_status"], "READY")
+            self.assertEqual(result["provider_risk_categories"]["product_blocking"], ["Risk one"])
             self.assertTrue((output_dir / "final_acceptance_report.json").exists())
             self.assertTrue((output_dir / "final_acceptance_report.md").exists())
 
@@ -106,6 +111,19 @@ class AcceptanceReportRunnerTests(unittest.TestCase):
 
             self.assertEqual(result["acceptance_status"], "READY")
             self.assertEqual(build_client.return_value.generate.call_count, 2)
+
+    def test_classify_provider_risks_groups_common_failure_types(self) -> None:
+        categories = classify_provider_risks(
+            [
+                "504 timeout from gateway",
+                "API key unauthorized",
+                "Acceptance artifact missing required field",
+            ]
+        )
+
+        self.assertEqual(categories["transient_environment"], ["504 timeout from gateway"])
+        self.assertEqual(categories["setup_or_auth"], ["API key unauthorized"])
+        self.assertEqual(categories["product_blocking"], ["Acceptance artifact missing required field"])
 
     def test_rejects_invalid_acceptance_status(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:

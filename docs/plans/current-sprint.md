@@ -1,5 +1,5 @@
 ---
-last_updated: 2026-04-23
+last_updated: 2026-04-24
 status: active
 owner: core
 ---
@@ -12,6 +12,8 @@ Move Claude Code MVP from a runnable coding loop into a clearer harness-oriented
 ## Related Plans / 相关计划
 
 - `docs/plans/harness-hardening-pr-plan.md`: first implementation wave for completion contracts, verification gates, scoped context selection, and repair policy hardening
+- `docs/plans/two-week-execution-plan.md`: near-term execution breakdown for permission guardrails, context compression, asset-driven behavior, structural checks, and acceptance tightening
+- `docs/plans/two-week-pr-breakdown.md`: review-friendly PR grouping for the current two-week execution pass
 
 ## Status Snapshot / 状态快照
 
@@ -87,17 +89,21 @@ It is now:
 - transient `glm5` gateway timeout failures can now be retried automatically during local acceptance reporting
 - release acceptance fast checks now unset live-test flags before unit discovery so 600-second preflight remains deterministic
 - delegated live acceptance can now create required `.claude-code/acceptance` artifacts from a fresh isolated workspace
+- operation, command, and file-write permissions now expose a stable `allow / confirm / deny` action model
+- network-shaped commands now require explicit approval by default unless the active policy skips confirmation
+- repo planning context and acceptance context now reuse shared compression helpers for prompt, path, file, and git shaping
+- workflow assets now add explicit context and clarification steps to generated plans
+- rule assets now produce structured critic rule-hit reporting and can be loaded as a set instead of a single hard-coded rule
+- architecture checks now include file-size guardrails for high-risk control-surface modules
+- release acceptance reporting now classifies provider risks into transient environment, setup/auth, and product-blocking buckets
 
 ### In Progress / 进行中
 
-- Continue turning workflow, template, and rule assets into behavior-shaping harness inputs
 - Improve application legibility foundations so the harness can inspect more than repository files
 - Keep final acceptance expectations explicit for live provider paths instead of relying only on mocked tests
 
 ### Not Started / 未开始
 
-- Add context compression and token-budget-aware context shaping
-- Add stronger permission and safety control layers with clearer allow / deny boundaries
 - Add a more unified tool registry and schema abstraction layer
 - Add stronger memory and retrieval strategy beyond replay storage
 - Add richer workflow execution behavior beyond simple task-to-workflow mapping
@@ -113,15 +119,48 @@ It is now:
   - active second-wave asset-shaping work
   - longer-term roadmap items
 
+## Two-Week Focus / 未来两周重点
+
+The next two weeks should consolidate the current transition from first-wave hardening into second-wave behavior shaping.
+
+Priority order:
+
+- first, make permission and safety boundaries more explicit
+- second, make context shaping budget-aware and more compressive
+- third, let `specs/` assets drive more runtime behavior instead of staying mostly descriptive
+- fourth, reinforce structural guardrails so architecture drift is caught early
+- fifth, tighten the release acceptance path into a clearer definition of done
+
+### Week 1 / 第一周
+
+- Land a first `allow / confirm / deny` permission model for file writes, command execution, git-facing actions, and network-shaped operations
+- Return clearer structured CLI outputs for permission and safety decisions, with matching tests and user-facing failure messages
+- Add first-pass context compression with budget-aware selection for large files, git diffs, test outputs, and candidate file lists
+- Reuse the same compression foundations in both planning and acceptance flows
+- Extend architecture checks with stronger import and file-size guardrails so risky growth is surfaced earlier in CI
+
+### Week 2 / 第二周
+
+- Deepen workflow wiring so `specs/workflows` influences clarification fields, planning shape, and verification gate selection
+- Deepen rule wiring so `specs/rules` can more explicitly shape critic and verifier judgments
+- Reduce hard-coded task-to-behavior branching where reusable workflow assets can carry the policy instead
+- Tighten release acceptance expectations into a clearer standard for ordinary changes versus provider-facing changes
+- Normalize acceptance artifact naming, output paths, and failure categorization so release outcomes are easier to interpret
+
+### Definition Of Progress / 进展判定
+
+- permission and safety checks should be clearer, more structured, and easier to test
+- context assembly should become shorter, more stable, and more budget-aware
+- at least part of the `specs/` layer should demonstrably change runtime behavior instead of only documenting intended behavior
+- release acceptance should more clearly signal when a change is complete and when a live provider check is required
+
 ## Next / 下一步
 
-- Add application legibility foundations
-- Add stronger import and file-size guardrails
-- Add context compression foundations
-- Add thicker permission and safety guardrails
 - Continue turning workflow, template, and rule assets into behavior-shaping harness inputs
+- Continue strengthening import and file-size guardrails
+- Add application legibility foundations
 - Keep live provider acceptance as an explicit release check for provider-facing changes
-- continue hardening unattended live acceptance reliability for API-backed providers without hiding real blocking failures
+- Continue hardening unattended live acceptance reliability for API-backed providers without hiding real blocking failures
 
 ## Acceptance Notes / 验收备注
 

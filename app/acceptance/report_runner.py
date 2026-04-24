@@ -23,7 +23,9 @@ def build_acceptance_prompt(context: dict[str, str]) -> str:
         f"CURRENT_SPRINT_SUMMARY:\n{context['current_sprint']}\n\n"
         f"RELEASE_NOTES_SUMMARY:\n{context['release_notes']}\n\n"
         f"GIT_STATUS_SUMMARY:\n{context['git_status']}\n\n"
+        f"GIT_STATUS_PATHS:\n{context.get('git_status_paths', '')}\n\n"
         f"GIT_DIFF_STAT_SUMMARY:\n{context['git_diff_stat']}\n\n"
+        f"GIT_DIFF_PATHS:\n{context.get('git_diff_paths', '')}\n\n"
         "Return valid JSON only.\n\n"
         "Required keys:\n"
         "- system_summary\n"
@@ -33,6 +35,7 @@ def build_acceptance_prompt(context: dict[str, str]) -> str:
         "- evidence\n\n"
         "Rules:\n"
         "- treat GIT_STATUS_SUMMARY and GIT_DIFF_STAT_SUMMARY as authoritative repository-state inputs\n"
+        "- use provider_risks to distinguish transient environment issues, setup/auth issues, and product-blocking issues when possible\n"
         "- the acceptance workspace may omit .git metadata intentionally; if git summaries are present, do not treat missing .git itself as a release risk\n"
         "- acceptance_status must be READY, NEEDS_REVIEW, or BLOCKED\n"
         "- provider_risks must be a list of concise strings\n"
@@ -97,6 +100,24 @@ def _generate_with_retry(client, prompt: str) -> str:
     raise RuntimeError("acceptance generation failed without a specific error")
 
 
+def classify_provider_risks(provider_risks: list[str]) -> dict[str, list[str]]:
+    categories = {
+        "transient_environment": [],
+        "setup_or_auth": [],
+        "product_blocking": [],
+    }
+    for item in provider_risks:
+        normalized = item.lower()
+        if any(token in normalized for token in ("timeout", "time-out", "timed out", "temporary", "unavailable", "rate limit", "gateway")):
+            categories["transient_environment"].append(item)
+            continue
+        if any(token in normalized for token in ("auth", "unauthorized", "forbidden", "credential", "token", "api key", "setup", "misconfigured")):
+            categories["setup_or_auth"].append(item)
+            continue
+        categories["product_blocking"].append(item)
+    return categories
+
+
 def run_acceptance_report(repo_path: Path, model_provider: str, output_dir: Path, auth_source: str = "auto") -> dict:
     selected_provider, excluded_prefixes = resolve_auth_loading_policy(repo_path, model_provider, auth_source)
     load_project_env(repo_path, exclude_prefixes=excluded_prefixes)
@@ -119,6 +140,7 @@ def run_acceptance_report(repo_path: Path, model_provider: str, output_dir: Path
         "report_json_path": str(json_path),
         "report_markdown_path": str(markdown_path),
         "acceptance_status": report["acceptance_status"],
+        "provider_risk_categories": classify_provider_risks(report["provider_risks"]),
     }
 
 

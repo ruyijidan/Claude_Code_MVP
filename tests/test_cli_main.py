@@ -224,6 +224,7 @@ class CliMainTests(unittest.TestCase):
             self.assertIn("operations", output)
             self.assertIn("command_profiles", output)
             self.assertIn("write_profiles", output)
+            self.assertIn("summary", output)
             self.assertIn("local_loop", output)
             self.assertIn("delegated_provider", output)
             self.assertIn("dangerous_remove", output)
@@ -231,6 +232,7 @@ class CliMainTests(unittest.TestCase):
             self.assertIn("runtime_trajectory", output)
             self.assertIn("runtime_log_file", output)
             self.assertIn("unclassified_tmp_file", output)
+            self.assertIn("\"action\": \"confirm\"", output)
 
     def test_cli_blocks_delegated_provider_without_explicit_approval(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -251,6 +253,7 @@ class CliMainTests(unittest.TestCase):
             output = stream.getvalue()
             self.assertEqual(exit_code, 1)
             self.assertIn("permission_denied", output)
+            self.assertIn("\"action\": \"confirm\"", output)
 
     def test_cli_blocks_delegated_provider_when_provider_is_unavailable(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:

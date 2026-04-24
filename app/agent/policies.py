@@ -29,6 +29,7 @@ class PermissionDecision:
     operation: str
     policy_mode: str
     decision: str
+    action: str
     risk: str
     approved: bool
     requires_confirmation: bool
@@ -48,6 +49,7 @@ class CommandPermissionDecision:
     category: str
     policy_mode: str
     decision: str
+    action: str
     risk: str
     approved: bool
     requires_confirmation: bool
@@ -65,6 +67,7 @@ class FileWriteDecision:
     repo_root: str
     policy_mode: str
     decision: str
+    action: str
     risk: str
     approved: bool
     requires_confirmation: bool
@@ -82,6 +85,7 @@ class PermissionPipeline:
     READ_ONLY_GIT_COMMANDS = {"status", "diff", "branch", "log", "show"}
     MUTATING_GIT_COMMANDS = {"add", "commit", "reset", "checkout", "clean", "restore"}
     HIGH_RISK_COMMANDS = {"rm", "sudo", "chmod", "chown", "dd", "mkfs", "fdisk", "shutdown", "reboot", "killall"}
+    NETWORK_COMMANDS = {"curl", "wget", "nc", "netcat"}
 
     def __init__(self, permission_rules: PermissionRulesSpec | None = None) -> None:
         self.permission_rules = permission_rules or PermissionRulesSpec(
@@ -101,6 +105,7 @@ class PermissionPipeline:
                 operation=operation,
                 policy_mode=policy.mode,
                 decision="allow",
+                action="allow",
                 risk="low",
                 approved=True,
                 requires_confirmation=False,
@@ -113,10 +118,11 @@ class PermissionPipeline:
             return PermissionDecision(
                 operation=operation,
                 policy_mode=policy.mode,
-                decision="allow_with_confirmation" if policy.requires_confirmation() else "allow",
+                decision="allow",
+                action="allow",
                 risk="medium",
                 approved=True,
-                requires_confirmation=policy.requires_confirmation(),
+                requires_confirmation=False,
                 scope="workspace_write",
                 boundary="harness_managed_repository",
                 reason="Local loop edits are allowed inside the harness-managed repository workflow.",
@@ -129,6 +135,7 @@ class PermissionPipeline:
                     operation=operation,
                     policy_mode=policy.mode,
                     decision="deny",
+                    action="deny",
                     risk="high",
                     approved=False,
                     requires_confirmation=False,
@@ -142,6 +149,7 @@ class PermissionPipeline:
                     operation=operation,
                     policy_mode=policy.mode,
                     decision="allow",
+                    action="allow",
                     risk="critical",
                     approved=True,
                     requires_confirmation=False,
@@ -158,6 +166,7 @@ class PermissionPipeline:
                     operation=operation,
                     policy_mode=policy.mode,
                     decision="allow",
+                    action="allow",
                     risk="high",
                     approved=True,
                     requires_confirmation=False,
@@ -169,7 +178,8 @@ class PermissionPipeline:
             return PermissionDecision(
                 operation=operation,
                 policy_mode=policy.mode,
-                decision="require_confirmation",
+                decision="confirm",
+                action="confirm",
                 risk="high",
                 approved=False,
                 requires_confirmation=True,
@@ -186,6 +196,7 @@ class PermissionPipeline:
             operation=operation,
             policy_mode=policy.mode,
             decision="deny",
+            action="deny",
             risk="unknown",
             approved=False,
             requires_confirmation=True,
@@ -212,6 +223,7 @@ class PermissionPipeline:
                 category="unknown",
                 policy_mode=policy.mode,
                 decision="deny",
+                action="deny",
                 risk="unknown",
                 approved=False,
                 requires_confirmation=True,
@@ -231,6 +243,7 @@ class PermissionPipeline:
                 category="git_read",
                 policy_mode=policy.mode,
                 decision="allow",
+                action="allow",
                 risk="low",
                 approved=True,
                 requires_confirmation=False,
@@ -245,7 +258,8 @@ class PermissionPipeline:
                 command_text=command_text,
                 category="git_write",
                 policy_mode=policy.mode,
-                decision="require_confirmation",
+                decision="confirm",
+                action="confirm",
                 risk="high",
                 approved=False,
                 requires_confirmation=True,
@@ -261,6 +275,7 @@ class PermissionPipeline:
                 category="test_runner",
                 policy_mode=policy.mode,
                 decision="allow",
+                action="allow",
                 risk="medium",
                 approved=True,
                 requires_confirmation=False,
@@ -275,10 +290,11 @@ class PermissionPipeline:
                 command_text=command_text,
                 category="repo_script",
                 policy_mode=policy.mode,
-                decision="allow_with_confirmation" if policy.requires_confirmation() else "allow",
+                decision="allow",
+                action="allow",
                 risk="medium",
                 approved=True,
-                requires_confirmation=policy.requires_confirmation(),
+                requires_confirmation=False,
                 scope="workspace_exec",
                 boundary="repository_script_execution",
                 reason="Repository-local scripts are allowed, but they should stay visible inside the harness workflow.",
@@ -292,12 +308,44 @@ class PermissionPipeline:
                 category="external_provider_cli",
                 policy_mode=policy.mode,
                 decision=delegated.decision,
+                action=delegated.action,
                 risk=delegated.risk,
                 approved=delegated.approved,
                 requires_confirmation=delegated.requires_confirmation,
                 scope=delegated.scope,
                 boundary=delegated.boundary,
                 reason=delegated.reason,
+            )
+
+        if binary_name in self.NETWORK_COMMANDS:
+            if policy.requires_confirmation():
+                return CommandPermissionDecision(
+                    command=command,
+                    command_text=command_text,
+                    category="network_access",
+                    policy_mode=policy.mode,
+                    decision="confirm",
+                    action="confirm",
+                    risk="high",
+                    approved=False,
+                    requires_confirmation=True,
+                    scope="network_access",
+                    boundary="network_access_requires_explicit_approval",
+                    reason="Network-shaped commands require explicit approval before reaching external systems.",
+                )
+            return CommandPermissionDecision(
+                command=command,
+                command_text=command_text,
+                category="network_access",
+                policy_mode=policy.mode,
+                decision="allow",
+                action="allow",
+                risk="high",
+                approved=True,
+                requires_confirmation=False,
+                scope="network_access",
+                boundary="network_access_auto_approved",
+                reason="Network-shaped commands are allowed only because the active policy skips confirmation.",
             )
 
         if binary_name in self.HIGH_RISK_COMMANDS:
@@ -307,6 +355,7 @@ class PermissionPipeline:
                 category="high_risk_shell",
                 policy_mode=policy.mode,
                 decision="deny",
+                action="deny",
                 risk="critical",
                 approved=False,
                 requires_confirmation=True,
@@ -320,7 +369,8 @@ class PermissionPipeline:
             command_text=command_text,
             category="unknown",
             policy_mode=policy.mode,
-            decision="require_confirmation",
+            decision="confirm",
+            action="confirm",
             risk="medium",
             approved=False,
             requires_confirmation=True,
@@ -362,6 +412,7 @@ class PermissionPipeline:
                 repo_root=str(resolved_repo_root),
                 policy_mode=active_policy.mode,
                 decision="deny",
+                action="deny",
                 risk="critical",
                 approved=False,
                 requires_confirmation=True,
@@ -376,6 +427,7 @@ class PermissionPipeline:
                 repo_root=str(resolved_repo_root),
                 policy_mode=active_policy.mode,
                 decision="deny",
+                action="deny",
                 risk="high",
                 approved=False,
                 requires_confirmation=True,
@@ -393,6 +445,7 @@ class PermissionPipeline:
                 repo_root=str(resolved_repo_root),
                 policy_mode=active_policy.mode,
                 decision="deny",
+                action="deny",
                 risk="critical",
                 approved=False,
                 requires_confirmation=True,
@@ -407,6 +460,7 @@ class PermissionPipeline:
                 repo_root=str(resolved_repo_root),
                 policy_mode=active_policy.mode,
                 decision="allow",
+                action="allow",
                 risk="low",
                 approved=True,
                 requires_confirmation=False,
@@ -421,6 +475,7 @@ class PermissionPipeline:
                 repo_root=str(resolved_repo_root),
                 policy_mode=active_policy.mode,
                 decision="allow",
+                action="allow",
                 risk="medium",
                 approved=True,
                 requires_confirmation=False,
@@ -434,7 +489,8 @@ class PermissionPipeline:
                 path=str(resolved_path),
                 repo_root=str(resolved_repo_root),
                 policy_mode=active_policy.mode,
-                decision="require_confirmation",
+                decision="confirm",
+                action="confirm",
                 risk="high",
                 approved=False,
                 requires_confirmation=True,
@@ -448,6 +504,7 @@ class PermissionPipeline:
             repo_root=str(resolved_repo_root),
             policy_mode=active_policy.mode,
             decision="allow",
+            action="allow",
             risk="medium",
             approved=True,
             requires_confirmation=False,

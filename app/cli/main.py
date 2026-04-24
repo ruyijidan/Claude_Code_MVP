@@ -14,6 +14,14 @@ from app.runtime.adapter_factory import build_runtime_adapter
 from app.runtime.git_tool import GitTool
 
 
+def _permission_summary(decision: dict) -> str:
+    action = decision.get("action", decision.get("decision", "unknown"))
+    risk = decision.get("risk", "unknown")
+    boundary = decision.get("boundary", "unknown")
+    reason = decision.get("reason", "")
+    return f"action={action} risk={risk} boundary={boundary} reason={reason}"
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="cc", description="Claude Code MVP CLI")
     parser.add_argument("prompt", nargs="?", default="", help='Developer request, for example: cc "fix failing tests"')
@@ -87,18 +95,36 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("a prompt is required unless a git inspection flag is used")
 
     if args.show_permissions:
+        operations = permission_pipeline.inspect_all(policy, provider_info=provider_info)
+        command_profiles = permission_pipeline.inspect_command_profiles(policy, provider_info=provider_info)
+        write_profiles = permission_pipeline.inspect_write_profiles(repo_path, policy)
         permissions_snapshot = {
             "policy_mode": policy.mode,
             "provider": provider_info,
-            "operations": permission_pipeline.inspect_all(policy, provider_info=provider_info),
-            "command_profiles": permission_pipeline.inspect_command_profiles(policy, provider_info=provider_info),
-            "write_profiles": permission_pipeline.inspect_write_profiles(repo_path, policy),
+            "operations": operations,
+            "command_profiles": command_profiles,
+            "write_profiles": write_profiles,
+            "summary": {
+                "operations": {name: _permission_summary(decision) for name, decision in operations.items()},
+                "command_profiles": {name: _permission_summary(decision) for name, decision in command_profiles.items()},
+                "write_profiles": {name: _permission_summary(decision) for name, decision in write_profiles.items()},
+            },
         }
         if args.json:
             print(json.dumps({"permissions": permissions_snapshot}, indent=2))
         else:
             print("permissions:")
-            print(json.dumps(permissions_snapshot, indent=2))
+            print(f"policy_mode: {policy.mode}")
+            print(f"provider: {provider_info.get('provider')} available={provider_info.get('available')}")
+            print("operations:")
+            for name, decision in operations.items():
+                print(f"- {name}: {_permission_summary(decision)}")
+            print("command profiles:")
+            for name, decision in command_profiles.items():
+                print(f"- {name}: {_permission_summary(decision)}")
+            print("write profiles:")
+            for name, decision in write_profiles.items():
+                print(f"- {name}: {_permission_summary(decision)}")
 
     if args.show_status:
         status = git_tool.status(repo_path)
@@ -205,6 +231,9 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"provider: {adapter.provider_name}")
                 print("mode: delegated_provider")
                 print("status: blocked")
+                print(f"action: {permission.action}")
+                print(f"risk: {permission.risk}")
+                print(f"boundary: {permission.boundary}")
                 print(permission.reason)
                 if permission.recommended_flag:
                     print(f"hint: retry with {permission.recommended_flag} if you trust this environment")
@@ -238,6 +267,7 @@ def main(argv: list[str] | None = None) -> int:
         else:
             print(f"provider: {adapter.provider_name}")
             print("mode: delegated_provider")
+            print(f"action: {permission.action}")
             print(f"risk: {permission.risk}")
             print(f"available: {provider_info['available']}")
             print(f"returncode: {code}")
@@ -295,6 +325,7 @@ def main(argv: list[str] | None = None) -> int:
     else:
         print(f"provider: {result['runtime_provider']}")
         print("mode: local_loop")
+        print(f"action: {permission.action}")
         print(f"risk: {permission.risk}")
         print(f"task: {result['task_spec'].name}")
         print(f"status: {result['test_result']}")

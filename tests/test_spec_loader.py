@@ -32,6 +32,16 @@ class SpecLoaderTests(unittest.TestCase):
         self.assertIn("smallest relevant change", rule.intent)
         self.assertIn("## Goal", template)
 
+    def test_load_rules_returns_non_permission_rule_assets(self) -> None:
+        root = Path(__file__).resolve().parents[1] / "specs"
+        loader = SpecLoader(root)
+
+        rules = loader.load_rules()
+
+        self.assertTrue(rules)
+        self.assertTrue(all(rule.name != "permission_rules_v1" for rule in rules))
+        self.assertIn("surgical_changes", {rule.name for rule in rules})
+
     def test_load_additional_workflows(self) -> None:
         root = Path(__file__).resolve().parents[1] / "specs"
         loader = SpecLoader(root)

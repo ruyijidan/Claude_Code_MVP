@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
+from app.core.context_compressor import ContextBudget
+
 
 @dataclass(slots=True)
 class ScopedContext:
@@ -24,6 +26,9 @@ class ContextSelector:
         "ARCHITECTURE.md",
         "docs/architecture/boundaries.md",
     ]
+
+    def __init__(self, budget: ContextBudget | None = None) -> None:
+        self.budget = budget or ContextBudget()
 
     def select(self, repo_path: Path, prompt: str, git_summary: dict, candidate_files: list[str]) -> ScopedContext:
         prompt_tokens = self._tokenize(prompt)
@@ -53,7 +58,7 @@ class ContextSelector:
             if any(token in normalized for token in prompt_tokens):
                 matched.append(path)
         selected = matched or fallback
-        return selected[:8]
+        return selected[: self.budget.max_relevant_files]
 
     def _select_test_targets(self, candidate_files: list[str], prompt_tokens: set[str]) -> list[str]:
         matched: list[str] = []
@@ -62,7 +67,7 @@ class ContextSelector:
             normalized = path.lower()
             if any(token in normalized for token in prompt_tokens):
                 matched.append(path)
-        return (matched or tests)[:6]
+        return (matched or tests)[: self.budget.max_test_targets]
 
     def _is_test_file(self, path: str) -> bool:
         return path.startswith("tests/") or "/tests/" in path or path.rsplit("/", maxsplit=1)[-1].startswith("test_")

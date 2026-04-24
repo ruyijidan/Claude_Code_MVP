@@ -27,12 +27,35 @@ class LightweightPlanner:
     def build_plan(self, prompt: str, context: dict, task_type: str, workflow: WorkflowSpec | None = None) -> list[dict]:
         if workflow is not None:
             plan = []
+            if workflow.required_context:
+                context_summary = ", ".join(workflow.required_context[:4])
+                plan.append(
+                    {
+                        "id": "workflow_context",
+                        "description": f"assemble bounded context for workflow inputs: {context_summary}",
+                        "agent": "coding_loop",
+                        "required_context": list(workflow.required_context),
+                        "context_budget": context.get("context_budget", {}),
+                    }
+                )
+            if workflow.clarification_fields:
+                clarification_summary = ", ".join(workflow.clarification_fields)
+                plan.append(
+                    {
+                        "id": "workflow_clarification",
+                        "description": f"respect workflow clarification fields: {clarification_summary}",
+                        "agent": "coding_loop",
+                        "clarification_fields": list(workflow.clarification_fields),
+                    }
+                )
             for index, step in enumerate(workflow.steps, start=1):
                 plan.append(
                     {
                         "id": f"workflow_step_{index}",
                         "description": step,
                         "agent": "coding_loop",
+                        "workflow": workflow.name,
+                        "verification_targets": list(workflow.verification),
                     }
                 )
             return plan

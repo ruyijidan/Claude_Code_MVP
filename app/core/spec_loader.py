@@ -31,6 +31,14 @@ class SpecLoader:
         data = self._load_json_document(self.spec_root / "rules" / f"{name}.yaml")
         return RuleSpec(**data)
 
+    def load_rules(self, *, exclude_permission_rules: bool = True) -> list[RuleSpec]:
+        rules: list[RuleSpec] = []
+        for path in sorted((self.spec_root / "rules").glob("*.yaml")):
+            if exclude_permission_rules and path.name == "permission-rules.yaml":
+                continue
+            rules.append(RuleSpec(**self._load_json_document(path)))
+        return rules
+
     def load_permission_rules(self, name: str = "permission-rules") -> PermissionRulesSpec:
         data = self._load_json_document(self.spec_root / "rules" / f"{name}.yaml")
         return PermissionRulesSpec(**data)

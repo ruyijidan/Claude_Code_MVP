@@ -3,9 +3,12 @@ from __future__ import annotations
 import subprocess
 from pathlib import Path
 
+from app.core.context_compressor import summarize_paths, summarize_text
+
 
 MAX_DOC_CHARS = 2400
 MAX_GIT_CHARS = 1200
+MAX_GIT_FILES = 12
 GIT_STATUS_SNAPSHOT_PATH = Path(".claude-code/acceptance/context/git_status.txt")
 GIT_DIFF_STAT_SNAPSHOT_PATH = Path(".claude-code/acceptance/context/git_diff_stat.txt")
 
@@ -35,16 +38,21 @@ def _load_git_snapshot(repo_path: Path, relative_path: Path) -> str:
         return ""
     return snapshot_path.read_text(encoding="utf-8").strip()
 
-
-def _summarize_text(text: str, *, max_chars: int) -> str:
-    normalized = text.strip()
-    if len(normalized) <= max_chars:
-        return normalized
-    head_budget = max_chars // 2
-    tail_budget = max_chars - head_budget - len("\n...\n")
-    head = normalized[:head_budget].rstrip()
-    tail = normalized[-tail_budget:].lstrip()
-    return f"{head}\n...\n{tail}"
+def _extract_changed_paths(text: str) -> list[str]:
+    paths: list[str] = []
+    for line in text.splitlines():
+        cleaned = line.strip()
+        if not cleaned:
+            continue
+        if "|" in cleaned:
+            paths.append(cleaned.split("|", maxsplit=1)[0].strip())
+            continue
+        if cleaned.startswith("?? "):
+            paths.append(cleaned[3:].strip())
+            continue
+        if len(cleaned) > 2 and cleaned[1] == " " and cleaned[0] in {"M", "A", "D", "R", "C", "U"}:
+            paths.append(cleaned[2:].strip())
+    return paths
 
 
 def build_acceptance_context(repo_path: Path) -> dict[str, str]:
@@ -56,20 +64,30 @@ def build_acceptance_context(repo_path: Path) -> dict[str, str]:
         git_diff_stat = _load_git_snapshot(repo_path, GIT_DIFF_STAT_SNAPSHOT_PATH) or git_diff_stat
 
     return {
-        "readme": _summarize_text(_read_optional(repo_path / "README.md"), max_chars=MAX_DOC_CHARS),
-        "architecture": _summarize_text(_read_optional(repo_path / "ARCHITECTURE.md"), max_chars=MAX_DOC_CHARS),
-        "testing_conventions": _summarize_text(
+        "readme": summarize_text(_read_optional(repo_path / "README.md"), max_chars=MAX_DOC_CHARS),
+        "architecture": summarize_text(_read_optional(repo_path / "ARCHITECTURE.md"), max_chars=MAX_DOC_CHARS),
+        "testing_conventions": summarize_text(
             _read_optional(repo_path / "docs" / "conventions" / "testing.md"),
             max_chars=MAX_DOC_CHARS,
         ),
-        "current_sprint": _summarize_text(
+        "current_sprint": summarize_text(
             _read_optional(repo_path / "docs" / "plans" / "current-sprint.md"),
             max_chars=MAX_DOC_CHARS,
         ),
-        "release_notes": _summarize_text(
+        "release_notes": summarize_text(
             _read_optional(repo_path / "docs" / "plans" / "release-notes.md"),
             max_chars=MAX_DOC_CHARS,
         ),
-        "git_status": _summarize_text(git_status, max_chars=MAX_GIT_CHARS),
-        "git_diff_stat": _summarize_text(git_diff_stat, max_chars=MAX_GIT_CHARS),
+        "git_status": summarize_text(git_status, max_chars=MAX_GIT_CHARS),
+        "git_diff_stat": summarize_text(git_diff_stat, max_chars=MAX_GIT_CHARS),
+        "git_status_paths": summarize_paths(
+            _extract_changed_paths(git_status),
+            max_items=MAX_GIT_FILES,
+            max_chars=MAX_GIT_CHARS,
+        ),
+        "git_diff_paths": summarize_paths(
+            _extract_changed_paths(git_diff_stat),
+            max_items=MAX_GIT_FILES,
+            max_chars=MAX_GIT_CHARS,
+        ),
     }
