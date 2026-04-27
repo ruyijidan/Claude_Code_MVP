@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Starforge Relay</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Long-Task Rerun Artifact</p>
+        <h1>Starforge Relay</h1>
+      </div>
+      <button id="muteButton" class="icon-button" type="button" aria-label="Toggle sound" aria-keyshortcuts="M">Sound: On</button>
+    </header>
+
+    <main class="game-layout">
+      <section class="stage-card">
+        <canvas id="gameCanvas" width="1600" height="900" aria-label="Starforge Relay game arena"></canvas>
+
+        <div id="startScreen" class="overlay visible">
+          <div class="panel hero-panel">
+            <p class="eyebrow">Arcade Strategy Courier</p>
+            <h2>Reignite The Relay</h2>
+            <p class="lede">
+              Drift through a collapsing star-yard, harvest luminous cells, and
+              deliver enough charge to relight each sector before the swarm closes in.
+            </p>
+
+            <div class="feature-grid">
+              <article>
+                <span class="feature-kicker">Run Loop</span>
+                <strong>5 escalating sectors</strong>
+                <p>Each sector raises the charge target, spawn pressure, and visual intensity.</p>
+              </article>
+              <article>
+                <span class="feature-kicker">Progression</span>
+                <strong>Upgrade draft</strong>
+                <p>Pick permanent upgrades between sectors to shape speed, cargo, pulse, and survival.</p>
+              </article>
+              <article>
+                <span class="feature-kicker">Moment-to-Moment</span>
+                <strong>Courier + crowd control</strong>
+                <p>Bank cargo fast, chain deliveries, and use pulse bursts to peel enemies away.</p>
+              </article>
+            </div>
+
+            <div class="control-strip">
+              <span><kbd>WASD</kbd> / <kbd>Arrows</kbd> move</span>
+              <span><kbd>Space</kbd> pulse</span>
+              <span><kbd>P</kbd> pause</span>
+              <span><kbd>M</kbd> sound</span>
+            </div>
+
+            <button id="startButton" class="primary-button" type="button">Launch Relay Run</button>
+          </div>
+        </div>
+
+        <div id="pauseOverlay" class="overlay">
+          <div class="panel compact-panel">
+            <p class="eyebrow">Run Paused</p>
+            <h2>Systems Holding</h2>
+            <p>Press <kbd>P</kbd>, <kbd>Esc</kbd>, or <kbd>Space</kbd> to resume.</p>
+          </div>
+        </div>
+
+        <div id="upgradeOverlay" class="overlay">
+          <div class="panel">
+            <p class="eyebrow">Sector Cleared</p>
+            <h2>Select One Upgrade</h2>
+            <p class="lede">Your relay is stabilizing. Lock in one permanent system boost.</p>
+            <div id="upgradeChoices" class="upgrade-grid"></div>
+          </div>
+        </div>
+
+        <div id="resultOverlay" class="overlay">
+          <div class="panel result-panel">
+            <p id="resultTag" class="eyebrow">Run Complete</p>
+            <h2 id="resultTitle">Relay Stabilized</h2>
+            <p id="resultSubtitle" class="lede"></p>
+            <div class="result-stats">
+              <div><span>Score</span><strong id="resultScore">0</strong></div>
+              <div><span>Best</span><strong id="resultBest">0</strong></div>
+              <div><span>Sector</span><strong id="resultSector">1</strong></div>
+              <div><span>Deliveries</span><strong id="resultDeliveries">0</strong></div>
+              <div><span>Pulse Uses</span><strong id="resultPulses">0</strong></div>
+              <div><span>Upgrades</span><strong id="resultUpgrades">0</strong></div>
+            </div>
+            <button id="restartButton" class="primary-button" type="button">Run Again</button>
+          </div>
+        </div>
+      </section>
+
+      <aside class="hud-panel">
+        <section class="hud-block">
+          <p class="hud-label">Sector</p>
+          <div class="hud-row">
+            <strong id="sectorValue">1</strong>
+            <span id="sectorStatus">Target 10</span>
+          </div>
+          <div class="meter">
+            <div id="chargeFill" class="meter-fill"></div>
+          </div>
+          <p id="chargeText" class="hud-meta">Relay charge 0 / 10</p>
+        </section>
+
+        <section class="hud-block">
+          <p class="hud-label">Integrity</p>
+          <div class="meter warm">
+            <div id="healthFill" class="meter-fill"></div>
+          </div>
+          <p id="healthText" class="hud-meta">Hull 100 / 100</p>
+        </section>
+
+        <section class="hud-block">
+          <p class="hud-label">Run Stats</p>
+          <div class="stat-list">
+            <div><span>Score</span><strong id="scoreValue">0</strong></div>
+            <div><span>Cargo</span><strong id="cargoValue">0 / 4</strong></div>
+            <div><span>Chain</span><strong id="chainValue">x1</strong></div>
+            <div><span>Pulse</span><strong id="pulseValue">Ready</strong></div>
+          </div>
+        </section>
+
+        <section class="hud-block">
+          <p class="hud-label">Installed Upgrades</p>
+          <div id="upgradeList" class="badge-list">
+            <span class="badge subtle">No upgrades yet</span>
+          </div>
+        </section>
+
+        <section class="hud-block">
+          <p class="hud-label">Controls</p>
+          <div class="mini-copy">
+            <p>Collect cells. Deliver them to the central relay ring.</p>
+            <p>Pulse to stun pursuers and scoop nearby cargo.</p>
+            <p>Clear 5 sectors to finish the rerun artifact.</p>
+          </div>
+        </section>
+      </aside>
+    </main>
+  </div>
+
+  <script src="./game.js"></script>
+</body>
+</html>

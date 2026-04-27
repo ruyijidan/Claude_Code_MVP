@@ -6,6 +6,15 @@ owner: core
 
 # Release Notes / 发布说明
 
+## 2026-04-27
+
+### Long Task Game Rerun Example / 长任务小游戏续跑示例
+
+Included pending change set:
+
+- `docs/design/long-task-game-rerun-2026-04-24.md`: design record for the second delegated game task rerun
+- `examples/long-task-game-2026-04-24/`: new standalone browser mini-game "Starforge Relay", a dependency-free vanilla HTML/CSS/JS top-down arcade courier game
+
 ## 2026-04-24
 
 ### Permission Guardrails, Context Compression, And Acceptance Tightening / 权限护栏、上下文压缩与验收收口
