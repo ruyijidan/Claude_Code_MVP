@@ -90,6 +90,14 @@ Harness 更像：
 - 为什么要有 policy / verify / replay
 - 为什么一个 agent 项目不能只有“模型调用”
 
+如果你想按“从入门到自己实现一个 harness 工程”的路线学，可以继续看：
+
+- [`docs/guides/from-zero-to-your-own-harness.md`](./docs/guides/from-zero-to-your-own-harness.md)
+- [`docs/guides/harness-capability-matrix.md`](./docs/guides/harness-capability-matrix.md)
+- [`docs/guides/harness-code-reading-path.md`](./docs/guides/harness-code-reading-path.md)
+- [`docs/guides/how-to-implement-a-harness.md`](./docs/guides/how-to-implement-a-harness.md)
+- [`docs/guides/harness-pitfalls-and-anti-patterns.md`](./docs/guides/harness-pitfalls-and-anti-patterns.md)
+
 ### 第二步：按层读代码，而不是按文件散读
 
 推荐按这条路径来读：
@@ -124,6 +132,10 @@ Harness 更像：
 - [`docs/patterns/asset-layer.md`](./docs/patterns/asset-layer.md)
 - [`docs/guides/how-to-add-a-workflow.md`](./docs/guides/how-to-add-a-workflow.md)
 - [`docs/guides/how-to-add-a-rule.md`](./docs/guides/how-to-add-a-rule.md)
+
+如果你想先在一个非常小的目标上练手，而不是直接对着整个仓库读，可以用：
+
+- [`examples/harness-lab`](./examples/harness-lab)
 
 ### 第三步：直接跑起来，看闭环怎么工作
 

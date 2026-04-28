@@ -1,5 +1,5 @@
 ---
-last_updated: 2026-04-10
+last_updated: 2026-04-27
 status: active
 owner: core
 ---
@@ -12,6 +12,9 @@ owner: core
 - Put durable architectural knowledge in `docs/architecture/`.
 - Put frequently changing execution plans in `docs/plans/`.
 - Mark stale or superseded designs with `status: deprecated`.
+- Give every document title a bilingual heading in the form `English Title / 中文标题`.
+- Section headings should also prefer bilingual form when practical so the documentation style stays consistent.
+- Body content can be written freely as long as the structure stays clear and the document remains easy to scan.
 
 ## Freshness / 新鲜度
 

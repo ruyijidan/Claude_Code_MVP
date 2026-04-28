@@ -8,7 +8,8 @@ Navigation:
 - [`docs/architecture/README.md`](./docs/architecture/README.md): architecture-specific reading order
 - [`docs/architecture/interaction-harness.md`](./docs/architecture/interaction-harness.md): a harness-oriented abstraction for interaction entry behavior, continuation, and kickoff visibility
 - [`docs/patterns/README.md`](./docs/patterns/README.md): stable architectural patterns and reusable harness concepts
-- [`docs/guides/README.md`](./docs/guides/README.md): contributor playbooks for extending workflows and assets
+- [`docs/guides/README.md`](./docs/guides/README.md): contributor playbooks for implementing the harness and extending workflows or assets
+- [`docs/guides/how-to-implement-a-harness.md`](./docs/guides/how-to-implement-a-harness.md): implementation guide for building the control loop end to end
 - [`docs/`](./docs): detailed architecture constraints, conventions, and plans
 
 ## Overview
@@ -42,6 +43,7 @@ Key files:
 - [`docs/architecture/interaction-harness.md`](./docs/architecture/interaction-harness.md)
 - [`docs/patterns/workflow-layer.md`](./docs/patterns/workflow-layer.md)
 - [`docs/patterns/asset-layer.md`](./docs/patterns/asset-layer.md)
+- [`docs/guides/how-to-implement-a-harness.md`](./docs/guides/how-to-implement-a-harness.md)
 - [`specs/workflows`](./specs/workflows)
 - [`specs/templates`](./specs/templates)
 - [`specs/rules`](./specs/rules)
@@ -54,6 +56,7 @@ Responsibilities:
 - define architecture boundaries
 - document a harness-oriented abstraction for interaction entry behavior and continuation rules
 - expose reusable workflow, template, and rule assets
+- teach the implementation path from entrypoint to replay
 - document conventions and plans
 - give the agent a stable navigation map
 
@@ -361,12 +364,13 @@ For a fast architectural pass:
 1. [`README.md`](./README.md)
 2. [`AGENTS.md`](./AGENTS.md)
 3. [`docs/architecture/overview.md`](./docs/architecture/overview.md)
-4. [`app/cli/main.py`](./app/cli/main.py)
-5. [`app/agent/loop.py`](./app/agent/loop.py)
-6. [`app/agent/policies.py`](./app/agent/policies.py)
-7. [`app/runtime`](./app/runtime)
-8. [`scripts/agent_verify.sh`](./scripts/agent_verify.sh)
-9. [`app/evals/replay.py`](./app/evals/replay.py)
+4. [`docs/guides/how-to-implement-a-harness.md`](./docs/guides/how-to-implement-a-harness.md)
+5. [`app/cli/main.py`](./app/cli/main.py)
+6. [`app/agent/loop.py`](./app/agent/loop.py)
+7. [`app/agent/policies.py`](./app/agent/policies.py)
+8. [`app/runtime`](./app/runtime)
+9. [`scripts/agent_verify.sh`](./scripts/agent_verify.sh)
+10. [`app/evals/replay.py`](./app/evals/replay.py)
 
 ## Backlinks
 

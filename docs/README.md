@@ -1,5 +1,5 @@
 ---
-last_updated: 2026-04-16
+last_updated: 2026-04-27
 status: active
 owner: core
 ---
@@ -13,7 +13,7 @@ If you only want one rule for navigating this directory:
 - `architecture`: understand how the system is shaped
 - `conventions`: understand project rules
 - `patterns`: understand reusable harness concepts
-- `guides`: understand how to extend the repo
+- `guides`: understand how to learn the harness and extend the repo
 - `plans`: understand what is being built next
 - `reference`: understand external comparisons and reading notes
 
@@ -76,11 +76,21 @@ Use this directory when the question is:
 
 Contributor playbooks for adding or extending assets.
 
+- [`guides/how-to-implement-a-harness.md`](./guides/how-to-implement-a-harness.md)
+- [`guides/from-zero-to-your-own-harness.md`](./guides/from-zero-to-your-own-harness.md)
+- [`guides/harness-capability-matrix.md`](./guides/harness-capability-matrix.md)
+- [`guides/harness-code-reading-path.md`](./guides/harness-code-reading-path.md)
+- [`guides/harness-pitfalls-and-anti-patterns.md`](./guides/harness-pitfalls-and-anti-patterns.md)
 - [`guides/how-to-add-a-workflow.md`](./guides/how-to-add-a-workflow.md)
 - [`guides/how-to-add-a-rule.md`](./guides/how-to-add-a-rule.md)
 
 Use this directory when the question is:
 
+- how do I implement a harness end to end?
+- how do I learn harness engineering from beginner level?
+- how do I distinguish current harness capability from roadmap?
+- how should I read the codebase in execution order?
+- what anti-patterns should I avoid when building a harness?
 - how do I add something safely?
 - where should a new workflow or rule go?
 
@@ -130,6 +140,19 @@ Use this directory when the question is:
 2. [`architecture/overview.md`](./architecture/overview.md)
 3. [`architecture/boundaries.md`](./architecture/boundaries.md)
 4. [`architecture/interaction-harness.md`](./architecture/interaction-harness.md)
+
+### Learn To Implement A Harness / 学会实现 Harness
+
+1. [`architecture/harness-explained.md`](./architecture/harness-explained.md)
+2. [`guides/from-zero-to-your-own-harness.md`](./guides/from-zero-to-your-own-harness.md)
+3. [`guides/harness-capability-matrix.md`](./guides/harness-capability-matrix.md)
+4. [`guides/harness-code-reading-path.md`](./guides/harness-code-reading-path.md)
+5. [`guides/how-to-implement-a-harness.md`](./guides/how-to-implement-a-harness.md)
+6. [`guides/harness-pitfalls-and-anti-patterns.md`](./guides/harness-pitfalls-and-anti-patterns.md)
+7. [`patterns/workflow-layer.md`](./patterns/workflow-layer.md)
+8. [`patterns/asset-layer.md`](./patterns/asset-layer.md)
+9. [`guides/how-to-add-a-workflow.md`](./guides/how-to-add-a-workflow.md)
+10. [`guides/how-to-add-a-rule.md`](./guides/how-to-add-a-rule.md)
 
 ### Extend The Workflow System / 扩展工作流系统
 

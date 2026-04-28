@@ -25,6 +25,7 @@ The codebase is optimized for harness engineering experiments, not for ad hoc pr
 | Learn coding and review conventions | `docs/conventions/README.md` |
 | Learn testing expectations | `docs/conventions/testing.md` |
 | Learn runtime and git workflow rules | `docs/conventions/runtime-and-git.md` |
+| Learn documentation writing rules | `docs/conventions/docs.md` |
 | See the current implementation roadmap | `docs/plans/current-sprint.md` |
 | Understand the current product positioning | `README.md` |
 
@@ -52,5 +53,6 @@ These are expected to be enforced by scripts, tests, or CI:
 - Keep prompts, plans, and outputs short and task-oriented.
 - Prefer stable conventions over clever one-off implementations.
 - Add new harness behavior as reusable infrastructure, not one-off CLI branching.
+- When writing or revising project documentation, use bilingual titles with English and Chinese shown together in headings.
 - Before creating a commit, update the project documentation with a short record of the completed change and its verification status. Prefer `docs/plans/release-notes.md`, and update `docs/plans/current-sprint.md` as well when the change affects the current implementation status.
 - Install and keep the repository git hooks active via `bash scripts/install_git_hooks.sh` so the commit workflow rule is enforced before each commit.

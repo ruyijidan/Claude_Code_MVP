@@ -1,12 +1,135 @@
 ---
-last_updated: 2026-04-24
+last_updated: 2026-04-28
 status: active
 owner: core
 ---
 
 # Release Notes / 发布说明
 
-## 2026-04-27
+## 2026-04-28
+
+### Harness Article Walkthrough Upgrade / Harness 文章实战增强
+
+Included pending change set:
+
+- `docs/guides/from-zero-to-your-own-harness.md`: expanded the main learning article with a harness evolution map and a repository-grounded request walkthrough
+
+Highlights:
+
+- added a stage-by-stage evolution diagram from prompt wrapper to workflow-aware harness
+- added a concrete call-chain walkthrough that traces a request through CLI, clarification, context, planning, policy, runtime, verification, repair, and replay
+- strengthened the article as a practical learning guide instead of only a conceptual overview
+
+Verification:
+
+- manual markdown link check for touched documentation passed locally
+- architecture check passed locally with `python3 scripts/check_architecture.py`
+- full unit test discovery passed locally: `126 tests OK, 2 skipped`
+
+Impact:
+
+- the main harness learning article is now closer to publishable long-form teaching material
+- readers can connect the concepts directly to real repository files with less interpretation work
+
+### Harness Learning Preparation Pack / Harness 学习准备包
+
+Included pending change set:
+
+- `docs/guides/harness-capability-matrix.md`: separates implemented, partial, and planned harness capabilities
+- `docs/guides/harness-code-reading-path.md`: gives an execution-order code reading route through the repository
+- `docs/guides/harness-pitfalls-and-anti-patterns.md`: collects common harness failure modes and teaching counterexamples
+- `examples/harness-lab/`: tiny practice target for first-harness exercises
+- navigation updates in `README.md`, `docs/guides/README.md`, `docs/README.md`, and `docs/architecture/README.md`
+
+Highlights:
+
+- clarified the boundary between current MVP behavior and future roadmap items
+- added a learner-friendly path for tracing one request through entry, context, planning, runtime, verification, repair, and replay
+- created a small practice target so readers can exercise harness behavior on something simpler than the full repository
+- collected anti-pattern material for future articles and onboarding docs
+
+Verification:
+
+- manual markdown link check for touched documentation passed locally
+- architecture check passed locally with `python3 scripts/check_architecture.py`
+- full unit test discovery passed locally: `126 tests OK, 2 skipped`
+- harness lab sample test discovery runs locally and currently shows one intentional failing regression in `test_divide_by_zero_raises_value_error`
+
+Impact:
+
+- the repository now has a stronger teaching substrate for future harness articles and onboarding
+- readers can move between concept docs, code reading, practice, and anti-patterns without inventing their own study path
+
+### Harness Learning Article / Harness 学习长文
+
+Included pending change set:
+
+- `docs/guides/from-zero-to-your-own-harness.md`: a long-form article that teaches harness learning from basics to implementation
+- documentation navigation updates in `docs/guides/README.md`, `docs/README.md`, and `docs/architecture/README.md`
+
+Highlights:
+
+- explains what a harness solves compared with a prompt wrapper
+- gives a staged learning path from mental model to asset layer to a first personal harness project
+- maps repository modules to harness responsibilities so readers can study the current codebase with less guesswork
+- complements the existing implementation guide with a more article-like onboarding path
+
+Verification:
+
+- manual markdown link check for touched documentation passed locally
+
+Impact:
+
+- the repository now has both a practical implementation guide and a more narrative learning article
+- onboarding readers can move from concept to code with a clearer path
+
+### Documentation Title Convention / 文档标题规范
+
+Included pending change set:
+
+- `docs/conventions/docs.md`: documented the bilingual-title rule for project documentation
+- `docs/conventions/README.md` and `AGENTS.md`: surfaced the rule in contributor and agent-facing navigation
+
+Highlights:
+
+- every new or materially updated document should use an `English Title / 中文标题` heading
+- section headings are encouraged to follow the same bilingual style when practical
+- body content stays flexible as long as the structure is clear
+
+Verification:
+
+- manual review of touched documentation passed locally
+
+Impact:
+
+- documentation style is now a repository rule instead of a conversational preference
+- future doc work has a clearer default, which should reduce formatting drift
+
+### Harness Implementation Guide / Harness 实现指南
+
+Included pending change set:
+
+- `docs/guides/how-to-implement-a-harness.md`: new contributor guide that teaches the end-to-end harness implementation path
+- documentation navigation updates in `ARCHITECTURE.md`, `docs/README.md`, and `docs/guides/README.md`
+- sprint status update in `docs/plans/current-sprint.md`
+
+Highlights:
+
+- mapped harness concerns to concrete repository implementation files
+- documented the minimum vertical slice for building a harness from scratch
+- explained entry, intent clarification, context, planning, policy, runtime, verification, repair, and replay as separate control points
+- added test-first guidance for proving harness behavior outside model prose
+
+Verification:
+
+- manual markdown link check for touched documentation passed locally
+- architecture check passed locally with `python3 scripts/check_architecture.py`
+- full unit test discovery passed locally: `126 tests OK, 2 skipped`
+
+Impact:
+
+- new contributors now have a direct path from "what is a harness?" to "how do I implement one?"
+- the project documentation is better organized as a teaching base, not only an architecture reference
 
 ### Long Task Game Rerun Example / 长任务小游戏续跑示例
 

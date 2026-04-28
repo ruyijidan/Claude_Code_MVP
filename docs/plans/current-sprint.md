@@ -1,5 +1,5 @@
 ---
-last_updated: 2026-04-24
+last_updated: 2026-04-27
 status: active
 owner: core
 ---
@@ -96,6 +96,10 @@ It is now:
 - rule assets now produce structured critic rule-hit reporting and can be loaded as a set instead of a single hard-coded rule
 - architecture checks now include file-size guardrails for high-risk control-surface modules
 - release acceptance reporting now classifies provider risks into transient environment, setup/auth, and product-blocking buckets
+- contributor-facing harness implementation guidance now exists under `docs/guides/how-to-implement-a-harness.md`
+- documentation conventions now explicitly require bilingual English/Chinese titles for new or materially updated docs
+- a new long-form learning article now connects harness basics to building a personal harness project
+- the harness learning path now also includes a capability matrix, code-reading guide, anti-pattern guide, and a tiny practice lab under `examples/harness-lab`
 
 ### In Progress / 进行中
 
@@ -159,6 +163,7 @@ Priority order:
 - Continue turning workflow, template, and rule assets into behavior-shaping harness inputs
 - Continue strengthening import and file-size guardrails
 - Add application legibility foundations
+- Keep teaching material aligned with the real harness control loop as implementation evolves
 - Keep live provider acceptance as an explicit release check for provider-facing changes
 - Continue hardening unattended live acceptance reliability for API-backed providers without hiding real blocking failures
 

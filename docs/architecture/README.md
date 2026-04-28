@@ -1,5 +1,5 @@
 ---
-last_updated: 2026-04-16
+last_updated: 2026-04-27
 status: active
 owner: core
 ---
@@ -33,3 +33,8 @@ This directory answers one question:
 - you want to understand where a responsibility belongs
 - you want to explain the harness to someone else
 - you are deciding whether a new feature is architecture, pattern, or workflow asset
+
+For a longer learner-oriented article that turns these docs into a path from beginner to implementation, continue with:
+
+- [`../guides/from-zero-to-your-own-harness.md`](../guides/from-zero-to-your-own-harness.md)
+- [`../guides/harness-code-reading-path.md`](../guides/harness-code-reading-path.md)
