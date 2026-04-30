@@ -7,35 +7,12 @@ from pathlib import Path
 from app.agent.intent_clarifier import IntentClarifier
 from app.agent.loop import CodingAgentLoop
 from app.agent.policies import ExecutionPolicy, PermissionPipeline, make_command_guard, make_file_write_guard
+from app.cli.rendering import permission_summary, print_application_verification
 from app.core.env_loader import load_project_env, resolve_auth_loading_policy
 from app.core.memory_store import MemoryStore
 from app.core.spec_loader import SpecLoader
 from app.runtime.adapter_factory import build_runtime_adapter
 from app.runtime.git_tool import GitTool
-
-
-def _permission_summary(decision: dict) -> str:
-    action = decision.get("action", decision.get("decision", "unknown"))
-    risk = decision.get("risk", "unknown")
-    boundary = decision.get("boundary", "unknown")
-    reason = decision.get("reason", "")
-    return f"action={action} risk={risk} boundary={boundary} reason={reason}"
-
-
-def _print_application_verification(result: dict) -> None:
-    application_verification = result.get("application_verification", {})
-    if not application_verification.get("available"):
-        return
-    print("application verification:")
-    print(application_verification.get("summary"))
-    findings = application_verification.get("findings", [])
-    for finding in findings[:5]:
-        print(f"- {finding}")
-    issues = application_verification.get("issues", [])
-    if issues:
-        print("application issues:")
-        for issue in issues[:5]:
-            print(f"- {issue}")
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -97,6 +74,7 @@ def main(argv: list[str] | None = None) -> int:
     memory_store = MemoryStore(repo_path / ".claude-code" / "trajectories")
     recent_run_summary = memory_store.read_latest()
     recent_run_summaries = memory_store.read_recent()
+    related_memory_hits = memory_store.search_related(args.prompt, repo_path, task_name=args.task_type) if args.prompt else []
     permission_rules = loader.load_permission_rules()
     policy = ExecutionPolicy(
         auto_approve=bool(args.auto_approve),
@@ -119,11 +97,11 @@ def main(argv: list[str] | None = None) -> int:
             "provider": provider_info,
             "operations": operations,
             "command_profiles": command_profiles,
-            "write_profiles": write_profiles,
-            "summary": {
-                "operations": {name: _permission_summary(decision) for name, decision in operations.items()},
-                "command_profiles": {name: _permission_summary(decision) for name, decision in command_profiles.items()},
-                "write_profiles": {name: _permission_summary(decision) for name, decision in write_profiles.items()},
+                "write_profiles": write_profiles,
+                "summary": {
+                "operations": {name: permission_summary(decision) for name, decision in operations.items()},
+                "command_profiles": {name: permission_summary(decision) for name, decision in command_profiles.items()},
+                "write_profiles": {name: permission_summary(decision) for name, decision in write_profiles.items()},
             },
         }
         if args.json:
@@ -134,13 +112,13 @@ def main(argv: list[str] | None = None) -> int:
             print(f"provider: {provider_info.get('provider')} available={provider_info.get('available')}")
             print("operations:")
             for name, decision in operations.items():
-                print(f"- {name}: {_permission_summary(decision)}")
+                print(f"- {name}: {permission_summary(decision)}")
             print("command profiles:")
             for name, decision in command_profiles.items():
-                print(f"- {name}: {_permission_summary(decision)}")
+                print(f"- {name}: {permission_summary(decision)}")
             print("write profiles:")
             for name, decision in write_profiles.items():
-                print(f"- {name}: {_permission_summary(decision)}")
+                print(f"- {name}: {permission_summary(decision)}")
 
     if args.show_status:
         status = git_tool.status(repo_path)
@@ -194,6 +172,7 @@ def main(argv: list[str] | None = None) -> int:
         explicit_task_type=args.task_type,
         recent_run_summary=recent_run_summary,
         recent_run_summaries=recent_run_summaries,
+        related_memory_hits=related_memory_hits,
     )
     effective_prompt = clarification.normalized_prompt or args.prompt
     effective_task_type = args.task_type or clarification.inferred_task_type
@@ -371,7 +350,8 @@ def main(argv: list[str] | None = None) -> int:
             print("post commit summary:")
             print(post_commit_summary.get("title"))
             print(post_commit_summary.get("summary"))
-        _print_application_verification(result)
+        for line in print_application_verification(result):
+            print(line)
         print(f"trajectory: {result['trajectory_path']}")
     return 0
 

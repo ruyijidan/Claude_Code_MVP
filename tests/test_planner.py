@@ -66,6 +66,37 @@ class PlannerTests(unittest.TestCase):
         self.assertIn("log files", plan[1]["artifact_kinds"])
         self.assertEqual(plan[2]["workflow"], "custom_workflow")
 
+    def test_memory_hits_add_memory_step_and_focus_paths(self) -> None:
+        planner = LightweightPlanner()
+        workflow = WorkflowSpec(
+            name="custom_workflow",
+            goal="Test",
+            entry_signals=[],
+            required_context=["AGENTS.md", "likely_relevant_files"],
+            clarification_fields=[],
+            steps=["inspect custom surface"],
+            verification=["tests must pass"],
+            stop_conditions=[],
+        )
+
+        plan = planner.build_plan(
+            "write tests",
+            {
+                "context_budget": {"max_candidate_files": 12},
+                "likely_relevant_files": ["src/current.py"],
+                "memory_context_paths": ["planner.py", "tests/test_planner.py"],
+                "memory_hits": [{"task": "write_tests", "request_prompt": "write tests for planner.py", "score": 7}],
+            },
+            "write_tests",
+            workflow,
+        )
+
+        self.assertEqual(plan[0]["id"], "workflow_context")
+        self.assertIn("planner.py", plan[0]["focused_paths"])
+        self.assertIn("prioritize planner.py", plan[0]["description"])
+        self.assertEqual(plan[1]["id"], "workflow_memory")
+        self.assertEqual(plan[1]["memory_context_paths"][0], "planner.py")
+
 
 if __name__ == "__main__":
     unittest.main()

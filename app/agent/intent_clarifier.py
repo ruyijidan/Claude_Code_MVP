@@ -60,6 +60,7 @@ class IntentClarifier:
         explicit_task_type: str | None = None,
         recent_run_summary: dict | None = None,
         recent_run_summaries: list[dict] | None = None,
+        related_memory_hits: list[dict] | None = None,
     ) -> IntentClarificationResult:
         normalized_prompt = " ".join(prompt.split())
         continuation_summary = self._select_continuation_summary(
@@ -67,6 +68,7 @@ class IntentClarifier:
             repo_path,
             recent_run_summary=recent_run_summary,
             recent_run_summaries=recent_run_summaries,
+            related_memory_hits=related_memory_hits,
         )
         continuation_candidates = self._build_continuation_candidates(
             repo_path,
@@ -78,6 +80,7 @@ class IntentClarifier:
         inferred_task_type = explicit_task_type or self._infer_task_type(
             effective_prompt,
             continuation_summary if continuation_target is not None else None,
+            related_memory_hits=related_memory_hits,
         )
         missing_constraints: list[str] = []
         questions: list[ClarificationQuestion] = []
@@ -131,7 +134,12 @@ class IntentClarifier:
                     )
                 )
 
-            if "target" in required_fields and not self._has_target_signal(effective_prompt, repo_path, inferred_task_type):
+            if "target" in required_fields and not self._has_target_signal(
+                effective_prompt,
+                repo_path,
+                inferred_task_type,
+                related_memory_hits=related_memory_hits,
+            ):
                 missing_constraints.append("target")
                 questions.append(
                     ClarificationQuestion(
@@ -176,16 +184,28 @@ class IntentClarifier:
                 repo_path,
                 recent_run_summary=continuation_summary,
                 continuation_target=continuation_target,
+                related_memory_hits=related_memory_hits,
             ),
             continuation_candidates=continuation_candidates,
         )
 
-    def _infer_task_type(self, prompt: str, recent_run_summary: dict | None = None) -> str:
+    def _infer_task_type(
+        self,
+        prompt: str,
+        recent_run_summary: dict | None = None,
+        related_memory_hits: list[dict] | None = None,
+    ) -> str:
         lowered = prompt.lower()
         if lowered in self.SHORT_CONTINUATIONS and recent_run_summary:
             recent_task = recent_run_summary.get("task")
             if isinstance(recent_task, str) and recent_task:
                 return recent_task
+        if related_memory_hits:
+            top_hit = self._best_memory_hit(related_memory_hits)
+            if top_hit is not None and self._prompt_needs_retrieval_hint(lowered):
+                memory_task = top_hit.get("task")
+                if isinstance(memory_task, str) and memory_task:
+                    return memory_task
         if "write tests" in lowered:
             return "write_tests"
         if "investigate" in lowered or "debug why" in lowered or "error" in lowered:
@@ -232,7 +252,13 @@ class IntentClarifier:
             )
         )
 
-    def _has_target_signal(self, prompt: str, repo_path: Path, task_type: str | None) -> bool:
+    def _has_target_signal(
+        self,
+        prompt: str,
+        repo_path: Path,
+        task_type: str | None,
+        related_memory_hits: list[dict] | None = None,
+    ) -> bool:
         lowered = prompt.lower()
         if self._extract_path_references(prompt):
             return True
@@ -244,6 +270,9 @@ class IntentClarifier:
             return True
         if any(f" {token} " in f" {lowered} " for token in self.GENERIC_TARGETS):
             return False
+        memory_target = self._memory_target_hint(related_memory_hits)
+        if memory_target is not None:
+            return True
         prompt_tokens = self._meaningful_tokens(lowered)
         if not prompt_tokens:
             return False
@@ -347,6 +376,7 @@ class IntentClarifier:
         repo_path: Path,
         recent_run_summary: dict | None = None,
         recent_run_summaries: list[dict] | None = None,
+        related_memory_hits: list[dict] | None = None,
     ) -> dict | None:
         if self._is_continuation_label(prompt):
             for index, candidate in enumerate(
@@ -361,6 +391,10 @@ class IntentClarifier:
         candidates = self._continuation_candidates(repo_path, recent_run_summary, recent_run_summaries)
         if len(candidates) == 1:
             return candidates[0]
+        if not candidates:
+            top_hit = self._best_memory_hit(related_memory_hits)
+            if top_hit is not None:
+                return top_hit
         return None
 
     def _has_ambiguous_continuation(
@@ -445,13 +479,14 @@ class IntentClarifier:
         repo_path: Path,
         recent_run_summary: dict | None = None,
         continuation_target: str | None = None,
+        related_memory_hits: list[dict] | None = None,
     ) -> str | None:
         if continuation_target is not None and recent_run_summary is not None:
             summary = self._continuation_summary(recent_run_summary)
             if summary:
                 return f"I'll continue the previous task by picking up {summary}."
             return "I'll continue the previous task from the latest confirmed execution context."
-        target_hint = self._kickoff_target_hint(prompt, repo_path)
+        target_hint = self._kickoff_target_hint(prompt, repo_path, related_memory_hits=related_memory_hits)
         if task_type == "fix_bug":
             if target_hint:
                 return f"I'll inspect {target_hint} first, then apply the smallest fix and verify the result."
@@ -499,7 +534,12 @@ class IntentClarifier:
             return f"the request '{recent_prompt.strip()}'"
         return None
 
-    def _kickoff_target_hint(self, prompt: str, repo_path: Path) -> str | None:
+    def _kickoff_target_hint(
+        self,
+        prompt: str,
+        repo_path: Path,
+        related_memory_hits: list[dict] | None = None,
+    ) -> str | None:
         referenced_paths = self._extract_path_references(prompt)
         if referenced_paths:
             return referenced_paths[0]
@@ -509,4 +549,42 @@ class IntentClarifier:
         for token in self._meaningful_tokens(lowered):
             if token in repo_names:
                 return token
+        return self._memory_target_hint(related_memory_hits)
+
+    def _best_memory_hit(self, related_memory_hits: list[dict] | None) -> dict | None:
+        if not related_memory_hits:
+            return None
+        ordered_hits = [item for item in related_memory_hits if isinstance(item, dict)]
+        if not ordered_hits:
+            return None
+        top_hit = ordered_hits[0]
+        top_score = top_hit.get("score", 0)
+        second_score = ordered_hits[1].get("score", 0) if len(ordered_hits) > 1 and isinstance(ordered_hits[1], dict) else -1
+        if not isinstance(top_score, int):
+            return None
+        if top_score < 4:
+            return None
+        if isinstance(second_score, int) and second_score >= 0 and top_score - second_score < 2:
+            return None
+        return top_hit
+
+    def _memory_target_hint(self, related_memory_hits: list[dict] | None) -> str | None:
+        top_hit = self._best_memory_hit(related_memory_hits)
+        if top_hit is None:
+            return None
+        changed_files = top_hit.get("changed_files", [])
+        if isinstance(changed_files, list) and changed_files:
+            first_path = changed_files[0]
+            if isinstance(first_path, str) and first_path.strip():
+                return first_path.strip()
+        request_prompt = top_hit.get("request_prompt")
+        if isinstance(request_prompt, str):
+            referenced_paths = self._extract_path_references(request_prompt)
+            if referenced_paths:
+                return referenced_paths[0]
         return None
+
+    def _prompt_needs_retrieval_hint(self, prompt: str) -> bool:
+        if prompt in self.SHORT_CONTINUATIONS:
+            return True
+        return any(f" {token} " in f" {prompt} " for token in self.GENERIC_TARGETS)

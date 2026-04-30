@@ -123,6 +123,8 @@ class GraphExecutionTests(unittest.TestCase):
 
         self.assertTrue(result["repo_context"]["memory_hits"])
         self.assertEqual(result["repo_context"]["memory_hits"][0]["task"], "write_tests")
+        self.assertIn("planner.py", result["repo_context"]["memory_context_paths"])
+        self.assertTrue(any(step["id"] == "workflow_memory" for step in result["plan"]))
 
 
 if __name__ == "__main__":

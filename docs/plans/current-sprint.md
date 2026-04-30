@@ -47,6 +47,8 @@ After the first hardening wave and the follow-on asset work, the repository now 
 - tool invocation now has a first unified spec-backed registry plus schema validation
 - workflow behavior now records structured execution state instead of staying only at plan-shaping level
 - repo context can now retrieve lightweight related trajectory summaries from local memory storage
+- intent clarification can now reuse strong related-memory hits for continuation fallback and target completion
+- planner context assembly can now prioritize bounded memory-derived file paths instead of relying only on fresh repo sampling
 
 In practical terms, the project has moved from:
 
@@ -108,6 +110,7 @@ It is now:
 - task execution now uses a unified tool registry with schema-validated tool I/O
 - workflow execution now records selected tools, selected readers, and per-run workflow status in replay artifacts
 - repo context now includes repository-scoped related memory hits from recent trajectories
+- retrieval now shapes continuation resolution, target completion, and planner-side context narrowing
 
 ### In Progress / 进行中
 

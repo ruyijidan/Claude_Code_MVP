@@ -26,11 +26,13 @@ Highlights:
 - moved browser preview, log, and metric collection into a reusable reader registry instead of hard-coded artifact scanning
 - let verifier, critic, replay, and CLI consume structured application artifact verification results
 - added repository-scoped related memory retrieval so new runs can reuse relevant recent trajectories in context assembly
+- let `IntentClarifier` reuse strong related-memory hits for continuation fallback and target completion when the prompt is underspecified
+- let the planner turn related-memory hits into bounded `memory_context_paths` so context assembly can prioritize narrower file slices
 
 Verification:
 
 - targeted registry, workflow, legibility, verifier, graph, CLI, and memory tests passed locally
-- full unit test discovery passed locally: `146 tests OK, 2 skipped`
+- full unit test discovery passed locally: `149 tests OK, 2 skipped`
 - architecture check passed locally with `python3 scripts/check_architecture.py`
 - isolated worktree verification passed locally with `bash scripts/agent_verify.sh`
 
@@ -40,6 +42,7 @@ Impact:
 - workflow assets now influence execution state and not only the generated plan text
 - application legibility is now registered, typed, and replay-visible across preview, log, and metric surfaces
 - memory moved from replay-only storage toward lightweight retrieval that can shape future task context
+- retrieval now influences continuation choice, target completion, and plan-level context narrowing instead of staying as a passive context annotation
 
 ## 2026-04-28
 

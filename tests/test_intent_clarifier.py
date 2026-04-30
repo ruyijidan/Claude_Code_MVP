@@ -181,6 +181,47 @@ class IntentClarifierTests(unittest.TestCase):
         self.assertEqual(len(result.continuation_candidates), 5)
         self.assertEqual(result.continuation_candidates[-1].label, "recent_task_5")
 
+    def test_short_continuation_can_fall_back_to_related_memory_hit(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            repo_path = Path(tmp_dir)
+            (repo_path / "planner.py").write_text("print('ok')\n", encoding="utf-8")
+            result = self.clarifier.clarify_with_context(
+                "继续",
+                repo_path,
+                related_memory_hits=[
+                    {
+                        "task": "write_tests",
+                        "request_prompt": "write tests for planner.py",
+                        "changed_files": ["planner.py", "tests/test_planner.py"],
+                        "score": 7,
+                    }
+                ],
+            )
+        self.assertEqual(result.status, "normalized")
+        self.assertEqual(result.inferred_task_type, "write_tests")
+        self.assertEqual(result.normalized_prompt, "write tests for planner.py")
+        self.assertIn("continue the previous task", result.kickoff_message)
+
+    def test_related_memory_hit_can_satisfy_missing_target_signal(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            repo_path = Path(tmp_dir)
+            (repo_path / "planner.py").write_text("print('ok')\n", encoding="utf-8")
+            result = self.clarifier.clarify_with_context(
+                "write tests",
+                repo_path,
+                related_memory_hits=[
+                    {
+                        "task": "write_tests",
+                        "request_prompt": "write tests for planner.py",
+                        "changed_files": ["planner.py", "tests/test_planner.py"],
+                        "score": 7,
+                    }
+                ],
+            )
+        self.assertEqual(result.status, "ready")
+        self.assertEqual(result.inferred_task_type, "write_tests")
+        self.assertIn("planner.py", result.kickoff_message)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -29,13 +29,26 @@ class LightweightPlanner:
             plan = []
             if workflow.required_context:
                 context_summary = ", ".join(workflow.required_context[:4])
+                focused_paths = self._focused_context_paths(context)
                 plan.append(
                     {
                         "id": "workflow_context",
-                        "description": f"assemble bounded context for workflow inputs: {context_summary}",
+                        "description": self._context_description(context_summary, focused_paths),
                         "agent": "coding_loop",
                         "required_context": list(workflow.required_context),
                         "context_budget": context.get("context_budget", {}),
+                        "focused_paths": focused_paths,
+                    }
+                )
+            memory_hits = context.get("memory_hits", [])
+            if memory_hits:
+                plan.append(
+                    {
+                        "id": "workflow_memory",
+                        "description": "reuse related trajectory context before exploring broader repo state",
+                        "agent": "coding_loop",
+                        "memory_hits": memory_hits[:3],
+                        "memory_context_paths": list(context.get("memory_context_paths", [])),
                     }
                 )
             application_legibility = context.get("application_legibility", {})
@@ -98,3 +111,24 @@ class LightweightPlanner:
         if legibility.get("metric_files"):
             available.append("metric files")
         return available
+
+    def _focused_context_paths(self, context: dict) -> list[str]:
+        memory_paths = context.get("memory_context_paths", [])
+        likely_paths = context.get("likely_relevant_files", [])
+        focused: list[str] = []
+        for collection in (memory_paths, likely_paths):
+            if not isinstance(collection, list):
+                continue
+            for path in collection:
+                if not isinstance(path, str) or path in focused:
+                    continue
+                focused.append(path)
+                if len(focused) >= 6:
+                    return focused
+        return focused
+
+    def _context_description(self, context_summary: str, focused_paths: list[str]) -> str:
+        if not focused_paths:
+            return f"assemble bounded context for workflow inputs: {context_summary}"
+        focus_summary = ", ".join(focused_paths[:3])
+        return f"assemble bounded context for workflow inputs: {context_summary}; prioritize {focus_summary}"

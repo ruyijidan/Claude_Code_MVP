@@ -126,6 +126,8 @@ class ContextBuilderTests(unittest.TestCase):
 
         self.assertEqual(len(result["memory_hits"]), 1)
         self.assertIn("write_tests", result["memory_hits_summary"])
+        self.assertEqual(result["memory_context_paths"][0], "planner.py")
+        self.assertIn("planner.py", result["memory_context_paths_summary"])
 
 
 if __name__ == "__main__":

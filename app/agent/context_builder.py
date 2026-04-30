@@ -32,6 +32,7 @@ class RepoContextBuilder:
         file_summaries = self._summarize_files(repo_path, scoped_context.likely_relevant_files)
         application_legibility = self.legibility_collector.collect(repo_path)
         memory_hits = self._search_related_memories(repo_path, prompt, task_name=task_name)
+        memory_context_paths = self._memory_context_paths(memory_hits)
         return {
             "repo_path": str(repo_path),
             "prompt": prompt,
@@ -64,6 +65,12 @@ class RepoContextBuilder:
             "application_legibility": application_legibility,
             "memory_hits": memory_hits,
             "memory_hits_summary": self._summarize_memory_hits(memory_hits),
+            "memory_context_paths": memory_context_paths,
+            "memory_context_paths_summary": summarize_paths(
+                memory_context_paths,
+                max_items=self.budget.max_relevant_files,
+                max_chars=self.budget.max_path_chars,
+            ),
             "scoped_context": scoped_context.to_dict(),
         }
 
@@ -120,6 +127,20 @@ class RepoContextBuilder:
             score = item.get("score", 0)
             lines.append(f"{task} (score={score}): {prompt}")
         return summarize_text("\n".join(lines), max_chars=self.budget.max_git_chars)
+
+    def _memory_context_paths(self, hits: list[dict]) -> list[str]:
+        paths: list[str] = []
+        for item in hits[:3]:
+            changed_files = item.get("changed_files", [])
+            if not isinstance(changed_files, list):
+                continue
+            for path in changed_files:
+                if not isinstance(path, str) or path in paths:
+                    continue
+                paths.append(path)
+                if len(paths) >= self.budget.max_relevant_files:
+                    return paths
+        return paths
 
 
 def summarize_lines_from_paths(paths: list[str], max_items: int, max_chars: int) -> str:
