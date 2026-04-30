@@ -21,6 +21,8 @@ class SpecLoaderTests(unittest.TestCase):
         workflow = loader.load_workflow("bugfix")
         rule = loader.load_rule("surgical-changes")
         permission_rules = loader.load_permission_rules()
+        tool = loader.load_tool("test_tool")
+        reader = loader.load_reader("browser_preview")
         template = loader.load_template("plan-template")
 
         self.assertEqual(workflow.name, "bugfix")
@@ -28,6 +30,8 @@ class SpecLoaderTests(unittest.TestCase):
         self.assertIn("tests must pass", workflow.verification)
         self.assertEqual(rule.name, "surgical_changes")
         self.assertEqual(permission_rules.name, "permission_rules_v1")
+        self.assertEqual(tool.name, "test_tool")
+        self.assertEqual(reader.artifact_kind, "preview")
         self.assertIn(".claude-code", permission_rules.runtime_artifact_dirs)
         self.assertIn("smallest relevant change", rule.intent)
         self.assertIn("## Goal", template)
@@ -51,6 +55,18 @@ class SpecLoaderTests(unittest.TestCase):
 
         self.assertEqual(write_tests.name, "write_tests")
         self.assertEqual(investigate.name, "investigate_issue")
+
+    def test_load_tool_and_reader_collections(self) -> None:
+        root = Path(__file__).resolve().parents[1] / "specs"
+        loader = SpecLoader(root)
+
+        tools = loader.load_tools()
+        readers = loader.load_readers()
+
+        self.assertIn("file_tool", {tool.name for tool in tools})
+        self.assertIn("test_tool", {tool.name for tool in tools})
+        self.assertIn("browser_preview", {reader.name for reader in readers})
+        self.assertIn("log_artifact", {reader.name for reader in readers})
 
 
 if __name__ == "__main__":

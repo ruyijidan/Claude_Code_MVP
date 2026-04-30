@@ -22,6 +22,9 @@ class CriticAgent(BaseAgent):
             issues.append("tests_failed")
         if state.get("verification_errors"):
             issues.extend(state["verification_errors"])
+        application_verification = state.get("application_verification", {})
+        if application_verification.get("issues"):
+            issues.extend(application_verification["issues"])
         if state.get("gate_failures"):
             issues.extend(state["gate_failures"])
         rule_hits = self._apply_rules(state)

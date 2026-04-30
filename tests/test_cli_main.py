@@ -425,6 +425,58 @@ class CliMainTests(unittest.TestCase):
             self.assertIn("post commit summary:", output)
             self.assertIn("feat: update app", output)
 
+    def test_cli_prints_application_verification_when_available(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            repo_path = Path(tmp_dir)
+            (repo_path / "planner.py").write_text("print('ok')\n", encoding="utf-8")
+            stream = io.StringIO()
+            fake_result = {
+                "runtime_provider": "local",
+                "task_spec": type("TaskSpecStub", (), {"name": "investigate_issue"})(),
+                "test_result": "passed",
+                "changed_files": ["reports/investigation.md"],
+                "repo_context": {"git": {"branch": {"name": "main"}}},
+                "application_verification": {
+                    "available": True,
+                    "summary": "preview artifacts inspected: examples/web/index.html",
+                    "findings": ["preview artifacts inspected: examples/web/index.html"],
+                    "issues": ["log artifact shows failure signal: logs/agent.log"],
+                },
+                "trajectory_path": str(repo_path / "traj.json"),
+            }
+            with patch("app.cli.main.CodingAgentLoop.run", return_value=fake_result):
+                with redirect_stdout(stream):
+                    exit_code = main(["investigate planner.py", "--repo", str(repo_path), "--task-type", "investigate_issue"])
+            output = stream.getvalue()
+            self.assertEqual(exit_code, 0)
+            self.assertIn("application verification:", output)
+            self.assertIn("preview artifacts inspected: examples/web/index.html", output)
+            self.assertIn("application issues:", output)
+            self.assertIn("logs/agent.log", output)
+
+    def test_cli_prints_memory_hit_count_when_available(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            repo_path = Path(tmp_dir)
+            (repo_path / "planner.py").write_text("print('ok')\n", encoding="utf-8")
+            stream = io.StringIO()
+            fake_result = {
+                "runtime_provider": "local",
+                "task_spec": type("TaskSpecStub", (), {"name": "write_tests"})(),
+                "test_result": "passed",
+                "changed_files": ["tests/test_planner.py"],
+                "repo_context": {
+                    "git": {"branch": {"name": "main"}},
+                    "memory_hits": [{"task": "write_tests", "request_prompt": "write tests for planner.py"}],
+                },
+                "trajectory_path": str(repo_path / "traj.json"),
+            }
+            with patch("app.cli.main.CodingAgentLoop.run", return_value=fake_result):
+                with redirect_stdout(stream):
+                    exit_code = main(["write tests for planner.py", "--repo", str(repo_path)])
+            output = stream.getvalue()
+            self.assertEqual(exit_code, 0)
+            self.assertIn("memory_hits: 1", output)
+
 
 if __name__ == "__main__":
     unittest.main()

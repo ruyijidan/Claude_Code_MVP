@@ -1,0 +1,12 @@
+{
+  "name": "browser_preview",
+  "artifact_kind": "preview",
+  "description": "Collect browser-openable preview artifacts such as html entrypoints.",
+  "output_schema": {
+    "reader": "string",
+    "artifact_kind": "string",
+    "paths": "list",
+    "summary": "string",
+    "artifacts": "list"
+  }
+}

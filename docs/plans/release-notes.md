@@ -1,10 +1,45 @@
 ---
-last_updated: 2026-04-28
+last_updated: 2026-04-30
 status: active
 owner: core
 ---
 
 # Release Notes / 发布说明
+
+## 2026-04-30
+
+### Tool Registry, Workflow Execution, Legibility Readers, And Memory Retrieval / 工具注册表、工作流执行、可观测读层与记忆检索
+
+Included pending change set:
+
+- `app/core/tool_registry.py`: added a spec-backed tool registry with schema-validated input and output checks
+- `app/runtime/artifact_readers.py`: added a registered artifact reader layer for preview, log, and metric inputs
+- `app/agent/workflow_executor.py`: added structured workflow execution state instead of plan-only workflow shaping
+- `app/core/memory_store.py`: added lightweight related-trajectory retrieval scoped to the active repository
+- `specs/tools/` and `specs/readers/`: added tool and reader specs for the new registry layer
+- loop, verifier, replay, CLI, and context wiring updates across `app/agent/loop.py`, `app/agents/verifier_agent.py`, `app/evals/replay.py`, `app/cli/main.py`, and `app/agent/context_builder.py`
+
+Highlights:
+
+- unified tool invocation behind spec-backed registry and schema validation instead of scattered direct calls
+- upgraded workflow behavior from plan shaping only into explicit `workflow_execution` state with selected tools, readers, steps, and completion status
+- moved browser preview, log, and metric collection into a reusable reader registry instead of hard-coded artifact scanning
+- let verifier, critic, replay, and CLI consume structured application artifact verification results
+- added repository-scoped related memory retrieval so new runs can reuse relevant recent trajectories in context assembly
+
+Verification:
+
+- targeted registry, workflow, legibility, verifier, graph, CLI, and memory tests passed locally
+- full unit test discovery passed locally: `146 tests OK, 2 skipped`
+- architecture check passed locally with `python3 scripts/check_architecture.py`
+- isolated worktree verification passed locally with `bash scripts/agent_verify.sh`
+
+Impact:
+
+- the harness now has a first reusable control plane for tools and application readers instead of one-off runtime wiring
+- workflow assets now influence execution state and not only the generated plan text
+- application legibility is now registered, typed, and replay-visible across preview, log, and metric surfaces
+- memory moved from replay-only storage toward lightweight retrieval that can shape future task context
 
 ## 2026-04-28
 

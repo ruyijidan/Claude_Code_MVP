@@ -34,6 +34,38 @@ class PlannerTests(unittest.TestCase):
         self.assertEqual(plan[2]["workflow"], "custom_workflow")
         self.assertIn("tests must pass", plan[2]["verification_targets"])
 
+    def test_application_legibility_adds_workflow_step(self) -> None:
+        planner = LightweightPlanner()
+        workflow = WorkflowSpec(
+            name="custom_workflow",
+            goal="Test",
+            entry_signals=[],
+            required_context=["AGENTS.md"],
+            clarification_fields=[],
+            steps=["inspect custom surface"],
+            verification=["tests must pass"],
+            stop_conditions=[],
+        )
+
+        plan = planner.build_plan(
+            "inspect preview output",
+            {
+                "context_budget": {"max_candidate_files": 12},
+                "application_legibility": {
+                    "preview_targets": ["examples/web/index.html"],
+                    "log_files": ["logs/agent.log"],
+                    "metric_files": [],
+                },
+            },
+            "investigate_issue",
+            workflow,
+        )
+
+        self.assertEqual(plan[1]["id"], "workflow_legibility")
+        self.assertIn("preview targets", plan[1]["artifact_kinds"])
+        self.assertIn("log files", plan[1]["artifact_kinds"])
+        self.assertEqual(plan[2]["workflow"], "custom_workflow")
+
 
 if __name__ == "__main__":
     unittest.main()

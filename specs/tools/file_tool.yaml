@@ -1,0 +1,12 @@
+{
+  "name": "file_tool",
+  "description": "Read a repository file for context or verification.",
+  "input_schema": {
+    "path": "string"
+  },
+  "output_schema": {
+    "path": "string",
+    "exists": "boolean",
+    "content": "string"
+  }
+}

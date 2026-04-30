@@ -104,6 +104,41 @@ class CriticAgentTests(unittest.TestCase):
         self.assertEqual(result["critic_rule_hits"][0]["rule"], "wide_change_guard")
         self.assertNotIn("Changed files drift away from the task prompt.", result["critic_issues"])
 
+    def test_application_verification_issues_flow_into_critic(self) -> None:
+        agent = CriticAgent(
+            AgentSpec(
+                name="critic",
+                role="critic",
+                system_prompt="critic",
+                allowed_tools=[],
+                input_schema={},
+                output_schema={},
+            )
+        )
+
+        result = agent.run(
+            {
+                "task_spec": TaskSpec(
+                    name="investigate_issue",
+                    goal="Investigate",
+                    inputs={},
+                    outputs={},
+                    constraints=[],
+                    tools=[],
+                    done_when=[],
+                ),
+                "changed_files": ["reports/investigation.md"],
+                "test_result": "passed",
+                "verification_errors": [],
+                "application_verification": {
+                    "issues": ["log artifact shows failure signal: logs/agent.log"],
+                },
+                "gate_failures": [],
+            }
+        )
+
+        self.assertIn("log artifact shows failure signal: logs/agent.log", result["critic_issues"])
+
 
 if __name__ == "__main__":
     unittest.main()

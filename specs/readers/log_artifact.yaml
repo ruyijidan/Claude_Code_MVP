@@ -1,0 +1,12 @@
+{
+  "name": "log_artifact",
+  "artifact_kind": "log",
+  "description": "Collect runtime and harness log artifacts.",
+  "output_schema": {
+    "reader": "string",
+    "artifact_kind": "string",
+    "paths": "list",
+    "summary": "string",
+    "artifacts": "list"
+  }
+}

@@ -49,6 +49,22 @@ class RuleSpec:
 
 
 @dataclass(slots=True)
+class ToolSpec:
+    name: str
+    description: str
+    input_schema: dict[str, Any]
+    output_schema: dict[str, Any]
+
+
+@dataclass(slots=True)
+class ReaderSpec:
+    name: str
+    artifact_kind: str
+    description: str
+    output_schema: dict[str, Any]
+
+
+@dataclass(slots=True)
 class PermissionRulesSpec:
     name: str
     runtime_artifact_dirs: list[str]

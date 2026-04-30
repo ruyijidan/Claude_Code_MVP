@@ -10,16 +10,22 @@ from app.agent.completion_contracts import CompletionContractRegistry
 from app.agent.context_builder import RepoContextBuilder
 from app.agent.policies import PermissionPipeline, make_file_write_guard
 from app.agent.planner import LightweightPlanner
+from app.agent.workflow_executor import WorkflowExecutor
 from app.agent.verification_gates import VerificationGateRunner
 from app.core.memory_store import MemoryStore
 from app.core.spec_loader import SpecLoader
+from app.core.tool_registry import ToolRegistry
 from app.evals.evaluator import Evaluator
 from app.evals.replay import ReplayLogger
+from app.runtime.application_legibility import ApplicationLegibilityCollector
+from app.runtime.artifact_readers import ArtifactReaderRegistry, BrowserPreviewReader, LogArtifactReader, MetricArtifactReader
 from app.runtime.ecc_adapter import ECCAdapter
 from app.superpowers.failure_classifier import FailureClassifier
 from app.superpowers.repair_policy import RepairPolicy
 from app.superpowers.retry_policy import RetryPolicy
 from app.superpowers.self_repair import SelfRepairEngine
+from app.tools.file_tool import FileTool
+from app.tools.test_tool import TestTool
 
 
 class CodingAgentLoop:
@@ -34,8 +40,15 @@ class CodingAgentLoop:
         self.memory_store = memory_store
         self.adapter = adapter
         self.permission_pipeline = permission_pipeline or PermissionPipeline()
-        self.context_builder = RepoContextBuilder(adapter)
+        self.tool_registry = self._build_tool_registry()
+        self.reader_registry = self._build_reader_registry()
+        self.context_builder = RepoContextBuilder(
+            adapter,
+            legibility_collector=ApplicationLegibilityCollector(self.reader_registry),
+            memory_store=self.memory_store,
+        )
         self.planner = LightweightPlanner()
+        self.workflow_executor = WorkflowExecutor(self.tool_registry, self.reader_registry)
         self.completion_contracts = CompletionContractRegistry()
         self.gate_runner = VerificationGateRunner(self.completion_contracts)
         self.failure_classifier = FailureClassifier()
@@ -52,7 +65,7 @@ class CodingAgentLoop:
         task_spec = self.spec_loader.load_task(task_type)
         workflow_name = self.planner.workflow_name_for_task_type(task_type)
         workflow_spec = self.spec_loader.load_workflow(workflow_name)
-        context = self.context_builder.build(repo_path, prompt)
+        context = self.context_builder.build(repo_path, prompt, task_name=task_type)
         plan = self.planner.build_plan(prompt, context, task_type, workflow_spec)
         provider_info = self.adapter.provider_info()
 
@@ -69,9 +82,10 @@ class CodingAgentLoop:
             "repo_context": context,
             "plan": plan,
         }
+        state["workflow_execution"] = self.workflow_executor.begin(task_spec, workflow_spec, context, plan)
 
         coder = CoderAgent(self.spec_loader.load_agent("coder"), self.adapter)
-        verifier = VerifierAgent(self.spec_loader.load_agent("verifier"), self.adapter)
+        verifier = VerifierAgent(self.spec_loader.load_agent("verifier"), self.adapter, self.tool_registry)
         critic = CriticAgent(
             self.spec_loader.load_agent("critic"),
             self.spec_loader.load_rules(),
@@ -83,6 +97,7 @@ class CodingAgentLoop:
         state.update(self.gate_runner.run_post_execute(state))
         state.update(critic.run(state))
         state.update(router.run(state))
+        state.update(self.workflow_executor.complete(state))
 
         attempt = 1
         repair_attempts: list[dict] = []
@@ -115,6 +130,7 @@ class CodingAgentLoop:
             state.update(self.gate_runner.run_post_execute(state))
             state.update(critic.run(state))
             state.update(router.run(state))
+            state.update(self.workflow_executor.complete(state))
             attempt += 1
 
         state.update(self.evaluator.score(state))
@@ -129,3 +145,16 @@ class CodingAgentLoop:
             "repair_decision": repair_decision.to_dict(),
             "repair_attempts": list(repair_attempts),
         }
+
+    def _build_tool_registry(self) -> ToolRegistry:
+        registry = ToolRegistry(self.spec_loader.load_tools())
+        registry.register(FileTool())
+        registry.register(TestTool(self.adapter))
+        return registry
+
+    def _build_reader_registry(self) -> ArtifactReaderRegistry:
+        registry = ArtifactReaderRegistry(self.spec_loader.load_readers())
+        registry.register(BrowserPreviewReader())
+        registry.register(LogArtifactReader())
+        registry.register(MetricArtifactReader())
+        return registry

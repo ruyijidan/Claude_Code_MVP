@@ -102,6 +102,80 @@ class VerificationGateTests(unittest.TestCase):
         self.assertNotIn("changed_test_file_recorded", gate_names)
         self.assertTrue(result["completion_check"]["passed"])
 
+    def test_application_legibility_gates_pass_when_artifacts_are_summarized(self) -> None:
+        runner = VerificationGateRunner()
+        workflow = WorkflowSpec(
+            name="investigate_issue",
+            goal="Investigate",
+            entry_signals=[],
+            required_context=[],
+            steps=[],
+            verification=["tests must pass", "completion contract must pass"],
+            stop_conditions=[],
+        )
+
+        result = runner.run_post_execute(
+            {
+                "task_spec": type("TaskSpecStub", (), {"name": "investigate_issue"})(),
+                "workflow_spec": workflow,
+                "changed_files": ["reports/investigation.md"],
+                "implementation_summary": "Generated an investigation report.",
+                "test_result": "passed",
+                "verification_errors": [],
+                "repo_context": {
+                    "application_legibility": {
+                        "preview_targets": ["examples/web/index.html"],
+                        "log_files": ["logs/agent.log"],
+                        "metric_files": ["reports/coverage.json"],
+                        "artifact_summaries": [
+                            {"kind": "preview", "path": "examples/web/index.html", "summary": "preview"},
+                            {"kind": "log", "path": "logs/agent.log", "summary": "log"},
+                            {"kind": "metric", "path": "reports/coverage.json", "summary": "metric"},
+                        ],
+                    }
+                },
+            }
+        )
+
+        gate_names = {item["name"] for item in result["gate_results"]}
+        self.assertIn("preview_artifacts_summarized", gate_names)
+        self.assertIn("log_artifacts_summarized", gate_names)
+        self.assertIn("metric_artifacts_summarized", gate_names)
+        self.assertEqual(result["gate_failures"], [])
+
+    def test_application_legibility_gates_fail_when_summary_is_missing(self) -> None:
+        runner = VerificationGateRunner()
+        workflow = WorkflowSpec(
+            name="investigate_issue",
+            goal="Investigate",
+            entry_signals=[],
+            required_context=[],
+            steps=[],
+            verification=["tests must pass", "completion contract must pass"],
+            stop_conditions=[],
+        )
+
+        result = runner.run_post_execute(
+            {
+                "task_spec": type("TaskSpecStub", (), {"name": "investigate_issue"})(),
+                "workflow_spec": workflow,
+                "changed_files": ["reports/investigation.md"],
+                "implementation_summary": "Generated an investigation report.",
+                "test_result": "passed",
+                "verification_errors": [],
+                "repo_context": {
+                    "application_legibility": {
+                        "preview_targets": ["examples/web/index.html"],
+                        "log_files": [],
+                        "metric_files": [],
+                        "artifact_summaries": [],
+                    }
+                },
+            }
+        )
+
+        self.assertIn("missing preview artifact summaries: examples/web/index.html", result["gate_failures"])
+
 
 if __name__ == "__main__":
     unittest.main()

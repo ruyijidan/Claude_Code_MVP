@@ -27,6 +27,7 @@ class VerificationGateRunner:
         workflow = state.get("workflow_spec")
         completion_check = self.contracts.evaluate(task_type, state, workflow)
         gate_results = self._workflow_verification_gates(state, workflow)
+        gate_results.extend(self._application_legibility_gates(state))
         gate_results.append(self._architecture_gate(state))
         gate_results.append(self._completion_gate(completion_check))
         return {
@@ -100,6 +101,49 @@ class VerificationGateRunner:
             severity="error",
             message="; ".join(completion_check.reasons) if not passed else "completion contract passed",
         )
+
+    def _application_legibility_gates(self, state: dict) -> list[GateResult]:
+        repo_context = state.get("repo_context", {})
+        legibility = repo_context.get("application_legibility", {})
+        artifact_summaries = legibility.get("artifact_summaries", [])
+        if not isinstance(artifact_summaries, list):
+            artifact_summaries = []
+
+        gates: list[GateResult] = []
+        gates.extend(self._artifact_summary_gate(legibility, artifact_summaries, "preview", "preview_targets"))
+        gates.extend(self._artifact_summary_gate(legibility, artifact_summaries, "log", "log_files"))
+        gates.extend(self._artifact_summary_gate(legibility, artifact_summaries, "metric", "metric_files"))
+        return gates
+
+    def _artifact_summary_gate(
+        self,
+        legibility: dict,
+        artifact_summaries: list[dict],
+        kind: str,
+        path_key: str,
+    ) -> list[GateResult]:
+        artifact_paths = legibility.get(path_key, [])
+        if not artifact_paths:
+            return []
+        summarized_paths = {
+            item.get("path")
+            for item in artifact_summaries
+            if isinstance(item, dict) and item.get("kind") == kind and item.get("path")
+        }
+        missing_paths = [path for path in artifact_paths if path not in summarized_paths]
+        passed = not missing_paths
+        return [
+            GateResult(
+                name=f"{kind}_artifacts_summarized",
+                passed=passed,
+                severity="error",
+                message=(
+                    f"{kind} artifacts summarized"
+                    if passed
+                    else f"missing {kind} artifact summaries: {', '.join(missing_paths)}"
+                ),
+            )
+        ]
 
     def _has_test_file(self, changed_files: list[str]) -> bool:
         for path in changed_files:

@@ -25,6 +25,21 @@ class EvaluatorTests(unittest.TestCase):
 
         self.assertEqual(result["score"], 0.0)
 
+    def test_score_accounts_for_application_verification_issues(self) -> None:
+        evaluator = Evaluator()
+
+        result = evaluator.score(
+            {
+                "test_result": "passed",
+                "verification_errors": [],
+                "application_verification": {"issues": ["log artifact shows failure signal: logs/agent.log"]},
+                "gate_failures": [],
+                "completion_check": {"passed": True},
+            }
+        )
+
+        self.assertEqual(result["score"], 0.75)
+
 
 if __name__ == "__main__":
     unittest.main()

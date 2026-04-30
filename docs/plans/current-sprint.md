@@ -1,5 +1,5 @@
 ---
-last_updated: 2026-04-27
+last_updated: 2026-04-30
 status: active
 owner: core
 ---
@@ -43,6 +43,10 @@ After the first hardening wave and the follow-on asset work, the repository now 
 - release acceptance now keeps fast unit verification isolated from opt-in live provider flags
 - acceptance artifact creation prompts can reference new output paths without being blocked by repo-target clarification
 - isolated live acceptance reports now have explicit prompt guidance to rely on git snapshots instead of flagging missing `.git` metadata as a release issue
+- application legibility now has a first registered reader layer for preview, log, and metric artifacts
+- tool invocation now has a first unified spec-backed registry plus schema validation
+- workflow behavior now records structured execution state instead of staying only at plan-shaping level
+- repo context can now retrieve lightweight related trajectory summaries from local memory storage
 
 In practical terms, the project has moved from:
 
@@ -100,18 +104,17 @@ It is now:
 - documentation conventions now explicitly require bilingual English/Chinese titles for new or materially updated docs
 - a new long-form learning article now connects harness basics to building a personal harness project
 - the harness learning path now also includes a capability matrix, code-reading guide, anti-pattern guide, and a tiny practice lab under `examples/harness-lab`
+- application legibility foundations now inspect browser preview, log, and metric artifacts through registered readers
+- task execution now uses a unified tool registry with schema-validated tool I/O
+- workflow execution now records selected tools, selected readers, and per-run workflow status in replay artifacts
+- repo context now includes repository-scoped related memory hits from recent trajectories
 
 ### In Progress / 进行中
 
-- Improve application legibility foundations so the harness can inspect more than repository files
 - Keep final acceptance expectations explicit for live provider paths instead of relying only on mocked tests
 
 ### Not Started / 未开始
 
-- Add a more unified tool registry and schema abstraction layer
-- Add stronger memory and retrieval strategy beyond replay storage
-- Add richer workflow execution behavior beyond simple task-to-workflow mapping
-- Add browser, preview, log, and metric reading capabilities
 - Add multi-agent isolation and orchestration patterns
 - Add API / daemon, dashboard, and cost / cache platform capabilities
 
@@ -162,7 +165,6 @@ Priority order:
 
 - Continue turning workflow, template, and rule assets into behavior-shaping harness inputs
 - Continue strengthening import and file-size guardrails
-- Add application legibility foundations
 - Keep teaching material aligned with the real harness control loop as implementation evolves
 - Keep live provider acceptance as an explicit release check for provider-facing changes
 - Continue hardening unattended live acceptance reliability for API-backed providers without hiding real blocking failures

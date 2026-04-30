@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from app.core.models import AgentSpec, PermissionRulesSpec, RuleSpec, TaskSpec, WorkflowSpec
+from app.core.models import AgentSpec, PermissionRulesSpec, ReaderSpec, RuleSpec, TaskSpec, ToolSpec, WorkflowSpec
 
 
 class SpecLoader:
@@ -30,6 +30,20 @@ class SpecLoader:
     def load_rule(self, name: str) -> RuleSpec:
         data = self._load_json_document(self.spec_root / "rules" / f"{name}.yaml")
         return RuleSpec(**data)
+
+    def load_tool(self, name: str) -> ToolSpec:
+        data = self._load_json_document(self.spec_root / "tools" / f"{name}.yaml")
+        return ToolSpec(**data)
+
+    def load_tools(self) -> list[ToolSpec]:
+        return [ToolSpec(**self._load_json_document(path)) for path in sorted((self.spec_root / "tools").glob("*.yaml"))]
+
+    def load_reader(self, name: str) -> ReaderSpec:
+        data = self._load_json_document(self.spec_root / "readers" / f"{name}.yaml")
+        return ReaderSpec(**data)
+
+    def load_readers(self) -> list[ReaderSpec]:
+        return [ReaderSpec(**self._load_json_document(path)) for path in sorted((self.spec_root / "readers").glob("*.yaml"))]
 
     def load_rules(self, *, exclude_permission_rules: bool = True) -> list[RuleSpec]:
         rules: list[RuleSpec] = []

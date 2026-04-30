@@ -31,6 +31,7 @@ class GraphExecutionTests(unittest.TestCase):
             self.assertEqual(result["test_result"], "passed")
             self.assertEqual(result["selected_path"], "complete")
             self.assertEqual(result["workflow_spec"].name, "implement_feature")
+            self.assertEqual(result["workflow_execution"]["status"], "completed")
             self.assertEqual(result["plan"][0]["id"], "workflow_context")
             self.assertIn("AGENTS.md", result["plan"][0]["description"])
             self.assertEqual(result["plan"][2]["description"], "inspect context and identify the smallest feature surface")
@@ -43,6 +44,9 @@ class GraphExecutionTests(unittest.TestCase):
             self.assertEqual(payload["runtime_provider"], "local")
             self.assertTrue(payload["completion_check"]["passed"])
             self.assertTrue(all(item["passed"] for item in payload["gate_results"]))
+            self.assertIn("application_legibility", payload)
+            self.assertIn("application_verification", payload)
+            self.assertIn("workflow_execution", payload)
 
     def test_execute_fix_bug_task(self) -> None:
         root = Path(__file__).resolve().parents[1]
@@ -88,6 +92,37 @@ class GraphExecutionTests(unittest.TestCase):
             self.assertEqual(result["runtime_provider"], "codex_cli")
             self.assertEqual(result["test_result"], "passed")
             self.assertIn("investigation.md", "".join(result["changed_files"]))
+
+    def test_execute_surfaces_related_memory_hits(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            repo_path = Path(tmp_dir) / "workspace"
+            repo_path.mkdir()
+            memory_store = MemoryStore(repo_path / ".claude-code" / "trajectories")
+            memory_store.write(
+                "20260430T080000Z",
+                {
+                    "task": "write_tests",
+                    "request_prompt": "write tests for planner.py",
+                    "request_repo_path": str(repo_path),
+                    "changed_files": ["planner.py", "tests/test_planner.py"],
+                },
+            )
+            loader = SpecLoader(root / "specs")
+            executor = GraphExecutor(loader, memory_store)
+            result = executor.execute(
+                {
+                    "repo_path": repo_path,
+                    "task_spec": loader.load_task("write_tests"),
+                    "request": {
+                        "repo_path": str(repo_path),
+                        "feature_request": "write tests for planner.py",
+                    },
+                }
+            )
+
+        self.assertTrue(result["repo_context"]["memory_hits"])
+        self.assertEqual(result["repo_context"]["memory_hits"][0]["task"], "write_tests")
 
 
 if __name__ == "__main__":

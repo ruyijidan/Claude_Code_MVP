@@ -1,0 +1,11 @@
+{
+  "name": "test_tool",
+  "description": "Run the repository test suite and collect output.",
+  "input_schema": {
+    "repo_path": "string"
+  },
+  "output_schema": {
+    "returncode": "integer",
+    "output": "string"
+  }
+}

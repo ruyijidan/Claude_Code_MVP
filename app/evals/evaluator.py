@@ -8,6 +8,9 @@ class Evaluator:
             score -= 0.5
         if state.get("verification_errors"):
             score -= 0.5
+        application_verification = state.get("application_verification", {})
+        if application_verification.get("issues"):
+            score -= 0.25
         if state.get("gate_failures"):
             score -= 0.5
         completion_check = state.get("completion_check", {})

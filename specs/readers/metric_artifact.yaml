@@ -1,0 +1,12 @@
+{
+  "name": "metric_artifact",
+  "artifact_kind": "metric",
+  "description": "Collect coverage and metric report artifacts.",
+  "output_schema": {
+    "reader": "string",
+    "artifact_kind": "string",
+    "paths": "list",
+    "summary": "string",
+    "artifacts": "list"
+  }
+}

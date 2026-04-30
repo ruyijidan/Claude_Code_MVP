@@ -22,6 +22,22 @@ def _permission_summary(decision: dict) -> str:
     return f"action={action} risk={risk} boundary={boundary} reason={reason}"
 
 
+def _print_application_verification(result: dict) -> None:
+    application_verification = result.get("application_verification", {})
+    if not application_verification.get("available"):
+        return
+    print("application verification:")
+    print(application_verification.get("summary"))
+    findings = application_verification.get("findings", [])
+    for finding in findings[:5]:
+        print(f"- {finding}")
+    issues = application_verification.get("issues", [])
+    if issues:
+        print("application issues:")
+        for issue in issues[:5]:
+            print(f"- {issue}")
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="cc", description="Claude Code MVP CLI")
     parser.add_argument("prompt", nargs="?", default="", help='Developer request, for example: cc "fix failing tests"')
@@ -330,6 +346,12 @@ def main(argv: list[str] | None = None) -> int:
         print(f"task: {result['task_spec'].name}")
         print(f"status: {result['test_result']}")
         print(f"changed_files: {len(result.get('changed_files', []))}")
+        workflow_execution = result.get("workflow_execution", {})
+        if workflow_execution.get("workflow"):
+            print(f"workflow: {workflow_execution.get('workflow')} ({workflow_execution.get('status')})")
+        memory_hits = result.get("repo_context", {}).get("memory_hits", [])
+        if memory_hits:
+            print(f"memory_hits: {len(memory_hits)}")
         git_snapshot = result.get("repo_context", {}).get("git", {})
         branch_name = git_snapshot.get("branch", {}).get("name")
         if branch_name:
@@ -349,6 +371,7 @@ def main(argv: list[str] | None = None) -> int:
             print("post commit summary:")
             print(post_commit_summary.get("title"))
             print(post_commit_summary.get("summary"))
+        _print_application_verification(result)
         print(f"trajectory: {result['trajectory_path']}")
     return 0
 

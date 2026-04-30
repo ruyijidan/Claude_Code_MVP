@@ -38,6 +38,18 @@ class LightweightPlanner:
                         "context_budget": context.get("context_budget", {}),
                     }
                 )
+            application_legibility = context.get("application_legibility", {})
+            artifact_kinds = self._available_legibility_kinds(application_legibility)
+            if artifact_kinds:
+                artifact_summary = ", ".join(artifact_kinds)
+                plan.append(
+                    {
+                        "id": "workflow_legibility",
+                        "description": f"inspect application artifacts before changes: {artifact_summary}",
+                        "agent": "coding_loop",
+                        "artifact_kinds": artifact_kinds,
+                    }
+                )
             if workflow.clarification_fields:
                 clarification_summary = ", ".join(workflow.clarification_fields)
                 plan.append(
@@ -76,3 +88,13 @@ class LightweightPlanner:
                 "agent": "coding_loop",
             },
         ]
+
+    def _available_legibility_kinds(self, legibility: dict) -> list[str]:
+        available: list[str] = []
+        if legibility.get("preview_targets"):
+            available.append("preview targets")
+        if legibility.get("log_files"):
+            available.append("log files")
+        if legibility.get("metric_files"):
+            available.append("metric files")
+        return available
