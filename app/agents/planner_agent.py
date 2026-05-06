@@ -5,6 +5,12 @@ from app.agents.base_agent import BaseAgent
 
 class PlannerAgent(BaseAgent):
     def run(self, state: dict) -> dict:
+        existing_plan = state.get("plan")
+        if isinstance(existing_plan, list) and existing_plan:
+            return {
+                "plan": existing_plan,
+                "next_agent": "coder",
+            }
         request = state["request"]["feature_request"]
         return {
             "plan": [

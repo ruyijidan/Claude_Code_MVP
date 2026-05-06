@@ -20,6 +20,7 @@ class ReplayLogger:
             "request_repo_path": state.get("request", {}).get("repo_path"),
             "plan": state.get("plan", []),
             "workflow_execution": state.get("workflow_execution", {}),
+            "agent_transitions": state.get("agent_transitions", []),
             "changed_files": state.get("changed_files", []),
             "test_result": state.get("test_result"),
             "verification_errors": state.get("verification_errors", []),

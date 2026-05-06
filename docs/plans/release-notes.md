@@ -1,10 +1,42 @@
 ---
-last_updated: 2026-04-30
+last_updated: 2026-05-06
 status: active
 owner: core
 ---
 
 # Release Notes / 发布说明
+
+## 2026-05-06
+
+### Multi-Agent Orchestration And Local Daemon Service / 多代理编排与本地守护服务
+
+Included pending change set:
+
+- `app/agent/orchestrator.py`: added explicit agent isolation and transition recording across planner, coder, verifier, critic, and router stages
+- `app/daemon/service.py` and `app/daemon/server.py`: added a minimal local daemon service and HTTP surface for run, status, and latest-trajectory queries
+- loop and replay wiring updates in `app/agent/loop.py` and `app/evals/replay.py`
+- agent reuse update in `app/agents/planner_agent.py`
+- new orchestration and daemon tests under `tests/test_orchestrator.py`, `tests/test_daemon_service.py`, and `tests/test_daemon_server.py`
+
+Highlights:
+
+- made agent handoff explicit instead of leaving execution order implicit inside one local loop
+- recorded agent-level allowed tools, declared I/O contracts, observed keys, and next-agent transitions in replay artifacts
+- kept the orchestration layer minimal and synchronous while still surfacing isolation boundaries clearly
+- added a small daemon service that can run a task, report latest run status, and return the latest stored trajectory over HTTP
+
+Verification:
+
+- targeted orchestration and daemon tests passed locally
+- full unit test discovery passed locally: `153 tests OK, 2 skipped`
+- architecture check passed locally with `python3 scripts/check_architecture.py`
+- isolated worktree verification passed locally with `bash scripts/agent_verify.sh`
+
+Impact:
+
+- the harness now has a first explicit multi-agent control surface instead of a purely monolithic local loop
+- replay artifacts are now more useful for studying stage boundaries and agent-level execution behavior
+- the project now has a first reusable daemon-style entrypoint beyond the CLI without committing to a larger platform surface yet
 
 ## 2026-04-30
 

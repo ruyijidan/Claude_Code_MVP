@@ -4,10 +4,12 @@ from pathlib import Path
 
 from app.agents.coder_agent import CoderAgent
 from app.agents.critic_agent import CriticAgent
+from app.agents.planner_agent import PlannerAgent
 from app.agents.router_agent import RouterAgent
 from app.agents.verifier_agent import VerifierAgent
 from app.agent.completion_contracts import CompletionContractRegistry
 from app.agent.context_builder import RepoContextBuilder
+from app.agent.orchestrator import AgentOrchestrator
 from app.agent.policies import PermissionPipeline, make_file_write_guard
 from app.agent.planner import LightweightPlanner
 from app.agent.workflow_executor import WorkflowExecutor
@@ -48,6 +50,7 @@ class CodingAgentLoop:
             memory_store=self.memory_store,
         )
         self.planner = LightweightPlanner()
+        self.orchestrator = AgentOrchestrator()
         self.workflow_executor = WorkflowExecutor(self.tool_registry, self.reader_registry)
         self.completion_contracts = CompletionContractRegistry()
         self.gate_runner = VerificationGateRunner(self.completion_contracts)
@@ -59,6 +62,7 @@ class CodingAgentLoop:
         self.replay_logger = ReplayLogger(memory_store)
 
     def run(self, repo_path: Path, prompt: str, task_name: str | None = None) -> dict:
+        self.orchestrator = AgentOrchestrator()
         if self.adapter.file_guard is None:
             self.adapter.configure_file_guard(make_file_write_guard(self.permission_pipeline, repo_root=repo_path))
         task_type = task_name or self.planner.infer_task_type(prompt)
@@ -83,21 +87,41 @@ class CodingAgentLoop:
             "plan": plan,
         }
         state["workflow_execution"] = self.workflow_executor.begin(task_spec, workflow_spec, context, plan)
+        state["agent_transitions"] = []
 
-        coder = CoderAgent(self.spec_loader.load_agent("coder"), self.adapter)
-        verifier = VerifierAgent(self.spec_loader.load_agent("verifier"), self.adapter, self.tool_registry)
+        planner_spec = self.spec_loader.load_agent("planner")
+        coder_spec = self.spec_loader.load_agent("coder")
+        verifier_spec = self.spec_loader.load_agent("verifier")
+        critic_spec = self.spec_loader.load_agent("critic")
+        router_spec = self.spec_loader.load_agent("router")
+
+        planner_agent = PlannerAgent(planner_spec)
+        coder = CoderAgent(coder_spec, self.adapter)
+        verifier = VerifierAgent(verifier_spec, self.adapter, self.tool_registry)
         critic = CriticAgent(
-            self.spec_loader.load_agent("critic"),
+            critic_spec,
             self.spec_loader.load_rules(),
         )
-        router = RouterAgent(self.spec_loader.load_agent("router"))
+        router = RouterAgent(router_spec)
 
-        state.update(coder.run(state))
-        state.update(verifier.run(state))
+        planner_result = planner_agent.run(self.orchestrator.isolated_state(planner_spec, state))
+        self.orchestrator.record_transition(planner_spec, state, planner_result, status="completed", next_agent="coder")
+        state.update(planner_result)
+        coder_result = coder.run(self.orchestrator.isolated_state(coder_spec, state))
+        self.orchestrator.record_transition(coder_spec, state, coder_result, status="completed", next_agent="verifier")
+        state.update(coder_result)
+        verifier_result = verifier.run(self.orchestrator.isolated_state(verifier_spec, state))
+        self.orchestrator.record_transition(verifier_spec, state, verifier_result, status="completed", next_agent="critic")
+        state.update(verifier_result)
         state.update(self.gate_runner.run_post_execute(state))
-        state.update(critic.run(state))
-        state.update(router.run(state))
+        critic_result = critic.run(self.orchestrator.isolated_state(critic_spec, state))
+        self.orchestrator.record_transition(critic_spec, state, critic_result, status="completed", next_agent="router")
+        state.update(critic_result)
+        router_result = router.run(self.orchestrator.isolated_state(router_spec, state))
+        self.orchestrator.record_transition(router_spec, state, router_result, status="completed")
+        state.update(router_result)
         state.update(self.workflow_executor.complete(state))
+        state["agent_transitions"] = self.orchestrator.history()
 
         attempt = 1
         repair_attempts: list[dict] = []
@@ -126,14 +150,22 @@ class CodingAgentLoop:
             if not retry_allowed:
                 break
             state.update(self.repair_engine.repair(state, decision))
-            state.update(verifier.run(state))
+            verifier_result = verifier.run(self.orchestrator.isolated_state(verifier_spec, state))
+            self.orchestrator.record_transition(verifier_spec, state, verifier_result, status="repair_verification", next_agent="critic")
+            state.update(verifier_result)
             state.update(self.gate_runner.run_post_execute(state))
-            state.update(critic.run(state))
-            state.update(router.run(state))
+            critic_result = critic.run(self.orchestrator.isolated_state(critic_spec, state))
+            self.orchestrator.record_transition(critic_spec, state, critic_result, status="repair_critique", next_agent="router")
+            state.update(critic_result)
+            router_result = router.run(self.orchestrator.isolated_state(router_spec, state))
+            self.orchestrator.record_transition(router_spec, state, router_result, status="repair_routing")
+            state.update(router_result)
             state.update(self.workflow_executor.complete(state))
+            state["agent_transitions"] = self.orchestrator.history()
             attempt += 1
 
         state.update(self.evaluator.score(state))
+        state["agent_transitions"] = self.orchestrator.history()
         state["trajectory_path"] = self.replay_logger.persist(state)
         return state
 

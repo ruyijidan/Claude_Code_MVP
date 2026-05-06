@@ -47,6 +47,10 @@ class GraphExecutionTests(unittest.TestCase):
             self.assertIn("application_legibility", payload)
             self.assertIn("application_verification", payload)
             self.assertIn("workflow_execution", payload)
+            self.assertIn("agent_transitions", payload)
+            self.assertGreaterEqual(len(result["agent_transitions"]), 5)
+            self.assertEqual(result["agent_transitions"][0]["agent"], "planner")
+            self.assertEqual(result["agent_transitions"][-1]["agent"], "router")
 
     def test_execute_fix_bug_task(self) -> None:
         root = Path(__file__).resolve().parents[1]

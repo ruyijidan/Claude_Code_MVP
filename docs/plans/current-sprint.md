@@ -1,5 +1,5 @@
 ---
-last_updated: 2026-04-30
+last_updated: 2026-05-06
 status: active
 owner: core
 ---
@@ -49,6 +49,8 @@ After the first hardening wave and the follow-on asset work, the repository now 
 - repo context can now retrieve lightweight related trajectory summaries from local memory storage
 - intent clarification can now reuse strong related-memory hits for continuation fallback and target completion
 - planner context assembly can now prioritize bounded memory-derived file paths instead of relying only on fresh repo sampling
+- multi-agent execution now records explicit planner, coder, verifier, critic, and router transitions with isolated stage views
+- a first local daemon service now exposes run, status, and latest-trajectory queries outside the CLI entrypoint
 
 In practical terms, the project has moved from:
 
@@ -111,6 +113,8 @@ It is now:
 - workflow execution now records selected tools, selected readers, and per-run workflow status in replay artifacts
 - repo context now includes repository-scoped related memory hits from recent trajectories
 - retrieval now shapes continuation resolution, target completion, and planner-side context narrowing
+- multi-agent isolation and orchestration patterns now have a first explicit runtime implementation
+- API / daemon capability now has a first local service and HTTP control surface
 
 ### In Progress / 进行中
 
@@ -118,8 +122,7 @@ It is now:
 
 ### Not Started / 未开始
 
-- Add multi-agent isolation and orchestration patterns
-- Add API / daemon, dashboard, and cost / cache platform capabilities
+- Add dashboard and cost / cache platform capabilities
 
 ### Doc Debt / 文档待修正
 
