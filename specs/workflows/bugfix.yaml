@@ -1,5 +1,7 @@
 {
   "name": "bugfix",
+  "workflow_slug": "bugfix",
+  "task_type": "fix_bug",
   "goal": "Fix a concrete defect with the smallest reliable change and verify the result with tests.",
   "entry_signals": [
     "prompt contains fix, bug, failing, regression, error",

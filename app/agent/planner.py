@@ -4,14 +4,18 @@ from app.core.models import WorkflowSpec
 
 
 class LightweightPlanner:
-    WORKFLOW_NAME_MAP = {
+    TASK_TYPE_FALLBACK_WORKFLOW_NAMES = {
         "fix_bug": "bugfix",
         "implement_feature": "implement-feature",
         "write_tests": "write-tests",
         "investigate_issue": "investigate-issue",
     }
 
-    def infer_task_type(self, prompt: str) -> str:
+    def infer_task_type(self, prompt: str, workflows: list[WorkflowSpec] | None = None) -> str:
+        if workflows is not None:
+            matched_workflow = self._workflow_from_prompt(prompt, workflows)
+            if matched_workflow is not None:
+                return matched_workflow.task_type or matched_workflow.name.replace("-", "_")
         lowered = prompt.lower()
         if "investigate" in lowered or "debug why" in lowered:
             return "investigate_issue"
@@ -21,8 +25,12 @@ class LightweightPlanner:
             return "fix_bug"
         return "implement_feature"
 
-    def workflow_name_for_task_type(self, task_type: str) -> str:
-        return self.WORKFLOW_NAME_MAP.get(task_type, "implement-feature")
+    def workflow_name_for_task_type(self, task_type: str, workflows: list[WorkflowSpec] | None = None) -> str:
+        if workflows is not None:
+            workflow = self._workflow_for_task_type(task_type, workflows)
+            if workflow is not None:
+                return workflow.workflow_slug or workflow.name
+        return self.TASK_TYPE_FALLBACK_WORKFLOW_NAMES.get(task_type, task_type.replace("_", "-"))
 
     def build_plan(self, prompt: str, context: dict, task_type: str, workflow: WorkflowSpec | None = None) -> list[dict]:
         if workflow is not None:
@@ -132,3 +140,33 @@ class LightweightPlanner:
             return f"assemble bounded context for workflow inputs: {context_summary}"
         focus_summary = ", ".join(focused_paths[:3])
         return f"assemble bounded context for workflow inputs: {context_summary}; prioritize {focus_summary}"
+
+    def _workflow_for_task_type(self, task_type: str, workflows: list[WorkflowSpec]) -> WorkflowSpec | None:
+        normalized_task_type = task_type.replace("-", "_")
+        for workflow in workflows:
+            workflow_task_type = workflow.task_type or workflow.name.replace("-", "_")
+            if workflow_task_type == normalized_task_type:
+                return workflow
+        return None
+
+    def _workflow_from_prompt(self, prompt: str, workflows: list[WorkflowSpec]) -> WorkflowSpec | None:
+        lowered = prompt.lower()
+        prompt_tokens = {token for token in lowered.replace("/", " ").replace(",", " ").split() if len(token) >= 3}
+        for workflow in workflows:
+            if self._workflow_matches_prompt(workflow, lowered, prompt_tokens):
+                return workflow
+        return None
+
+    def _workflow_matches_prompt(self, workflow: WorkflowSpec, lowered_prompt: str, prompt_tokens: set[str]) -> bool:
+        for signal in workflow.entry_signals:
+            lowered_signal = signal.lower()
+            if "prompt contains" in lowered_signal:
+                signal_text = lowered_signal.split("prompt contains", maxsplit=1)[1]
+                signal_tokens = {token.strip(" ,") for token in signal_text.replace("/", " ").split() if len(token.strip(" ,")) >= 3}
+                if signal_tokens and signal_tokens.intersection(prompt_tokens):
+                    return True
+            elif "task type inferred as" in lowered_signal:
+                continue
+            elif lowered_signal in lowered_prompt:
+                return True
+        return False

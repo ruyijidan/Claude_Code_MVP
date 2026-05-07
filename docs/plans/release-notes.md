@@ -8,6 +8,35 @@ owner: core
 
 ## 2026-05-07
 
+### Workflow Resolution Now Uses Workflow Asset Metadata / 工作流解析现在使用工作流资产元数据
+
+Included pending change set:
+
+- `app/core/models.py`: added optional `task_type` and `workflow_slug` metadata to workflow assets
+- `app/core/spec_loader.py`: added bulk workflow loading and task-type workflow lookup helpers
+- `app/agent/planner.py`: made prompt-to-task and task-to-workflow resolution prefer workflow metadata before heuristic fallback
+- `app/agent/intent_clarifier.py`: reused the shared workflow lookup helper for clarification fields
+- `app/agent/loop.py`: now loads the workflow catalog once and uses it for task/workflow resolution
+- `specs/workflows/*.yaml`: added explicit `task_type` and `workflow_slug` metadata
+- tests updated in `tests/test_spec_loader.py` and `tests/test_planner.py`
+
+Highlights:
+
+- moved the main task-to-workflow mapping out of hard-coded planner branching and into workflow asset metadata
+- kept a small fallback mapping only for cases where workflow metadata is unavailable
+- aligned intent clarification with the same shared workflow lookup path
+- made the active loop load the workflow catalog once instead of encoding separate task/workflow resolution rules in multiple places
+
+Verification:
+
+- targeted spec loader, planner, CLI, and daemon tests passed locally
+- full unit test discovery passed locally: `159 tests OK, 2 skipped`
+
+Impact:
+
+- workflow assets now carry enough metadata to drive both task inference and workflow file resolution
+- the task-to-behavior path is now more spec-driven and less dependent on duplicated code constants
+
 ### Rule Assets Now Route Into Critic And Verifier / 规则资产现已接入 Critic 与 Verifier
 
 Included pending change set:

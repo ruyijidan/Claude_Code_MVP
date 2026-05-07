@@ -33,6 +33,7 @@ After the first hardening wave and the follow-on asset work, the repository now 
 - `failure classification` and `repair policy` are in place
 - workflow, template, and rule assets now exist under `specs/`
 - workflow assets already shape plan and verification behavior
+- workflow assets now also carry explicit task-type and workflow-slug metadata used by planner resolution
 - rule assets have started to shape critic behavior
 - pre-execution `intent clarification` now exists as an explicit CLI control point
 - continuation-aware clarification now distinguishes between a single recent task and multiple ambiguous recent tasks

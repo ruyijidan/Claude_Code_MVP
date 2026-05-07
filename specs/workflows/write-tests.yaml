@@ -1,5 +1,7 @@
 {
   "name": "write_tests",
+  "workflow_slug": "write-tests",
+  "task_type": "write_tests",
   "goal": "Add or extend tests with minimal supporting changes and verify that the test suite passes.",
   "entry_signals": [
     "prompt contains write and test",

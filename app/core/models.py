@@ -43,6 +43,8 @@ class WorkflowSpec:
     steps: list[str]
     verification: list[str]
     stop_conditions: list[str]
+    workflow_slug: str | None = None
+    task_type: str | None = None
     clarification_fields: list[str] = field(default_factory=list)
     verification_gates: list[VerificationGateSpec] = field(default_factory=list)
 

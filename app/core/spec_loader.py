@@ -31,6 +31,9 @@ class SpecLoader:
         ]
         return WorkflowSpec(**data, verification_gates=gate_specs)
 
+    def load_workflows(self) -> list[WorkflowSpec]:
+        return [self.load_workflow(path.stem) for path in sorted((self.spec_root / "workflows").glob("*.yaml"))]
+
     def load_rule(self, name: str) -> RuleSpec:
         data = self._load_json_document(self.spec_root / "rules" / f"{name}.yaml")
         return RuleSpec(**data)
@@ -63,3 +66,23 @@ class SpecLoader:
 
     def load_template(self, name: str) -> str:
         return (self.spec_root / "templates" / f"{name}.md").read_text(encoding="utf-8")
+
+    def find_workflow_for_task_type(self, task_type: str) -> WorkflowSpec | None:
+        workflows = self.load_workflows()
+        normalized_task_type = task_type.replace("-", "_")
+        for workflow in workflows:
+            workflow_task_type = workflow.task_type or workflow.name.replace("-", "_")
+            if workflow_task_type == normalized_task_type:
+                return workflow
+        for workflow in workflows:
+            if self._workflow_mentions_task_type(workflow, normalized_task_type):
+                return workflow
+        return None
+
+    def _workflow_mentions_task_type(self, workflow: WorkflowSpec, task_type: str) -> bool:
+        task_alias = task_type.replace("_", " ")
+        workflow_name = workflow.name.replace("-", " ")
+        return any(
+            task_type in signal.replace("-", "_").lower() or task_alias in signal.lower() or workflow_name in signal.lower()
+            for signal in workflow.entry_signals
+        )

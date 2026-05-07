@@ -1,5 +1,7 @@
 {
   "name": "investigate_issue",
+  "workflow_slug": "investigate-issue",
+  "task_type": "investigate_issue",
   "goal": "Investigate a problem, produce an explicit report, and verify the required artifact exists.",
   "entry_signals": [
     "prompt contains investigate or debug why",

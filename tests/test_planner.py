@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import unittest
+from pathlib import Path
 
 from app.agent.planner import LightweightPlanner
+from app.core.spec_loader import SpecLoader
 from app.core.models import WorkflowSpec
 
 
@@ -96,6 +98,17 @@ class PlannerTests(unittest.TestCase):
         self.assertIn("prioritize planner.py", plan[0]["description"])
         self.assertEqual(plan[1]["id"], "workflow_memory")
         self.assertEqual(plan[1]["memory_context_paths"][0], "planner.py")
+
+    def test_planner_uses_workflow_assets_for_task_type_and_name_resolution(self) -> None:
+        planner = LightweightPlanner()
+        root = Path(__file__).resolve().parents[1] / "specs"
+        workflows = SpecLoader(root).load_workflows()
+
+        task_type = planner.infer_task_type("fix the failing router test", workflows)
+        workflow_name = planner.workflow_name_for_task_type(task_type, workflows)
+
+        self.assertEqual(task_type, "fix_bug")
+        self.assertEqual(workflow_name, "bugfix")
 
 
 if __name__ == "__main__":

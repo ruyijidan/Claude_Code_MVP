@@ -1,5 +1,7 @@
 {
   "name": "implement_feature",
+  "workflow_slug": "implement-feature",
+  "task_type": "implement_feature",
   "goal": "Add a new feature with bounded context, explicit verification, and a clear completion summary.",
   "entry_signals": [
     "prompt does not match bugfix, write-tests, or investigate patterns",

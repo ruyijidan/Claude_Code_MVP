@@ -52,11 +52,23 @@ class SpecLoaderTests(unittest.TestCase):
         root = Path(__file__).resolve().parents[1] / "specs"
         loader = SpecLoader(root)
 
+        workflows = loader.load_workflows()
         write_tests = loader.load_workflow("write-tests")
         investigate = loader.load_workflow("investigate-issue")
 
+        self.assertIn("bugfix", {workflow.name for workflow in workflows})
+        self.assertIn("fix_bug", {workflow.task_type for workflow in workflows})
         self.assertEqual(write_tests.name, "write_tests")
         self.assertEqual(investigate.name, "investigate_issue")
+
+    def test_find_workflow_for_task_type_uses_spec_metadata(self) -> None:
+        root = Path(__file__).resolve().parents[1] / "specs"
+        loader = SpecLoader(root)
+
+        workflow = loader.find_workflow_for_task_type("fix_bug")
+
+        self.assertIsNotNone(workflow)
+        self.assertEqual(workflow.name, "bugfix")
 
     def test_load_tool_and_reader_collections(self) -> None:
         root = Path(__file__).resolve().parents[1] / "specs"

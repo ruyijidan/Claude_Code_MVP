@@ -219,18 +219,10 @@ class IntentClarifier:
     def _required_fields_for_task_type(self, task_type: str | None) -> set[str]:
         if task_type is None:
             return {"target", "success_criteria"}
-        workflow_name_map = {
-            "fix_bug": "bugfix",
-            "implement_feature": "implement-feature",
-            "write_tests": "write-tests",
-            "investigate_issue": "investigate-issue",
-        }
         if self.spec_loader is not None:
-            workflow_name = workflow_name_map.get(task_type)
-            if workflow_name is not None:
-                workflow = self.spec_loader.load_workflow(workflow_name)
-                if workflow.clarification_fields:
-                    return set(workflow.clarification_fields)
+            workflow = self.spec_loader.find_workflow_for_task_type(task_type)
+            if workflow is not None and workflow.clarification_fields:
+                return set(workflow.clarification_fields)
         return {"target", "success_criteria"}
 
     def _extract_path_references(self, prompt: str) -> list[str]:

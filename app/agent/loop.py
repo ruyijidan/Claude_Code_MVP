@@ -65,9 +65,10 @@ class CodingAgentLoop:
         self.orchestrator = AgentOrchestrator()
         if self.adapter.file_guard is None:
             self.adapter.configure_file_guard(make_file_write_guard(self.permission_pipeline, repo_root=repo_path))
-        task_type = task_name or self.planner.infer_task_type(prompt)
+        workflows = self.spec_loader.load_workflows()
+        task_type = task_name or self.planner.infer_task_type(prompt, workflows)
         task_spec = self.spec_loader.load_task(task_type)
-        workflow_name = self.planner.workflow_name_for_task_type(task_type)
+        workflow_name = self.planner.workflow_name_for_task_type(task_type, workflows)
         workflow_spec = self.spec_loader.load_workflow(workflow_name)
         context = self.context_builder.build(repo_path, prompt, task_name=task_type)
         plan = self.planner.build_plan(prompt, context, task_type, workflow_spec)
