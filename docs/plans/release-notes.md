@@ -8,6 +8,35 @@ owner: core
 
 ## 2026-05-07
 
+### Rule Assets Now Route Into Critic And Verifier / 规则资产现已接入 Critic 与 Verifier
+
+Included pending change set:
+
+- `app/core/models.py`: extended `RuleSpec` with explicit `enforced_by` ownership
+- `app/agents/critic_agent.py`: filtered rule execution by `critic` ownership instead of applying every rule generically
+- `app/agents/verifier_agent.py`: added rule-driven verifier judgments and structured `verifier_rule_hits`
+- `app/agent/loop.py`: passed loaded rule assets into verifier execution
+- `specs/rules/surgical-changes.yaml`: marked the existing surgical scope rule as critic-owned
+- `specs/rules/application-artifact-signals.yaml`: added a first verifier-owned rule asset for blocking application artifact failure signals
+- tests updated in `tests/test_spec_loader.py`, `tests/test_critic_agent.py`, and `tests/test_verifier_agent.py`
+
+Highlights:
+
+- moved rule assets from critic-only influence toward explicit multi-agent enforcement
+- let verifier treat application artifact failure signals as rule-backed blocking evidence instead of relying only on hard-coded verifier logic
+- kept rule ownership explicit so verifier-targeted rules do not accidentally alter critic behavior
+- made both verifier and critic expose structured rule-hit reporting for downstream replay and debugging
+
+Verification:
+
+- targeted spec loader, critic, and verifier tests passed locally
+- full unit test discovery passed locally: `157 tests OK, 2 skipped`
+
+Impact:
+
+- `specs/rules` now shape verifier and critic judgments through explicit ownership instead of only influencing critic summaries
+- the harness took another concrete step toward the sprint goal of making repo assets control real runtime behavior
+
 ### Workflow Verification Gates Become Spec-Driven / 工作流验证门转为规范驱动
 
 Included pending change set:

@@ -139,6 +139,50 @@ class CriticAgentTests(unittest.TestCase):
 
         self.assertIn("log artifact shows failure signal: logs/agent.log", result["critic_issues"])
 
+    def test_verifier_only_rule_does_not_change_critic_behavior(self) -> None:
+        agent = CriticAgent(
+            AgentSpec(
+                name="critic",
+                role="critic",
+                system_prompt="critic",
+                allowed_tools=[],
+                input_schema={},
+                output_schema={},
+            ),
+            RuleSpec(
+                name="application_artifact_signals",
+                intent="Treat artifact failures as blocking",
+                applies_to=["investigate_issue"],
+                checks=["application artifact failure signals must fail verification"],
+                failure_message="Application artifact verification reported blocking signals.",
+                enforced_by=["verifier"],
+            ),
+        )
+
+        result = agent.run(
+            {
+                "task_spec": TaskSpec(
+                    name="investigate_issue",
+                    goal="Investigate",
+                    inputs={},
+                    outputs={},
+                    constraints=[],
+                    tools=[],
+                    done_when=[],
+                ),
+                "changed_files": ["reports/investigation.md"],
+                "test_result": "passed",
+                "verification_errors": [],
+                "application_verification": {
+                    "issues": ["log artifact shows failure signal: logs/agent.log"],
+                },
+                "gate_failures": [],
+            }
+        )
+
+        self.assertEqual(result["critic_rule_hits"], [])
+        self.assertEqual(result["critic_issues"], ["log artifact shows failure signal: logs/agent.log"])
+
 
 if __name__ == "__main__":
     unittest.main()

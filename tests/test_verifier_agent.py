@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 
 from app.agents.verifier_agent import VerifierAgent
-from app.core.models import AgentSpec, TaskSpec
+from app.core.models import AgentSpec, RuleSpec, TaskSpec
 from app.runtime.local_runtime import LocalRuntimeAdapter
 
 
@@ -88,6 +88,50 @@ class VerifierAgentTests(unittest.TestCase):
             )
 
         self.assertIn("metric artifact shows zero line coverage: reports/coverage.json", result["application_verification"]["issues"])
+
+    def test_verifier_rule_turns_artifact_signals_into_verification_error(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            repo_path = Path(tmp_dir)
+            (repo_path / "tests").mkdir()
+            (repo_path / "tests" / "test_ok.py").write_text(
+                "import unittest\n\nclass T(unittest.TestCase):\n    def test_ok(self):\n        self.assertTrue(True)\n",
+                encoding="utf-8",
+            )
+            agent = VerifierAgent(
+                AgentSpec(
+                    name="verifier",
+                    role="verifier",
+                    system_prompt="verify",
+                    allowed_tools=["test_tool"],
+                    input_schema={},
+                    output_schema={},
+                ),
+                LocalRuntimeAdapter(),
+                rule_spec=RuleSpec(
+                    name="application_artifact_signals",
+                    intent="Treat artifact failures as blocking",
+                    applies_to=["investigate_issue"],
+                    checks=["application artifact failure signals must fail verification"],
+                    failure_message="Application artifact verification reported blocking signals.",
+                    enforced_by=["verifier"],
+                ),
+            )
+            result = agent.run(
+                {
+                    "repo_path": repo_path,
+                    "task_spec": self._task_spec(),
+                    "repo_context": {
+                        "application_legibility": {
+                            "artifact_summaries": [
+                                {"kind": "log", "path": "logs/agent.log", "summary": "Traceback: failure"},
+                            ]
+                        }
+                    },
+                }
+            )
+
+        self.assertIn("Application artifact verification reported blocking signals.", result["verification_errors"])
+        self.assertEqual(result["verifier_rule_hits"][0]["rule"], "application_artifact_signals")
 
 
 if __name__ == "__main__":

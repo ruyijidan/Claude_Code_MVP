@@ -1,0 +1,17 @@
+{
+  "name": "application_artifact_signals",
+  "intent": "Treat failure signals in application artifacts as verifier-visible blocking evidence.",
+  "applies_to": [
+    "implement_feature",
+    "fix_bug",
+    "write_tests",
+    "investigate_issue"
+  ],
+  "enforced_by": [
+    "verifier"
+  ],
+  "checks": [
+    "application artifact failure signals must fail verification"
+  ],
+  "failure_message": "Application artifact verification reported blocking signals."
+}

@@ -42,6 +42,8 @@ class CriticAgent(BaseAgent):
 
         hits: list[dict] = []
         for rule in self.rule_specs:
+            if rule.enforced_by and "critic" not in rule.enforced_by:
+                continue
             if task_spec.name not in rule.applies_to:
                 continue
             failed_checks = self._failed_checks(rule, changed_files, prompt)

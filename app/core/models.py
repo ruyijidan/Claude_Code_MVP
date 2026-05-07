@@ -54,6 +54,7 @@ class RuleSpec:
     applies_to: list[str]
     checks: list[str]
     failure_message: str
+    enforced_by: list[str] = field(default_factory=list)
 
 
 @dataclass(slots=True)

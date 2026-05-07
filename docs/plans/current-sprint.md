@@ -102,7 +102,7 @@ It is now:
 - repo planning context and acceptance context now reuse shared compression helpers for prompt, path, file, and git shaping
 - workflow assets now add explicit context and clarification steps to generated plans
 - workflow assets now also select post-execution verification gates through structured `verification_gates` specs
-- rule assets now produce structured critic rule-hit reporting and can be loaded as a set instead of a single hard-coded rule
+- rule assets now produce structured critic and verifier rule-hit reporting and can declare explicit enforcement ownership
 - architecture checks now include file-size guardrails for high-risk control-surface modules
 - release acceptance reporting now classifies provider risks into transient environment, setup/auth, and product-blocking buckets
 - contributor-facing harness implementation guidance now exists under `docs/guides/how-to-implement-a-harness.md`

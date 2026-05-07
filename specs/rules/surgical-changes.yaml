@@ -7,6 +7,9 @@
     "write_tests",
     "investigate_issue"
   ],
+  "enforced_by": [
+    "critic"
+  ],
   "checks": [
     "changed files should map back to the current task",
     "avoid broad cleanup when it is not required for correctness",

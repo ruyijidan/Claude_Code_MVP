@@ -46,6 +46,7 @@ class SpecLoaderTests(unittest.TestCase):
         self.assertTrue(rules)
         self.assertTrue(all(rule.name != "permission_rules_v1" for rule in rules))
         self.assertIn("surgical_changes", {rule.name for rule in rules})
+        self.assertIn("application_artifact_signals", {rule.name for rule in rules})
 
     def test_load_additional_workflows(self) -> None:
         root = Path(__file__).resolve().parents[1] / "specs"

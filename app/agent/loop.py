@@ -97,7 +97,12 @@ class CodingAgentLoop:
 
         planner_agent = PlannerAgent(planner_spec)
         coder = CoderAgent(coder_spec, self.adapter)
-        verifier = VerifierAgent(verifier_spec, self.adapter, self.tool_registry)
+        verifier = VerifierAgent(
+            verifier_spec,
+            self.adapter,
+            self.tool_registry,
+            self.spec_loader.load_rules(),
+        )
         critic = CriticAgent(
             critic_spec,
             self.spec_loader.load_rules(),

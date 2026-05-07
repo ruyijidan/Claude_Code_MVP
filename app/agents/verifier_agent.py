@@ -3,17 +3,30 @@ from __future__ import annotations
 from typing import Any
 
 from app.agents.base_agent import BaseAgent
+from app.core.models import RuleSpec
 from app.core.schema_validator import SchemaValidator
 from app.core.tool_registry import ToolRegistry
 from app.runtime.ecc_adapter import ECCAdapter
 
 
 class VerifierAgent(BaseAgent):
-    def __init__(self, spec, adapter: ECCAdapter | None = None, tool_registry: ToolRegistry | None = None) -> None:
+    def __init__(
+        self,
+        spec,
+        adapter: ECCAdapter | None = None,
+        tool_registry: ToolRegistry | None = None,
+        rule_spec: RuleSpec | list[RuleSpec] | None = None,
+    ) -> None:
         super().__init__(spec)
         self.adapter = adapter or ECCAdapter()
         self.validator = SchemaValidator()
         self.tool_registry = tool_registry
+        if rule_spec is None:
+            self.rule_specs: list[RuleSpec] = []
+        elif isinstance(rule_spec, RuleSpec):
+            self.rule_specs = [rule_spec]
+        else:
+            self.rule_specs = list(rule_spec)
 
     def run(self, state: dict) -> dict:
         if self.tool_registry is not None:
@@ -30,9 +43,12 @@ class VerifierAgent(BaseAgent):
             "application_verification": application_verification,
         }
         errors = self.validator.validate_result(state["task_spec"], result)
+        rule_hits = self._apply_rules(state, result)
+        errors.extend(hit["message"] for hit in rule_hits)
         return {
             **result,
             "verification_errors": errors,
+            "verifier_rule_hits": rule_hits,
             "test_output": output,
         }
 
@@ -96,3 +112,40 @@ class VerifierAgent(BaseAgent):
             if '"line_rate": 0' in summary or '"line_rate":0' in summary or "line-rate=\"0" in summary:
                 issues.append(f"metric artifact shows zero line coverage: {path}")
         return issues
+
+    def _apply_rules(self, state: dict[str, Any], result: dict[str, Any]) -> list[dict[str, Any]]:
+        task_spec = state.get("task_spec")
+        if task_spec is None:
+            return []
+
+        hits: list[dict[str, Any]] = []
+        application_verification = result.get("application_verification", {})
+        for rule in self.rule_specs:
+            if rule.enforced_by and "verifier" not in rule.enforced_by:
+                continue
+            if task_spec.name not in rule.applies_to:
+                continue
+            failed_checks = self._failed_checks(rule, application_verification)
+            if not failed_checks:
+                continue
+            hits.append(
+                {
+                    "rule": rule.name,
+                    "intent": rule.intent,
+                    "failed_checks": failed_checks,
+                    "message": rule.failure_message,
+                }
+            )
+        return hits
+
+    def _failed_checks(self, rule: RuleSpec, application_verification: dict[str, Any]) -> list[str]:
+        failed: list[str] = []
+        lowered_checks = [check.lower() for check in rule.checks]
+        artifact_issues = application_verification.get("issues", [])
+        if not isinstance(artifact_issues, list):
+            artifact_issues = []
+
+        if any("application artifact failure signals must fail verification" in check for check in lowered_checks):
+            if artifact_issues:
+                failed.append("application artifact failure signals must fail verification")
+        return failed
