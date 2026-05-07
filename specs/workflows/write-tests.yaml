@@ -29,6 +29,12 @@
     "at least one changed test file must be recorded",
     "completion contract must pass"
   ],
+  "verification_gates": [
+    {"name": "tests_passed"},
+    {"name": "changed_files_recorded"},
+    {"name": "changed_test_file_recorded"},
+    {"name": "completion_contract"}
+  ],
   "stop_conditions": [
     "architecture violation detected",
     "repair policy denies retry",

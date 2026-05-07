@@ -28,6 +28,13 @@ class AgentSpec:
 
 
 @dataclass(slots=True)
+class VerificationGateSpec:
+    name: str
+    severity: str = "error"
+    enabled: bool = True
+
+
+@dataclass(slots=True)
 class WorkflowSpec:
     name: str
     goal: str
@@ -37,6 +44,7 @@ class WorkflowSpec:
     verification: list[str]
     stop_conditions: list[str]
     clarification_fields: list[str] = field(default_factory=list)
+    verification_gates: list[VerificationGateSpec] = field(default_factory=list)
 
 
 @dataclass(slots=True)

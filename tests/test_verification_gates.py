@@ -3,7 +3,7 @@ from __future__ import annotations
 import unittest
 
 from app.agent.verification_gates import VerificationGateRunner
-from app.core.models import WorkflowSpec
+from app.core.models import VerificationGateSpec, WorkflowSpec
 
 
 class VerificationGateTests(unittest.TestCase):
@@ -101,6 +101,43 @@ class VerificationGateTests(unittest.TestCase):
         gate_names = {item["name"] for item in result["gate_results"]}
         self.assertNotIn("changed_test_file_recorded", gate_names)
         self.assertTrue(result["completion_check"]["passed"])
+
+    def test_structured_workflow_gates_change_runtime_gate_selection(self) -> None:
+        runner = VerificationGateRunner()
+        workflow = WorkflowSpec(
+            name="implement_feature",
+            goal="Implement",
+            entry_signals=[],
+            required_context=[],
+            steps=[],
+            verification=[
+                "tests must pass",
+                "at least one changed file must be recorded",
+                "at least one changed test file must be recorded",
+                "completion contract must pass",
+            ],
+            verification_gates=[
+                VerificationGateSpec(name="changed_files_recorded"),
+                VerificationGateSpec(name="completion_contract"),
+            ],
+            stop_conditions=[],
+        )
+
+        result = runner.run_post_execute(
+            {
+                "task_spec": type("TaskSpecStub", (), {"name": "implement_feature"})(),
+                "workflow_spec": workflow,
+                "changed_files": ["app/runtime/local_runtime.py"],
+                "implementation_summary": "Added a focused feature change.",
+                "test_result": "failed",
+                "verification_errors": [],
+            }
+        )
+
+        gate_names = {item["name"] for item in result["gate_results"]}
+        self.assertNotIn("tests_passed", gate_names)
+        self.assertNotIn("changed_test_file_recorded", gate_names)
+        self.assertEqual(result["gate_failures"], [])
 
     def test_application_legibility_gates_pass_when_artifacts_are_summarized(self) -> None:
         runner = VerificationGateRunner()

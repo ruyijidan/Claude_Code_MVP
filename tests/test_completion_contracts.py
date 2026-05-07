@@ -3,7 +3,7 @@ from __future__ import annotations
 import unittest
 
 from app.agent.completion_contracts import CompletionContractRegistry
-from app.core.models import WorkflowSpec
+from app.core.models import VerificationGateSpec, WorkflowSpec
 
 
 class CompletionContractTests(unittest.TestCase):
@@ -57,6 +57,33 @@ class CompletionContractTests(unittest.TestCase):
             {
                 "changed_files": ["reports/investigation.md"],
                 "implementation_summary": "Generated an investigation report.",
+            },
+            workflow,
+        )
+
+        self.assertTrue(check.passed)
+
+    def test_structured_workflow_gates_control_test_file_requirement(self) -> None:
+        registry = CompletionContractRegistry()
+        workflow = WorkflowSpec(
+            name="implement_feature",
+            goal="Implement",
+            entry_signals=[],
+            required_context=[],
+            steps=[],
+            verification=["tests must pass", "at least one changed test file must be recorded", "completion contract must pass"],
+            verification_gates=[
+                VerificationGateSpec(name="changed_files_recorded"),
+                VerificationGateSpec(name="completion_contract"),
+            ],
+            stop_conditions=[],
+        )
+
+        check = registry.evaluate(
+            "implement_feature",
+            {
+                "changed_files": ["app/runtime/local_runtime.py"],
+                "implementation_summary": "Added a focused feature change.",
             },
             workflow,
         )

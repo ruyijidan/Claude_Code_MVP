@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 
 from app.agent.completion_contracts import CompletionContractRegistry
-from app.core.models import WorkflowSpec
+from app.core.models import VerificationGateSpec, WorkflowSpec
 
 
 @dataclass(slots=True)
@@ -26,55 +26,98 @@ class VerificationGateRunner:
         task_type = task_spec.name if task_spec is not None else "implement_feature"
         workflow = state.get("workflow_spec")
         completion_check = self.contracts.evaluate(task_type, state, workflow)
-        gate_results = self._workflow_verification_gates(state, workflow)
+        gate_results = self._workflow_verification_gates(state, workflow, completion_check)
         gate_results.extend(self._application_legibility_gates(state))
         gate_results.append(self._architecture_gate(state))
-        gate_results.append(self._completion_gate(completion_check))
         return {
             "completion_check": completion_check.to_dict(),
             "gate_results": [gate.to_dict() for gate in gate_results],
             "gate_failures": [gate.message for gate in gate_results if not gate.passed],
         }
 
-    def _workflow_verification_gates(self, state: dict, workflow: WorkflowSpec | None) -> list[GateResult]:
-        verification_items = list(workflow.verification) if workflow is not None else ["tests must pass", "completion contract must pass"]
+    def _workflow_verification_gates(
+        self,
+        state: dict,
+        workflow: WorkflowSpec | None,
+        completion_check,
+    ) -> list[GateResult]:
+        gate_specs = self._resolve_workflow_gate_specs(workflow)
         gates: list[GateResult] = []
         changed_files = state.get("changed_files", [])
 
+        for gate_spec in gate_specs:
+            gate = self._evaluate_workflow_gate(gate_spec, state, changed_files, completion_check)
+            if gate is not None:
+                gates.append(gate)
+        return gates
+
+    def _resolve_workflow_gate_specs(self, workflow: WorkflowSpec | None) -> list[VerificationGateSpec]:
+        if workflow is None:
+            return [
+                VerificationGateSpec(name="tests_passed"),
+                VerificationGateSpec(name="completion_contract"),
+            ]
+        if workflow.verification_gates:
+            return [gate for gate in workflow.verification_gates if gate.enabled]
+        return self._legacy_gate_specs(workflow.verification)
+
+    def _legacy_gate_specs(self, verification_items: list[str]) -> list[VerificationGateSpec]:
+        gate_specs: list[VerificationGateSpec] = []
         for item in verification_items:
             lowered = item.lower()
             if "tests must pass" in lowered:
-                gates.append(self._tests_passed_gate(state))
+                gate_specs.append(VerificationGateSpec(name="tests_passed"))
                 continue
             if "changed test file" in lowered:
-                passed = self._has_test_file(changed_files)
-                gates.append(
-                    GateResult(
-                        name="changed_test_file_recorded",
-                        passed=passed,
-                        severity="error",
-                        message="changed test file recorded" if passed else "no changed test file was recorded",
-                    )
-                )
+                gate_specs.append(VerificationGateSpec(name="changed_test_file_recorded"))
                 continue
             if "changed file" in lowered:
-                passed = isinstance(changed_files, list) and bool(changed_files)
-                gates.append(
-                    GateResult(
-                        name="changed_files_recorded",
-                        passed=passed,
-                        severity="error",
-                        message="changed files recorded" if passed else "no changed files were recorded",
-                    )
-                )
-        return gates
+                gate_specs.append(VerificationGateSpec(name="changed_files_recorded"))
+                continue
+            if "completion contract must pass" in lowered:
+                gate_specs.append(VerificationGateSpec(name="completion_contract"))
+        return gate_specs
 
-    def _tests_passed_gate(self, state: dict) -> GateResult:
+    def _evaluate_workflow_gate(
+        self,
+        gate_spec: VerificationGateSpec,
+        state: dict,
+        changed_files: list[str],
+        completion_check,
+    ) -> GateResult | None:
+        if gate_spec.name == "tests_passed":
+            return self._tests_passed_gate(state, severity=gate_spec.severity)
+        if gate_spec.name == "changed_test_file_recorded":
+            passed = self._has_test_file(changed_files)
+            return GateResult(
+                name="changed_test_file_recorded",
+                passed=passed,
+                severity=gate_spec.severity,
+                message="changed test file recorded" if passed else "no changed test file was recorded",
+            )
+        if gate_spec.name == "changed_files_recorded":
+            passed = isinstance(changed_files, list) and bool(changed_files)
+            return GateResult(
+                name="changed_files_recorded",
+                passed=passed,
+                severity=gate_spec.severity,
+                message="changed files recorded" if passed else "no changed files were recorded",
+            )
+        if gate_spec.name == "completion_contract":
+            return self._completion_gate(completion_check, severity=gate_spec.severity)
+        return GateResult(
+            name=gate_spec.name,
+            passed=False,
+            severity=gate_spec.severity,
+            message=f"unknown workflow verification gate: {gate_spec.name}",
+        )
+
+    def _tests_passed_gate(self, state: dict, *, severity: str = "error") -> GateResult:
         passed = state.get("test_result") == "passed"
         return GateResult(
             name="tests_passed",
             passed=passed,
-            severity="error",
+            severity=severity,
             message="tests did not pass" if not passed else "tests passed",
         )
 
@@ -93,12 +136,12 @@ class VerificationGateRunner:
             message="; ".join(architecture_errors) if architecture_errors else "no architecture violation detected",
         )
 
-    def _completion_gate(self, completion_check) -> GateResult:
+    def _completion_gate(self, completion_check, *, severity: str = "error") -> GateResult:
         passed = completion_check.passed
         return GateResult(
             name="completion_contract",
             passed=passed,
-            severity="error",
+            severity=severity,
             message="; ".join(completion_check.reasons) if not passed else "completion contract passed",
         )
 

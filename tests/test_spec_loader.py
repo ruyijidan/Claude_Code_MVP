@@ -28,6 +28,7 @@ class SpecLoaderTests(unittest.TestCase):
         self.assertEqual(workflow.name, "bugfix")
         self.assertIn("target", workflow.clarification_fields)
         self.assertIn("tests must pass", workflow.verification)
+        self.assertIn("completion_contract", {gate.name for gate in workflow.verification_gates})
         self.assertEqual(rule.name, "surgical_changes")
         self.assertEqual(permission_rules.name, "permission_rules_v1")
         self.assertEqual(tool.name, "test_tool")

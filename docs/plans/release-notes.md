@@ -6,6 +6,36 @@ owner: core
 
 # Release Notes / 发布说明
 
+## 2026-05-07
+
+### Workflow Verification Gates Become Spec-Driven / 工作流验证门转为规范驱动
+
+Included pending change set:
+
+- `app/core/models.py`: added a structured `VerificationGateSpec` model on workflow assets
+- `app/core/spec_loader.py`: added workflow gate loading from `verification_gates`
+- `app/agent/verification_gates.py`: made workflow-defined gate specs drive runtime gate selection
+- `app/agent/completion_contracts.py`: aligned completion-contract test-file requirements with structured workflow gate configuration
+- `specs/workflows/*.yaml`: added explicit `verification_gates` entries for shipped workflow assets
+- tests updated in `tests/test_spec_loader.py`, `tests/test_completion_contracts.py`, and `tests/test_verification_gates.py`
+
+Highlights:
+
+- moved workflow verification-gate selection from string matching toward explicit spec-backed gate declarations
+- kept backward compatibility for workflows that still rely on legacy `verification` text entries
+- made workflow assets visibly change runtime verification behavior instead of only plan text
+- kept completion-contract requirements aligned with workflow gate configuration so the harness does not apply conflicting rules
+
+Verification:
+
+- targeted workflow, gate, completion-contract, and planner tests passed locally
+- full unit test discovery passed locally: `155 tests OK, 2 skipped`
+
+Impact:
+
+- workflow assets now control post-execution gate selection through a structured runtime-facing field
+- the project took a concrete step toward the current sprint goal of making `specs/` assets shape real harness behavior
+
 ## 2026-05-06
 
 ### Multi-Agent Orchestration And Local Daemon Service / 多代理编排与本地守护服务

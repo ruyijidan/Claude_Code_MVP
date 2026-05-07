@@ -1,5 +1,5 @@
 ---
-last_updated: 2026-05-06
+last_updated: 2026-05-07
 status: active
 owner: core
 ---
@@ -101,6 +101,7 @@ It is now:
 - network-shaped commands now require explicit approval by default unless the active policy skips confirmation
 - repo planning context and acceptance context now reuse shared compression helpers for prompt, path, file, and git shaping
 - workflow assets now add explicit context and clarification steps to generated plans
+- workflow assets now also select post-execution verification gates through structured `verification_gates` specs
 - rule assets now produce structured critic rule-hit reporting and can be loaded as a set instead of a single hard-coded rule
 - architecture checks now include file-size guardrails for high-risk control-surface modules
 - release acceptance reporting now classifies provider risks into transient environment, setup/auth, and product-blocking buckets

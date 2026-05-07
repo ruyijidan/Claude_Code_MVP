@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from app.core.models import AgentSpec, PermissionRulesSpec, ReaderSpec, RuleSpec, TaskSpec, ToolSpec, WorkflowSpec
+from app.core.models import AgentSpec, PermissionRulesSpec, ReaderSpec, RuleSpec, TaskSpec, ToolSpec, VerificationGateSpec, WorkflowSpec
 
 
 class SpecLoader:
@@ -25,7 +25,11 @@ class SpecLoader:
 
     def load_workflow(self, name: str) -> WorkflowSpec:
         data = self._load_json_document(self.spec_root / "workflows" / f"{name}.yaml")
-        return WorkflowSpec(**data)
+        gate_specs = [
+            VerificationGateSpec(**item) if isinstance(item, dict) else VerificationGateSpec(name=str(item))
+            for item in data.pop("verification_gates", [])
+        ]
+        return WorkflowSpec(**data, verification_gates=gate_specs)
 
     def load_rule(self, name: str) -> RuleSpec:
         data = self._load_json_document(self.spec_root / "rules" / f"{name}.yaml")
