@@ -90,6 +90,34 @@ class CompletionContractTests(unittest.TestCase):
 
         self.assertTrue(check.passed)
 
+    def test_long_task_game_workflow_does_not_require_test_file(self) -> None:
+        registry = CompletionContractRegistry()
+        workflow = WorkflowSpec(
+            name="long_task_game",
+            goal="Improve a browser mini-game",
+            entry_signals=[],
+            required_context=[],
+            steps=[],
+            verification=["tests must pass", "at least one changed file must be recorded", "completion_contract"],
+            verification_gates=[
+                VerificationGateSpec(name="tests_passed"),
+                VerificationGateSpec(name="changed_files_recorded"),
+                VerificationGateSpec(name="completion_contract"),
+            ],
+            stop_conditions=[],
+        )
+
+        check = registry.evaluate(
+            "long_task_game",
+            {
+                "changed_files": ["examples/halo-drift/game.js"],
+                "implementation_summary": "Improved the browser mini-game.",
+            },
+            workflow,
+        )
+
+        self.assertTrue(check.passed)
+
 
 if __name__ == "__main__":
     unittest.main()

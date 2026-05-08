@@ -1,5 +1,5 @@
 ---
-last_updated: 2026-05-07
+last_updated: 2026-05-08
 status: active
 owner: core
 ---
@@ -106,6 +106,8 @@ It is now:
 - rule assets now produce structured critic and verifier rule-hit reporting and can declare explicit enforcement ownership
 - architecture checks now include file-size guardrails for high-risk control-surface modules
 - release acceptance reporting now classifies provider risks into transient environment, setup/auth, and product-blocking buckets
+- the long-task game flow now has a repeatable launcher, session log template, and a verified 30-minute run against `examples/halo-drift`
+- the long-task launcher now uses spinner feedback plus temp-file-backed session logging so long runs can continue without argv overflow or silent stalls
 - contributor-facing harness implementation guidance now exists under `docs/guides/how-to-implement-a-harness.md`
 - documentation conventions now explicitly require bilingual English/Chinese titles for new or materially updated docs
 - a new long-form learning article now connects harness basics to building a personal harness project
@@ -121,6 +123,7 @@ It is now:
 ### In Progress / 进行中
 
 - Keep final acceptance expectations explicit for live provider paths instead of relying only on mocked tests
+- Keep the long-task browser mini-game workflow reproducible so future runs can be launched and verified from the documented runbook
 
 ### Not Started / 未开始
 

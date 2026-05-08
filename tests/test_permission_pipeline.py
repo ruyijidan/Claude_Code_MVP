@@ -162,6 +162,15 @@ class PermissionPipelineTests(unittest.TestCase):
         self.assertEqual(decision.boundary, "repository_managed_write")
         self.assertFalse(decision.requires_confirmation)
 
+    def test_examples_directory_is_allowed(self) -> None:
+        pipeline = PermissionPipeline()
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            repo_root = Path(tmp_dir)
+            decision = pipeline.assess_file_write(repo_root / "examples" / "halo-drift" / "game.js", repo_root)
+        self.assertTrue(decision.approved)
+        self.assertEqual(decision.boundary, "repository_managed_write")
+        self.assertFalse(decision.requires_confirmation)
+
     def test_runtime_artifact_write_is_allowed_with_artifact_scope(self) -> None:
         pipeline = PermissionPipeline()
         with tempfile.TemporaryDirectory() as tmp_dir:

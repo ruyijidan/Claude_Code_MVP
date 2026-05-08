@@ -14,6 +14,15 @@ class SpecLoaderTests(unittest.TestCase):
         self.assertEqual(task.name, "implement_feature")
         self.assertIn("feature_request", task.inputs)
 
+    def test_load_long_task_game_task(self) -> None:
+        root = Path(__file__).resolve().parents[1] / "specs"
+        loader = SpecLoader(root)
+
+        task = loader.load_task("long_task_game")
+
+        self.assertEqual(task.name, "long_task_game")
+        self.assertIn("artifact_path", task.inputs)
+
     def test_load_workflow_rule_and_template(self) -> None:
         root = Path(__file__).resolve().parents[1] / "specs"
         loader = SpecLoader(root)
@@ -69,6 +78,15 @@ class SpecLoaderTests(unittest.TestCase):
 
         self.assertIsNotNone(workflow)
         self.assertEqual(workflow.name, "bugfix")
+
+    def test_find_workflow_for_long_task_game_uses_spec_metadata(self) -> None:
+        root = Path(__file__).resolve().parents[1] / "specs"
+        loader = SpecLoader(root)
+
+        workflow = loader.find_workflow_for_task_type("long_task_game")
+
+        self.assertIsNotNone(workflow)
+        self.assertEqual(workflow.name, "long_task_game")
 
     def test_load_tool_and_reader_collections(self) -> None:
         root = Path(__file__).resolve().parents[1] / "specs"

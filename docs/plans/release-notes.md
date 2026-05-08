@@ -1,10 +1,36 @@
 ---
-last_updated: 2026-05-06
+last_updated: 2026-05-08
 status: active
 owner: core
 ---
 
 # Release Notes / 发布说明
+
+## 2026-05-08
+
+### Long-Task Game Session Runner Now Supports Verified 30-Minute Runs / 长任务小游戏会话执行器现已支持可验证的 30 分钟运行
+
+Included pending change set:
+
+- `scripts/start_long_task_game_session.sh`: added spinner feedback, temp-file-backed session logging, and iterative long-task execution for `long_task_game`
+- `docs/design/long-task-game-*.md`: added the runbook, launch phrase, task template, and session log template for repeatable long-task game verification
+- `specs/tasks/long_task_game.yaml` and `specs/workflows/long-task-game.yaml`: added a dedicated long-task game task/workflow pair targeting `examples/halo-drift`
+- `app/core/task_templates.py`, `app/agents/coder_agent.py`, `app/agent/policies.py`, and `specs/rules/permission-rules.yaml`: routed the long-task game path to the browser mini-game workspace and allowed repo-managed example writes
+- `examples/halo-drift/`: added the browser mini-game target used by the long-task verification session
+- tests updated under `tests/test_task_templates.py`, `tests/test_coder_agent_long_task_game.py`, `tests/test_halo_drift_game.py`, and related spec/permission tests
+
+Highlights:
+
+- turned the long-task game workflow into a repeatable, scriptable verification path instead of a one-off manual run
+- added visible terminal progress so long runs can be monitored while they are still executing
+- fixed two real shell/runtime failure modes during verification: multiline command splitting and oversized argv/session payloads
+- completed a full 30-minute verification session that sustained the target duration and returned to the intended `examples/halo-drift` artifact path
+
+Verification:
+
+- `bash -n scripts/start_long_task_game_session.sh`
+- full unit test discovery passed locally: `166 tests OK, 2 skipped`
+- final long-task session passed with `elapsed_seconds: 1801`, `requested_seconds: 1800`, `sustained_target_duration: yes`
 
 ## 2026-05-07
 

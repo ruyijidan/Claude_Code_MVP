@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Halo Drift / 环轨漂移</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="page-shell">
+      <section class="hero-panel">
+        <p class="eyebrow">Claude Code MVP Demo</p>
+        <h1>Halo Drift</h1>
+        <p class="summary">
+          在一圈一圈的轨道上回旋，收集星核回声，躲开虚空噪点，用脉冲把危险扫开。
+        </p>
+        <div class="feature-grid">
+          <article>
+            <span>环轨切换</span>
+            <strong>四层轨道</strong>
+          </article>
+          <article>
+            <span>清场动作</span>
+            <strong>脉冲波</strong>
+          </article>
+          <article>
+            <span>长局成长</span>
+            <strong>永久升级</strong>
+          </article>
+          <article>
+            <span>存档</span>
+            <strong>本地最佳分</strong>
+          </article>
+        </div>
+        <div class="controls">
+          <span><kbd>←</kbd> <kbd>→</kbd> / <kbd>A</kbd> <kbd>D</kbd>：旋转</span>
+          <span><kbd>↑</kbd> <kbd>↓</kbd> / <kbd>W</kbd> <kbd>S</kbd>：升降轨道</span>
+          <span><kbd>Space</kbd>：脉冲</span>
+          <span><kbd>P</kbd>：暂停 / 继续</span>
+          <span><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd>：升级选择</span>
+        </div>
+      </section>
+
+      <section class="game-panel">
+        <div class="hud">
+          <div class="stat-card">
+            <span class="label">分数</span>
+            <strong id="score">0</strong>
+          </div>
+          <div class="stat-card">
+            <span class="label">生命</span>
+            <strong id="health">3</strong>
+          </div>
+          <div class="stat-card">
+            <span class="label">阶段</span>
+            <strong id="phase">1</strong>
+          </div>
+          <div class="stat-card">
+            <span class="label">时间</span>
+            <strong id="time">0:00</strong>
+          </div>
+          <div class="stat-card">
+            <span class="label">升级</span>
+            <strong id="upgrades">0</strong>
+          </div>
+          <div class="stat-card">
+            <span class="label">充能</span>
+            <strong id="charge">0 / 6</strong>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <div class="mode-selector" role="group" aria-label="难度选择">
+            <button type="button" class="mode-button is-active" data-mode="calm">CALM</button>
+            <button type="button" class="mode-button" data-mode="standard">STANDARD</button>
+            <button type="button" class="mode-button" data-mode="storm">STORM</button>
+          </div>
+          <div class="run-selector" role="group" aria-label="运行模式">
+            <button type="button" class="run-button" data-run="classic">CLASSIC</button>
+            <button type="button" class="run-button is-active" data-run="marathon">MARATHON</button>
+          </div>
+          <div class="toolbar-badge" id="bestBadge">BEST 0</div>
+        </div>
+
+        <div class="canvas-frame">
+          <canvas id="gameCanvas" width="1200" height="760" aria-label="Halo Drift game arena"></canvas>
+          <div class="overlay" id="overlay">
+            <div class="overlay-card">
+              <p class="overlay-tag" id="overlayTag">READY</p>
+              <h2 id="overlayTitle">校准环轨，准备跃入星环</h2>
+              <p id="overlayText">
+                收集发光回声点，避开暗色噪点。每次充能满格后，核心会进入下一阶段。
+              </p>
+              <div class="upgrade-select hidden" id="upgradeSelect" aria-label="升级选择">
+                <p class="upgrade-kicker">PERMANENT UPGRADE</p>
+                <div class="upgrade-grid" id="upgradeGrid"></div>
+              </div>
+              <button id="startButton" type="button">开始游戏</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="touch-controls" aria-label="触屏控制">
+          <button type="button" class="touch-button" data-action="left">↺</button>
+          <button type="button" class="touch-button" data-action="in">IN</button>
+          <button type="button" class="touch-button pulse" data-action="pulse">PULSE</button>
+          <button type="button" class="touch-button" data-action="out">OUT</button>
+          <button type="button" class="touch-button" data-action="right">↻</button>
+        </div>
+      </section>
+    </main>
+
+    <script src="./game.js"></script>
+  </body>
+</html>

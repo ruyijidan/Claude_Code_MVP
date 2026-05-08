@@ -1,7 +1,62 @@
 from __future__ import annotations
 
+from pathlib import Path
+
+
+def _halo_drift_long_task_module_content() -> str:
+    repo_root = Path(__file__).resolve().parents[2]
+    game_path = repo_root / "examples" / "halo-drift" / "game.js"
+    if game_path.exists():
+        content = game_path.read_text(encoding="utf-8")
+    else:
+        content = ""
+
+    replacements = [
+        ("校准环轨，准备跃入星环", "校准环轨，进入长任务漂移"),
+        (
+            "收集发光回声点，避开暗色噪点。每次充能满格后，核心会进入下一阶段。",
+            "收集发光回声点，避开暗色噪点。长任务会持续给出升级选择，帮助你把这局跑得更久。",
+        ),
+        (
+            "马拉松模式会持续推进，并在每个阶段后给你一次永久升级选择。",
+            "马拉松模式会持续推进，并在每个阶段后给你一次永久升级选择，适合 30 分钟长任务验证。",
+        ),
+        ("星环完成同步", "长任务同步完成"),
+        ("轨道被噪点击穿", "长任务还没跑满"),
+    ]
+    for old, new in replacements:
+        content = content.replace(old, new)
+
+    banner = "// Long-task browser mini-game baseline for autonomous reruns.\n"
+    if banner.strip() not in content:
+        content = banner + content
+    return content
+
 
 def build_task_artifacts(task_name: str) -> dict[str, str]:
+    if task_name == "long_task_game":
+        return {
+            "module_path": "examples/halo-drift/game.js",
+            "module_content": _halo_drift_long_task_module_content(),
+            "test_path": "tests/test_halo_drift_game.py",
+            "test_content": """import unittest
+from pathlib import Path
+
+
+class HaloDriftGameTests(unittest.TestCase):
+    def test_game_script_mentions_long_task_mode(self) -> None:
+        game_script = Path("examples/halo-drift/game.js")
+        self.assertTrue(game_script.exists())
+        text = game_script.read_text(encoding="utf-8")
+        self.assertIn("长任务", text)
+
+
+if __name__ == "__main__":
+    unittest.main()
+""",
+            "summary": "Updated the halo-drift browser game baseline for long-task reruns.",
+        }
+
     if task_name == "fix_bug":
         return {
             "module_path": "sample_app/calculator.py",

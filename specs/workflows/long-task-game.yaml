@@ -1,0 +1,46 @@
+{
+  "name": "long_task_game",
+  "workflow_slug": "long-task-game",
+  "task_type": "long_task_game",
+  "goal": "Iteratively improve a browser mini-game artifact over a long autonomous run while keeping the work focused on one target.",
+  "entry_signals": [
+    "prompt contains long task or 30 minutes",
+    "prompt mentions browser mini-game, marathon, or halo drift",
+    "task type inferred as long_task_game"
+  ],
+  "required_context": [
+    "AGENTS.md",
+    "ARCHITECTURE.md",
+    "docs/architecture/boundaries.md",
+    "likely_relevant_files",
+    "test_targets",
+    "git_summary"
+  ],
+  "clarification_fields": [
+    "target",
+    "artifact_path",
+    "success_criteria"
+  ],
+  "steps": [
+    "inspect the target game artifact and surrounding browser files",
+    "apply a visible improvement that makes the game better to play or easier to verify",
+    "keep iterating only inside the target game surface",
+    "run local verification on the game artifact",
+    "record replay or session evidence and a concise summary"
+  ],
+  "verification": [
+    "tests must pass",
+    "at least one changed file must be recorded",
+    "completion contract must pass"
+  ],
+  "verification_gates": [
+    {"name": "tests_passed"},
+    {"name": "changed_files_recorded"},
+    {"name": "completion_contract"}
+  ],
+  "stop_conditions": [
+    "architecture violation detected",
+    "time budget exhausted",
+    "maximum retry budget reached"
+  ]
+}

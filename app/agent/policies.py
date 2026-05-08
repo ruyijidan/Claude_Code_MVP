@@ -91,7 +91,7 @@ class PermissionPipeline:
         self.permission_rules = permission_rules or PermissionRulesSpec(
             name="permission_rules_builtin",
             runtime_artifact_dirs=[".claude-code", "logs"],
-            standard_repo_dirs=["app", "tests", "docs", "specs", "scripts", "sample_app", "reports"],
+            standard_repo_dirs=["app", "tests", "docs", "specs", "scripts", "examples", "sample_app", "reports"],
             protected_dirs=[".git"],
         )
 

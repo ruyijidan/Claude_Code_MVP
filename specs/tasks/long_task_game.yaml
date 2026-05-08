@@ -1,0 +1,28 @@
+{
+  "name": "long_task_game",
+  "goal": "Autonomously improve a standalone browser mini-game over a long time budget while keeping the work focused on a single game artifact.",
+  "inputs": {
+    "repo_path": "string",
+    "feature_request": "string",
+    "artifact_path": "string"
+  },
+  "outputs": {
+    "changed_files": "list",
+    "test_result": "string",
+    "summary": "string"
+  },
+  "constraints": [
+    "must keep the work focused on the target game artifact",
+    "must keep the game playable from file:// without external dependencies",
+    "must record a concise summary"
+  ],
+  "tools": [
+    "file_tool",
+    "test_tool"
+  ],
+  "done_when": [
+    "tests must pass",
+    "output must match schema",
+    "target artifact must be visibly improved"
+  ]
+}
