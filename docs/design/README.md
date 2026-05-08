@@ -1,5 +1,5 @@
 ---
-last_updated: 2026-05-07
+last_updated: 2026-05-08
 status: active
 owner: core
 ---
@@ -23,6 +23,8 @@ Current files:
 - [`long-task-game-task-template.md`](./long-task-game-task-template.md): copy-paste template for starting a long-task browser mini-game run
 - [`long-task-game-launch-phrase.md`](./long-task-game-launch-phrase.md): short copy-paste phrase for starting the default long-task flow
 - [`long-task-game-session-log-template.md`](./long-task-game-session-log-template.md): evidence template for proving a long-task run actually sustained its target duration
+- [`long-task-game-optimization-strategy.md`](./long-task-game-optimization-strategy.md): convergence-focused strategy for improving the same game across a sustained long-task session
+- [`fc-style-long-play-principles.md`](./fc-style-long-play-principles.md): design principles for small games that stay engaging for a long time
 - [`start_long_task_game_session.sh`](../../scripts/start_long_task_game_session.sh): script entrypoint that creates a session log and runs the long-task game session with timeout handling
 - [`long-task-game-upgrade.md`](./long-task-game-upgrade.md): historical 600-second mini-game upgrade record for `Void Breaker`
 - [`long-task-game-rerun-2026-04-24.md`](./long-task-game-rerun-2026-04-24.md): historical rerun record for `Starforge Relay`

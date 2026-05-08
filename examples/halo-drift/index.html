@@ -67,6 +67,10 @@
             <span class="label">充能</span>
             <strong id="charge">0 / 6</strong>
           </div>
+          <div class="stat-card">
+            <span class="label">收敛</span>
+            <strong id="convergence">0%</strong>
+          </div>
         </div>
 
         <div class="toolbar">
@@ -91,6 +95,14 @@
               <p id="overlayText">
                 收集发光回声点，避开暗色噪点。每次充能满格后，核心会进入下一阶段。
               </p>
+              <div class="session-strip" id="sessionStrip" aria-live="polite">
+                <span id="sessionPhase">阶段 1</span>
+                <span id="sessionConvergence">收敛 0%</span>
+                <span id="sessionUpgrades">升级 0</span>
+                <span id="sessionBest">最佳 0</span>
+                <span id="sessionTempo">节奏 1x</span>
+                <span id="sessionFocus">焦点 轨道推进</span>
+              </div>
               <div class="upgrade-select hidden" id="upgradeSelect" aria-label="升级选择">
                 <p class="upgrade-kicker">PERMANENT UPGRADE</p>
                 <div class="upgrade-grid" id="upgradeGrid"></div>

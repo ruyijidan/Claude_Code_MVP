@@ -44,6 +44,9 @@ After the first hardening wave and the follow-on asset work, the repository now 
 - release acceptance now keeps fast unit verification isolated from opt-in live provider flags
 - acceptance artifact creation prompts can reference new output paths without being blocked by repo-target clarification
 - isolated live acceptance reports now have explicit prompt guidance to rely on git snapshots instead of flagging missing `.git` metadata as a release issue
+- long-task runner verification now checks actual target-path fingerprint movement and tracks no-progress streaks so repeated empty iterations cannot masquerade as successful long-session iteration
+- long-task game UI now exposes a richer session summary strip with stage, convergence, upgrades, best score, tempo, and focus so long-session convergence is visible during the run
+- the latest 30-minute long-task result is intentionally recorded as a rough harness demo, not a polished game release
 - application legibility now has a first registered reader layer for preview, log, and metric artifacts
 - tool invocation now has a first unified spec-backed registry plus schema validation
 - workflow behavior now records structured execution state instead of staying only at plan-shaping level
@@ -124,6 +127,8 @@ It is now:
 
 - Keep final acceptance expectations explicit for live provider paths instead of relying only on mocked tests
 - Keep the long-task browser mini-game workflow reproducible so future runs can be launched and verified from the documented runbook
+- Keep the long-task runner focused on genuine per-iteration game improvement rather than repeated text-only edits
+- Keep the current long-task game artifact labeled as rough demo output until a new design-first pass replaces it
 
 ### Not Started / 未开始
 

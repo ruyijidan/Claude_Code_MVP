@@ -6,6 +6,13 @@ const overlay = document.getElementById("overlay");
 const overlayTag = document.getElementById("overlayTag");
 const overlayTitle = document.getElementById("overlayTitle");
 const overlayText = document.getElementById("overlayText");
+const sessionStrip = document.getElementById("sessionStrip");
+const sessionPhase = document.getElementById("sessionPhase");
+const sessionConvergence = document.getElementById("sessionConvergence");
+const sessionUpgrades = document.getElementById("sessionUpgrades");
+const sessionBest = document.getElementById("sessionBest");
+const sessionTempo = document.getElementById("sessionTempo");
+const sessionFocus = document.getElementById("sessionFocus");
 const startButton = document.getElementById("startButton");
 const scoreLabel = document.getElementById("score");
 const healthLabel = document.getElementById("health");
@@ -13,6 +20,7 @@ const phaseLabel = document.getElementById("phase");
 const timeLabel = document.getElementById("time");
 const upgradesLabel = document.getElementById("upgrades");
 const chargeLabel = document.getElementById("charge");
+const convergenceLabel = document.getElementById("convergence");
 const bestBadge = document.getElementById("bestBadge");
 const modeButtons = Array.from(document.querySelectorAll(".mode-button"));
 const runButtons = Array.from(document.querySelectorAll(".run-button"));
@@ -186,6 +194,7 @@ const state = {
   comboWindowMul: 1,
   hazardDriftMul: 1,
   maxHealth: 3,
+  convergence: 0,
 };
 
 const player = {
@@ -280,6 +289,7 @@ function resetGame() {
   state.chargeTarget = getChargeTarget();
   state.combo = 1;
   state.comboTimer = 0;
+  state.convergence = 0;
   state.pulseCooldown = 0.25 * state.pulseCooldownMul;
   state.pulseActive = 0;
   state.pauseFlash = 0;
@@ -324,6 +334,26 @@ function hideOverlay() {
   overlay.classList.add("hidden");
 }
 
+function updateSessionStrip() {
+  if (!sessionStrip) {
+    return;
+  }
+  sessionPhase.textContent = `阶段 ${state.phase}${state.runMode === "marathon" ? " / ∞" : ""}`;
+  sessionConvergence.textContent = `收敛 ${state.convergence}%`;
+  sessionUpgrades.textContent = `升级 ${state.upgrades.length}`;
+  sessionBest.textContent = `最佳 ${state.bestScore}`;
+  sessionTempo.textContent = `节奏 ${Math.max(1, state.combo)}x · ${state.combo >= 4 ? "热" : "稳"}`;
+  sessionTempo.style.color = state.combo >= 5 ? "#c6ff9a" : state.combo >= 3 ? "#8ef2ff" : "#f5fbff";
+  sessionConvergence.style.color = state.convergence >= 80 ? "#c6ff9a" : state.convergence >= 50 ? "#8ef2ff" : "#f5fbff";
+  sessionFocus.textContent = state.mode === "draft"
+    ? "焦点 升级决策 · 收敛到更稳的长局"
+    : state.mode === "results"
+      ? "焦点 结算复盘 · 整理下一轮提升点"
+      : state.mode === "paused"
+        ? "焦点 暂停整理 · 先稳住节奏"
+        : "焦点 轨道推进 · 持续补齐闭环";
+}
+
 function showOverlay(tag, title, text, buttonText) {
   overlay.classList.remove("hidden");
   overlayTag.textContent = tag;
@@ -333,6 +363,7 @@ function showOverlay(tag, title, text, buttonText) {
   startButton.hidden = false;
   upgradeSelect.classList.add("hidden");
   upgradeGrid.innerHTML = "";
+  updateSessionStrip();
 }
 
 function renderUpgradeChoices(choices) {
@@ -359,10 +390,11 @@ function openUpgradeDraft() {
   overlay.classList.remove("hidden");
   overlayTag.textContent = "UPGRADE";
   overlayTitle.textContent = "选择一个永久升级";
-  overlayText.textContent = `第 ${state.phase} 阶段完成。挑一个升级，让这次长局更能跑下去。也可以按 1 / 2 / 3 直接选择。`;
+  overlayText.textContent = `第 ${state.phase} 阶段完成。当前收敛 ${state.convergence}% · 最佳 ${state.bestScore}。挑一个永久升级，让这次长局更能跑下去。也可以按 1 / 2 / 3 直接选择。`;
   startButton.hidden = true;
   upgradeSelect.classList.remove("hidden");
   renderUpgradeChoices(state.upgradeDraft);
+  updateSessionStrip();
 }
 
 function chooseUpgrade(index) {
@@ -420,10 +452,11 @@ function endGame(victory) {
     victory ? "COMPLETE" : "RUN ENDED",
     victory ? "长任务同步完成" : "长任务还没跑满",
     victory
-      ? "你成功点亮了整座核心塔。可以重新选择难度，再跑一轮更快的轨道。"
-      : "核心保护层耗尽了。换个难度再试一次，或者继续追求更高分。",
+      ? `你成功点亮了整座核心塔。本轮收敛 ${state.convergence}% · 已拿到 ${state.upgrades.length} 个永久升级。可以重新选择难度，再跑一轮更快的轨道。`
+      : `核心保护层耗尽了。本轮收敛 ${state.convergence}% · 已拿到 ${state.upgrades.length} 个永久升级。换个难度再试一次，或者继续追求更高分。`,
     "重新开始"
   );
+  updateSessionStrip();
 }
 
 function setDifficulty(mode) {
@@ -452,7 +485,7 @@ function updateOverlayForDifficulty() {
   const config = currentConfig();
   const runConfig = currentRunConfig();
   const runText = runConfig.name === "MARATHON"
-    ? "马拉松模式会持续推进，并在每个阶段后给你一次永久升级选择，适合 30 分钟长任务验证。"
+    ? "马拉松模式会持续推进，并在每个阶段后给你一次永久升级选择，适合 30 分钟长任务验证。当前目标不是只跑够时长，而是让同一轮长局持续收敛，并补齐下一层可见进步。"
     : "经典模式会在 5 个阶段后直接结算。";
   showOverlay(
     "READY",
@@ -460,6 +493,7 @@ function updateOverlayForDifficulty() {
     `当前难度 ${config.name} · ${runConfig.name}。${runText} 用方向键沿轨旋转，用上下键切换轨道，Space 释放脉冲，1/2/3 选择升级。`,
     "开始游戏"
   );
+  updateSessionStrip();
 }
 
 function ringRadius(index) {
@@ -803,7 +837,27 @@ function updateHud() {
   timeLabel.textContent = `${minutes}:${seconds}`;
   upgradesLabel.textContent = String(state.upgrades.length);
   chargeLabel.textContent = `${state.charge} / ${state.chargeTarget}`;
+  state.convergence = Math.min(
+    100,
+    Math.round(
+      state.phase * 12 +
+        state.upgrades.length * 10 +
+        state.combo * 8 +
+        Math.floor((state.charge / Math.max(1, state.chargeTarget)) * 22) +
+        Math.floor(state.elapsedMs / 12000) +
+        Math.floor(state.bestScore / 250) +
+        Math.floor(state.pulseActive * 6) +
+        Math.floor(state.health * 7) +
+        Math.floor(state.comboTimer * 5) +
+        Math.floor(state.phaseBanner.life * 14) +
+        6
+    )
+  );
+  convergenceLabel.textContent = `${state.convergence}%`;
+  convergenceLabel.style.color = state.convergence >= 81 ? "#c6ff9a" : state.convergence >= 48 ? "#8ef2ff" : "#f5fbff";
+  convergenceLabel.title = "综合阶段、升级、充能与表现的长期收敛值";
   bestBadge.textContent = `BEST ${state.bestScore}`;
+  updateSessionStrip();
 }
 
 function update(delta) {

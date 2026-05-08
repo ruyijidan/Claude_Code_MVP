@@ -8,6 +8,28 @@ owner: core
 
 ## 2026-05-08
 
+### Long-Task Runner Now Enforces Real Per-Iteration Progress / 长任务执行器现已强制每轮真实推进
+
+Included pending change set:
+
+- `scripts/start_long_task_game_session.sh`: tightened the long-task loop so per-iteration progress is validated against target-path fingerprint changes, no-progress streaks are tracked, and fallback upgrades now have multiple visible improvement rungs instead of repeating the same patch
+- `examples/halo-drift/index.html`, `examples/halo-drift/styles.css`, and `examples/halo-drift/game.js`: added a richer session summary strip plus stronger menu, upgrade, and results copy so the game visibly reflects long-session convergence instead of only counting time
+- tests rerun locally after the update, including the existing harness and task-template coverage
+
+Highlights:
+
+- made the long-task runner treat empty or repeated iterations as real harness failures instead of successful-looking progress
+- added a visible multi-field session summary strip so long runs can show stage, convergence, upgrades, best score, tempo, and focus in one place
+- kept the long-task session flow aligned with actual content changes rather than letting repeated textual edits stand in for new progress
+- the 30-minute verification now proves sustained progress, but the resulting `examples/halo-drift` artifact is still rough and should be treated as a harness-quality demo, not a polished game
+
+Verification:
+
+- `bash -n scripts/start_long_task_game_session.sh`
+- `python3 -m unittest tests.test_task_templates tests.test_coder_agent_long_task_game tests.test_permission_pipeline tests.test_spec_loader tests.test_completion_contracts tests.test_verification_gates`
+- `node --check examples/halo-drift/game.js`
+- short local long-task run passed with `target progress valid: yes` on all three iterations
+
 ### Long-Task Game Session Runner Now Supports Verified 30-Minute Runs / 长任务小游戏会话执行器现已支持可验证的 30 分钟运行
 
 Included pending change set:

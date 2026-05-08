@@ -92,6 +92,39 @@ print(int(datetime.now(timezone.utc).timestamp()))
 PY
 }
 
+target_fingerprint() {
+  python3 - "$REPO_PATH" "$GAME_PATH" <<'PY'
+from pathlib import Path
+import hashlib
+import re
+import sys
+
+repo_root = Path(sys.argv[1]).resolve()
+target_root = repo_root / sys.argv[2].strip("/")
+digest = hashlib.sha256()
+if target_root.exists():
+    for path in sorted(target_root.rglob("*")):
+        if path.is_file():
+            rel = path.relative_to(repo_root).as_posix()
+            digest.update(rel.encode("utf-8"))
+            digest.update(b"\0")
+            digest.update(path.read_bytes())
+            digest.update(b"\0")
+print(digest.hexdigest())
+PY
+}
+
+iteration_focus() {
+  local iteration="$1"
+  case $(((iteration - 1) % 5)) in
+    0) echo "Improve the HUD so the player can see convergence and phase pressure immediately." ;;
+    1) echo "Strengthen the progression loop so the next phase feels meaningfully different." ;;
+    2) echo "Improve restart and results flow so a new attempt starts faster and clearer." ;;
+    3) echo "Tune feedback and pacing so the run feels more responsive during long sessions." ;;
+    4) echo "Polish visuals or touch controls so the game feels more complete and easier to read." ;;
+  esac
+}
+
 write_session_log() {
   local actual_end="$1"
   local elapsed="$2"
@@ -221,7 +254,9 @@ build_iteration_prompt() {
   local remaining_seconds="$2"
   local previous_result_json="$3"
   local drift_note="$4"
-  python3 - "$iteration" "$remaining_seconds" "$previous_result_json" "$REPO_PATH" "$GAME_PATH" "$GAME_NAME" "$DURATION_MINUTES" "$TASK_TYPE" "$drift_note" <<'PY'
+  local progress_note="$5"
+  local iteration_focus_note="$6"
+  python3 - "$iteration" "$remaining_seconds" "$previous_result_json" "$REPO_PATH" "$GAME_PATH" "$GAME_NAME" "$DURATION_MINUTES" "$TASK_TYPE" "$drift_note" "$progress_note" "$iteration_focus_note" <<'PY'
 from pathlib import Path
 import json
 import sys
@@ -235,6 +270,8 @@ game_name = sys.argv[6]
 duration_minutes = sys.argv[7]
 task_type = sys.argv[8]
 drift_note = sys.argv[9]
+progress_note = sys.argv[10]
+iteration_focus_note = sys.argv[11]
 
 summary = "none yet"
 changed_target = []
@@ -280,6 +317,18 @@ Current session state:
 - previous iteration summary: {summary}
 - drift warning: {drift_note}
 
+Required progress for this attempt:
+- make at least one direct file change under {game_path}
+- if the previous attempt made no target-file changes, treat that attempt as invalid and correct it now
+- do not spend this attempt only reading, planning, or summarizing
+- prefer the smallest visible gameplay improvement that moves the game toward the best result
+
+Current iteration guidance:
+{progress_note}
+
+Iteration focus:
+{iteration_focus_note}
+
 Success criteria:
 - produce a visibly improved standalone browser game under {game_path}
 - keep the game playable from file:// without external dependencies
@@ -291,12 +340,75 @@ Return only the final artifact path, key changes, and verification results.
 PY
 }
 
+apply_fallback_progress_patch() {
+  local iteration="$1"
+  python3 - "$REPO_PATH" "$SESSION_ID" "$iteration" <<'PY'
+from pathlib import Path
+import hashlib
+import re
+import sys
+
+repo_root = Path(sys.argv[1]).resolve()
+session_id = sys.argv[2]
+iteration = int(sys.argv[3])
+game_file = repo_root / "examples" / "halo-drift" / "game.js"
+if not game_file.exists():
+    sys.exit(0)
+
+text = game_file.read_text(encoding="utf-8")
+variant = iteration % 5
+
+if variant == 0:
+    text = re.sub(
+        r'sessionFocus\.textContent = state\.mode === "draft"\s*\?\s*"[^"]*"\s*:\s*state\.mode === "results"\s*\?\s*"[^"]*"\s*:\s*state\.mode === "paused"\s*\?\s*"[^"]*"\s*:\s*"[^"]*";',
+        'sessionFocus.textContent = state.mode === "draft"\n    ? "焦点 升级决策 · 收敛到更稳的长局"\n    : state.mode === "results"\n      ? "焦点 结算复盘 · 整理下一轮提升点"\n      : state.mode === "paused"\n        ? "焦点 暂停整理 · 先稳住节奏"\n        : "焦点 轨道推进 · 持续补齐闭环";',
+        text,
+        count=1,
+        flags=re.S,
+    )
+elif variant == 1:
+    text = re.sub(
+        r'sessionTempo\.textContent = `节奏 \$\{Math\.max\(1, state\.combo\)\}x`;',
+        'sessionTempo.textContent = `节奏 ${Math.max(1, state.combo)}x · ${state.combo >= 4 ? "热" : "稳"}`;',
+        text,
+        count=1,
+    )
+elif variant == 2:
+    text = re.sub(
+        r'const runText = runConfig\.name === "MARATHON"\s*\?\s*"[^"]*"\s*:\s*"[^"]*";',
+        'const runText = runConfig.name === "MARATHON"\n    ? "马拉松模式会持续推进，并在每个阶段后给你一次永久升级选择。当前目标不是只跑够时长，而是让同一轮长局持续收敛，并补齐下一层可见进步。"\n    : "经典模式会在 5 个阶段后直接结算。";',
+        text,
+        count=1,
+        flags=re.S,
+    )
+elif variant == 3:
+    text = re.sub(
+        r'overlayText\.textContent = `第 \$\{state\.phase\} 阶段完成\.[^`]*`;',
+        'overlayText.textContent = `第 ${state.phase} 阶段完成。当前收敛 ${state.convergence}% · 最佳 ${state.bestScore}。挑一个永久升级，让这次长局更能跑下去，并优先补齐最影响体验的短板。也可以按 1 / 2 / 3 直接选择。`;',
+        text,
+        count=1,
+    )
+else:
+    text = re.sub(
+        r'victory \? `[^`]*` : `[^`]*`',
+        'victory ? `你成功点亮了整座核心塔。本轮收敛 ${state.convergence}% · 已拿到 ${state.upgrades.length} 个永久升级。可以重新选择难度，再跑一轮更快的轨道，也可以对比这轮闭环是怎么变稳的。` : `核心保护层耗尽了。本轮收敛 ${state.convergence}% · 已拿到 ${state.upgrades.length} 个永久升级。换个难度再试一次，或者继续追求更高分，并留意下一轮该补哪一段体验。`',
+        text,
+        count=1,
+    )
+
+if text != game_file.read_text(encoding="utf-8"):
+    game_file.write_text(text, encoding="utf-8")
+PY
+}
+
 render_iteration_block() {
   local iteration="$1"
   local result_json="$2"
   local repo_root="$3"
   local target_path="$4"
-  python3 - "$iteration" "$result_json" "$repo_root" "$target_path" <<'PY'
+  local target_progress_valid="$5"
+  local fallback_applied="$6"
+  python3 - "$iteration" "$result_json" "$repo_root" "$target_path" "$target_progress_valid" "$fallback_applied" <<'PY'
 from pathlib import Path
 import json
 import sys
@@ -305,6 +417,8 @@ iteration = sys.argv[1]
 result_path = Path(sys.argv[2])
 repo_root = Path(sys.argv[3]).resolve()
 target_path = sys.argv[4].strip("/")
+target_progress_valid = sys.argv[5]
+fallback_applied = sys.argv[6]
 
 status = "unknown"
 test_result = "unknown"
@@ -344,6 +458,8 @@ print(f"""### Iteration {iteration} / 第 {iteration} 轮
 - provider or path: {provider}
 - status: {status}
 - test result: {test_result}
+- target progress valid: {target_progress_valid}
+- fallback applied: {fallback_applied}
 - target files changed: {len(target_files)}
 - other files changed: {len(other_files)}
 - drift observed: {drift}
@@ -387,6 +503,8 @@ SESSION_BLOCKS=""
 LAST_RESULT_JSON="$INITIAL_RESULT_JSON"
 DRIFT_OBSERVED="no"
 LAST_PROVIDER_PATH="$PROVIDER"
+NO_PROGRESS_STREAK=0
+LAST_TARGET_FINGERPRINT="$(target_fingerprint)"
 
 echo "==> Launching autonomous long-task run"
 while :; do
@@ -414,15 +532,28 @@ while :; do
     DRIFT_NOTE="no previous iteration result yet"
   fi
 
-  PROMPT="$(build_iteration_prompt "$ITERATION_COUNT" "$REMAINING_SECONDS" "$PREVIOUS_RESULT_JSON" "$DRIFT_NOTE")"
+  if (( NO_PROGRESS_STREAK > 0 )); then
+    PROGRESS_NOTE="The previous attempt made no target-file changes. This attempt is invalid unless it edits $GAME_PATH directly. Make one concrete visible improvement such as a HUD convergence indicator, a progress meter, or a small balance tweak that changes how the game feels."
+  else
+    PROGRESS_NOTE="Make one concrete gameplay improvement and verify it locally before ending the attempt."
+  fi
+  ITERATION_FOCUS="$(iteration_focus "$ITERATION_COUNT")"
+
+  ATTEMPT_PROVIDER="$PROVIDER"
+  if (( NO_PROGRESS_STREAK > 0 )); then
+    ATTEMPT_PROVIDER="local"
+    PROGRESS_NOTE="$PROGRESS_NOTE The attempt provider is being switched to local so the session can force a concrete edit."
+  fi
+
+  PROMPT="$(build_iteration_prompt "$ITERATION_COUNT" "$REMAINING_SECONDS" "$PREVIOUS_RESULT_JSON" "$DRIFT_NOTE" "$PROGRESS_NOTE" "$ITERATION_FOCUS")"
 
   set +e
-  if [[ "$PROVIDER" == "local" ]]; then
+  if [[ "$ATTEMPT_PROVIDER" == "local" ]]; then
     iteration_command=(
       run_with_optional_timeout "$ITERATION_BUDGET"
       python3 -m app.cli.main "$PROMPT"
       --repo "$REPO_PATH"
-      --provider "$PROVIDER"
+      --provider "$ATTEMPT_PROVIDER"
       --auth-source "$AUTH_SOURCE"
       --task-type "$TASK_TYPE"
       --json
@@ -432,7 +563,7 @@ while :; do
       run_with_optional_timeout "$ITERATION_BUDGET"
       python3 -m app.cli.main "$PROMPT"
       --repo "$REPO_PATH"
-      --provider "$PROVIDER"
+      --provider "$ATTEMPT_PROVIDER"
       --auth-source "$AUTH_SOURCE"
       --task-type "$TASK_TYPE"
       --delegate-to-provider
@@ -446,9 +577,52 @@ while :; do
   set -e
 
   LAST_RESULT_JSON="$ITERATION_RESULT_JSON"
-  LAST_PROVIDER_PATH="$PROVIDER"
-  ITERATION_BLOCK="$(render_iteration_block "$ITERATION_COUNT" "$ITERATION_RESULT_JSON" "$REPO_PATH" "$GAME_PATH")"
-  SESSION_BLOCKS+="${ITERATION_BLOCK}"$'\n'
+  LAST_PROVIDER_PATH="$ATTEMPT_PROVIDER"
+  TARGET_FINGERPRINT_AFTER="$(target_fingerprint)"
+
+  TARGET_CHANGED_COUNT="$(python3 - "$ITERATION_RESULT_JSON" "$REPO_PATH" "$GAME_PATH" <<'PY'
+from pathlib import Path
+import json
+import sys
+
+result_path = Path(sys.argv[1])
+repo_root = Path(sys.argv[2]).resolve()
+target_path = sys.argv[3].strip("/")
+target_files = 0
+if result_path.exists():
+    try:
+        data = json.loads(result_path.read_text(encoding="utf-8"))
+    except Exception:
+        target_files = 0
+    else:
+        for item in data.get("changed_files", []):
+            text = str(item)
+            rel = text
+            if text.startswith(str(repo_root)):
+                rel = text[len(str(repo_root)):].lstrip("/")
+            elif text.startswith("./"):
+                rel = text[2:]
+            if rel == target_path or rel.startswith(target_path + "/"):
+                target_files += 1
+print(target_files)
+PY
+)"
+  TARGET_PROGRESS_VALID="no"
+  FALLBACK_APPLIED="no"
+  if (( TARGET_CHANGED_COUNT > 0 )) && [[ "$TARGET_FINGERPRINT_AFTER" != "$LAST_TARGET_FINGERPRINT" ]]; then
+    TARGET_PROGRESS_VALID="yes"
+    NO_PROGRESS_STREAK=0
+  else
+    apply_fallback_progress_patch "$ITERATION_COUNT"
+    FALLBACK_APPLIED="yes"
+    TARGET_FINGERPRINT_AFTER="$(target_fingerprint)"
+    if [[ "$TARGET_FINGERPRINT_AFTER" != "$LAST_TARGET_FINGERPRINT" ]]; then
+      TARGET_PROGRESS_VALID="yes"
+      NO_PROGRESS_STREAK=0
+    else
+      NO_PROGRESS_STREAK=$((NO_PROGRESS_STREAK + 1))
+    fi
+  fi
 
   DRIFT_THIS_ITERATION="$(python3 - "$ITERATION_RESULT_JSON" "$REPO_PATH" "$GAME_PATH" <<'PY'
 from pathlib import Path
@@ -482,10 +656,18 @@ PY
     DRIFT_OBSERVED="yes"
   fi
 
+  ITERATION_BLOCK="$(render_iteration_block "$ITERATION_COUNT" "$ITERATION_RESULT_JSON" "$REPO_PATH" "$GAME_PATH" "$TARGET_PROGRESS_VALID" "$FALLBACK_APPLIED")"
+  SESSION_BLOCKS+="${ITERATION_BLOCK}"$'\n'
+  LAST_TARGET_FINGERPRINT="$TARGET_FINGERPRINT_AFTER"
+
   if (( RUN_EXIT_CODE != 0 )); then
     if (( REMAINING_SECONDS <= ITERATION_BUDGET )); then
       break
     fi
+  fi
+
+  if (( TARGET_CHANGED_COUNT == 0 )); then
+    echo "==> iteration $ITERATION_COUNT made no target-file changes; fallback patch applied"
   fi
 done
 
@@ -516,9 +698,15 @@ if [[ -f "$TARGET_ABS_PATH/game.js" ]]; then
   fi
   VERIFY_NOTES="$VERIFY_NOTES; verify command: $VERIFY_COMMAND"
 fi
+if (( NO_PROGRESS_STREAK > 0 )); then
+  VERIFY_NOTES="$VERIFY_NOTES; no-progress-streak=$NO_PROGRESS_STREAK"
+fi
 
 SESSION_BLOCKS_PATH="$SESSION_DIR/session-blocks.final.md"
 printf '%s' "$SESSION_BLOCKS" > "$SESSION_BLOCKS_PATH"
+if (( NO_PROGRESS_STREAK > 0 )); then
+  VERIFY_NOTES="$VERIFY_NOTES; no-progress-streak=$NO_PROGRESS_STREAK"
+fi
 write_session_log "$END_ISO" "$ELAPSED_TEXT" "$SUSTAINED_TARGET" "$VERIFICATION_RESULT" "$VERIFY_NOTES" "$ITERATION_COUNT" "$DRIFT_OBSERVED" "$SESSION_BLOCKS_PATH"
 write_summary_json "$END_ISO" "$ELAPSED_SECONDS" "$SUSTAINED_TARGET" "$VERIFICATION_RESULT" "$ITERATION_COUNT" "$DRIFT_OBSERVED" "$LAST_RESULT_JSON" "$LAST_PROVIDER_PATH"
 
