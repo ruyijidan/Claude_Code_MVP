@@ -114,6 +114,11 @@ Prefer upgrades in this order:
 This keeps the task moving toward a better playable artifact instead of getting
 stuck on ornamental changes.
 
+If the artifact still feels bad when actually played, prioritize the play feel
+over any proxy diagnostic or log-only success signal.
+
+如果实际玩起来仍然不好，应优先修玩感，而不是优先代理诊断或只在日志里“看起来成功”的信号。
+
 ### 4. Verify locally / 本地验证
 
 At minimum, verify:

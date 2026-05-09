@@ -25,6 +25,7 @@ Current files:
 - [`long-task-game-session-log-template.md`](./long-task-game-session-log-template.md): evidence template for proving a long-task run actually sustained its target duration
 - [`long-task-game-optimization-strategy.md`](./long-task-game-optimization-strategy.md): convergence-focused strategy for improving the same game across a sustained long-task session
 - [`fc-style-long-play-principles.md`](./fc-style-long-play-principles.md): design principles for small games that stay engaging for a long time
+- [`auto-experience-diagnostics.md`](./auto-experience-diagnostics.md): diagnostic loop for detecting game-experience problems automatically during long-task runs
 - [`start_long_task_game_session.sh`](../../scripts/start_long_task_game_session.sh): script entrypoint that creates a session log and runs the long-task game session with timeout handling
 - [`long-task-game-upgrade.md`](./long-task-game-upgrade.md): historical 600-second mini-game upgrade record for `Void Breaker`
 - [`long-task-game-rerun-2026-04-24.md`](./long-task-game-rerun-2026-04-24.md): historical rerun record for `Starforge Relay`

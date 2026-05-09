@@ -24,6 +24,10 @@ If a change does not improve playability, clarity, polish, or progression, it is
 
 如果一个改动没有提升可玩性、清晰度、完成度或推进感，它就不是长任务循环中的有效改动。
 
+If the game still feels bad in practice, that feeling outweighs any proxy metric or internal confidence score.
+
+如果游戏实际玩起来仍然不好，那么这种真实感受优先于任何代理指标或内部置信分。
+
 ## Iteration Loop / 迭代循环
 
 ### 1. Observe / 观察
@@ -49,6 +53,7 @@ If a change does not improve playability, clarity, polish, or progression, it is
 - Capture what changed
 - Capture what improved
 - Capture what still feels weak
+- Capture whether the actual play feel improved, not just whether a signal moved
 
 ### 5. Repeat / 重复
 
@@ -99,4 +104,3 @@ Stop the session when one of these is true:
 - Treating long duration as the success criterion
 - Restarting from scratch when the current build only needs refinement
 - Making changes that are hard to perceive in the game itself
-
