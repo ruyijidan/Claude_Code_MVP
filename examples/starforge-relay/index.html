@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Starforge Relay / 星炉中继</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="page-shell">
+      <section class="hero-panel">
+        <p class="eyebrow">Claude Code MVP · New Run</p>
+        <h1>Starforge Relay</h1>
+        <p class="summary">
+          自由移动、自动交火、波次构筑的星域生存战。收集中继碎片，系统会在波次间自动配装永久模块，把一轮轮防线推向更稳定的收敛。
+        </p>
+        <div class="feature-grid">
+          <article>
+            <span>核心循环</span>
+            <strong>移动 / 收集 / 升级</strong>
+          </article>
+          <article>
+            <span>战斗节奏</span>
+            <strong>自动交火 + 脉冲清场</strong>
+          </article>
+          <article>
+            <span>成长感</span>
+            <strong>波次间永久模块</strong>
+          </article>
+          <article>
+            <span>目标</span>
+            <strong>长局稳定推进</strong>
+          </article>
+        </div>
+        <div class="controls">
+          <span><kbd>WASD</kbd> / 方向键：移动</span>
+          <span><kbd>Space</kbd>：冲刺</span>
+          <span><kbd>E</kbd>：脉冲</span>
+          <span><kbd>P</kbd> / <kbd>Esc</kbd>：暂停</span>
+          <span>拖动 / 触控：引导飞船移动</span>
+        </div>
+      </section>
+
+      <section class="game-panel">
+        <div class="hud">
+          <div class="stat-card">
+            <span class="label">分数</span>
+            <strong id="score">0</strong>
+          </div>
+          <div class="stat-card">
+            <span class="label">生命</span>
+            <strong id="health">4</strong>
+          </div>
+          <div class="stat-card">
+            <span class="label">波次</span>
+            <strong id="wave">1</strong>
+          </div>
+          <div class="stat-card">
+            <span class="label">中继</span>
+            <strong id="charge">0 / 8</strong>
+          </div>
+          <div class="stat-card">
+            <span class="label">连锁</span>
+            <strong id="combo">1x</strong>
+          </div>
+          <div class="stat-card">
+            <span class="label">模块</span>
+            <strong id="modules">0</strong>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <div class="mode-selector" role="group" aria-label="难度选择">
+            <button type="button" class="mode-button is-active" data-mode="calm">CALM</button>
+            <button type="button" class="mode-button" data-mode="standard">STANDARD</button>
+            <button type="button" class="mode-button" data-mode="storm">STORM</button>
+          </div>
+          <div class="run-selector" role="group" aria-label="运行模式">
+            <button type="button" class="run-button" data-run="classic">CLASSIC</button>
+            <button type="button" class="run-button is-active" data-run="marathon">MARATHON</button>
+          </div>
+          <div class="toolbar-badge" id="bestBadge">BEST 0</div>
+        </div>
+
+        <div class="canvas-frame">
+          <canvas id="gameCanvas" width="1200" height="760" aria-label="Starforge Relay game arena"></canvas>
+          <div class="overlay" id="overlay">
+            <div class="overlay-card">
+              <p class="overlay-tag" id="overlayTag">READY</p>
+              <h2 id="overlayTitle">点燃中继核心，准备进入星环</h2>
+              <p id="overlayText">
+                拖动或键盘移动飞船，自动锁定敌人，收集碎片填满中继。每次波次完成后系统会自动配装一个永久模块，让这局越来越稳。
+              </p>
+              <div class="session-strip" id="sessionStrip" aria-live="polite">
+                <span id="sessionWave">波次 1</span>
+                <span id="sessionCharge">中继 0%</span>
+                <span id="sessionCombo">连锁 1x</span>
+                <span id="sessionModules">模块 0</span>
+                <span id="sessionTempo">节奏 稳</span>
+                <span id="sessionFocus">焦点 自动配装</span>
+              </div>
+              <div class="upgrade-select hidden" id="upgradeSelect" aria-label="升级选择">
+                <p class="upgrade-kicker">PERMANENT MODULE</p>
+                <div class="upgrade-grid" id="upgradeGrid"></div>
+              </div>
+              <button id="startButton" type="button">开始任务</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="touch-controls" aria-label="触屏控制">
+          <button type="button" class="touch-button" data-action="dash">DASH</button>
+          <button type="button" class="touch-button pulse" data-action="pulse">PULSE</button>
+          <button type="button" class="touch-button" data-action="pause">PAUSE</button>
+        </div>
+      </section>
+    </main>
+
+    <script src="./game.js"></script>
+  </body>
+</html>

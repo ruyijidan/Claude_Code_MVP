@@ -47,6 +47,8 @@ After the first hardening wave and the follow-on asset work, the repository now 
 - long-task runner verification now checks actual target-path fingerprint movement and tracks no-progress streaks so repeated empty iterations cannot masquerade as successful long-session iteration
 - long-task game UI now exposes a richer session summary strip with stage, convergence, upgrades, best score, tempo, and focus so long-session convergence is visible during the run
 - the latest 30-minute long-task result is intentionally recorded as a rough harness demo, not a polished game release
+- `examples/starforge-relay` now provides a new browser-game baseline with a cleaner wave-defense loop, permanent module drafts, and touch support
+- long-task session logs now surface a fixed per-iteration "did / optimized / artifact / next" summary so long runs are readable without opening each iteration JSON file
 - application legibility now has a first registered reader layer for preview, log, and metric artifacts
 - tool invocation now has a first unified spec-backed registry plus schema validation
 - workflow behavior now records structured execution state instead of staying only at plan-shaping level
@@ -68,6 +70,7 @@ The repository also gained two concrete product-facing additions after the harde
 
 - a dedicated `glm5` delegated provider path through an Anthropic-compatible API adapter
 - a browser-playable web game demo under `examples/web-game`
+- a higher-quality browser mini-game baseline under `examples/starforge-relay`
 
 So the current state is no longer just “MVP that can run”.
 It is now:
@@ -111,6 +114,7 @@ It is now:
 - release acceptance reporting now classifies provider risks into transient environment, setup/auth, and product-blocking buckets
 - the long-task game flow now has a repeatable launcher, session log template, and a verified 30-minute run against `examples/halo-drift`
 - the long-task launcher now uses spinner feedback plus temp-file-backed session logging so long runs can continue without argv overflow or silent stalls
+- `examples/starforge-relay` is now the active higher-quality browser-game candidate, while the earlier `examples/halo-drift` artifact remains labeled as rough demo output
 - contributor-facing harness implementation guidance now exists under `docs/guides/how-to-implement-a-harness.md`
 - documentation conventions now explicitly require bilingual English/Chinese titles for new or materially updated docs
 - a new long-form learning article now connects harness basics to building a personal harness project
@@ -129,6 +133,7 @@ It is now:
 - Keep the long-task browser mini-game workflow reproducible so future runs can be launched and verified from the documented runbook
 - Keep the long-task runner focused on genuine per-iteration game improvement rather than repeated text-only edits
 - Keep the current long-task game artifact labeled as rough demo output until a new design-first pass replaces it
+- Continue iterating on `examples/starforge-relay` as the new browser-game baseline instead of extending the rough `halo-drift` artifact
 
 ### Not Started / 未开始
 

@@ -8,6 +8,42 @@ owner: core
 
 ## 2026-05-08
 
+### Starforge Relay Sets a New Browser-Game Baseline / 星炉中继建立新的浏览器小游戏基线
+
+Included pending change set:
+
+- `examples/starforge-relay/`: new browser mini-game with free movement, automatic firing, wave pressure, permanent module drafts, classic/marathon run modes, touch controls, and persistent best-score storage
+- `tests/test_starforge_relay_game.py`: new regression coverage for asset presence and JavaScript parseability
+
+Highlights:
+
+- built a new game from scratch instead of continuing to patch the rough `examples/halo-drift` long-task demo
+- shifted the interaction model toward a cleaner wave-defense loop with clearer HUD/session feedback and stronger module-based progression
+- kept the artifact directly playable from `file://` and added a regression test so the new game path stays parseable
+
+Verification:
+
+- `node --check examples/starforge-relay/game.js`
+- `python3 -m unittest tests.test_starforge_relay_game tests.test_task_templates tests.test_coder_agent_long_task_game tests.test_permission_pipeline tests.test_completion_contracts tests.test_verification_gates`
+- full unit test discovery passed locally: `168 tests OK, 2 skipped`
+
+### Long-Task Iteration Logs Now Report Did / Optimized / Artifact / Next / 长任务迭代日志现在输出做了什么、优化了什么、产物和下一轮
+
+Included pending change set:
+
+- `scripts/start_long_task_game_session.sh`: changed the per-iteration markdown block to surface a fixed four-part view of each round: what was done, what was optimized, what artifact changed, and what the next round should focus on
+
+Highlights:
+
+- made the long-task session logs easier to read without opening each iteration JSON file
+- exposed a stable per-iteration narrative so session readers can see the concrete improvement path at a glance
+
+Verification:
+
+- `bash -n scripts/start_long_task_game_session.sh`
+
+## 2026-05-08
+
 ### Long-Task Runner Now Enforces Real Per-Iteration Progress / 长任务执行器现已强制每轮真实推进
 
 Included pending change set:
