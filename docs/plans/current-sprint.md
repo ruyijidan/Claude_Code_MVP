@@ -114,6 +114,7 @@ It is now:
 - release acceptance reporting now classifies provider risks into transient environment, setup/auth, and product-blocking buckets
 - the long-task game flow now has a repeatable launcher, session log template, and a verified 30-minute run against `examples/halo-drift`
 - the long-task launcher now uses spinner feedback plus temp-file-backed session logging so long runs can continue without argv overflow or silent stalls
+- long-task session logs now preserve per-iteration `did / optimized / artifact / next` fields so replay notes are easier to inspect after long runs
 - `examples/starforge-relay` is now the active higher-quality browser-game candidate, while the earlier `examples/halo-drift` artifact remains labeled as rough demo output
 - contributor-facing harness implementation guidance now exists under `docs/guides/how-to-implement-a-harness.md`
 - documentation conventions now explicitly require bilingual English/Chinese titles for new or materially updated docs

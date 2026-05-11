@@ -238,18 +238,23 @@ class CliMainTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp_dir:
             repo_path = Path(tmp_dir)
             stream = io.StringIO()
-            with redirect_stdout(stream):
-                exit_code = main(
-                    [
-                        "fix failing tests",
-                        "--repo",
-                        str(repo_path),
-                        "--provider",
-                        "codex_cli",
-                        "--delegate-to-provider",
-                        "--json",
-                    ]
-                )
+            fake_adapter = MagicMock()
+            fake_adapter.provider_name = "codex_cli"
+            fake_adapter.provider_info.return_value = {"provider": "codex_cli", "available": True, "delegates_prompt": True}
+            fake_adapter.can_delegate_prompt.return_value = True
+            with patch("app.cli.main.build_runtime_adapter", return_value=fake_adapter):
+                with redirect_stdout(stream):
+                    exit_code = main(
+                        [
+                            "fix failing tests",
+                            "--repo",
+                            str(repo_path),
+                            "--provider",
+                            "codex_cli",
+                            "--delegate-to-provider",
+                            "--json",
+                        ]
+                    )
             output = stream.getvalue()
             self.assertEqual(exit_code, 1)
             self.assertIn("permission_denied", output)

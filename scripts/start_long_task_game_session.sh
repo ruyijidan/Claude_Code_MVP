@@ -408,7 +408,8 @@ render_iteration_block() {
   local target_path="$4"
   local target_progress_valid="$5"
   local fallback_applied="$6"
-  python3 - "$iteration" "$result_json" "$repo_root" "$target_path" "$target_progress_valid" "$fallback_applied" <<'PY'
+  local iteration_focus="$7"
+  python3 - "$iteration" "$result_json" "$repo_root" "$target_path" "$target_progress_valid" "$fallback_applied" "$iteration_focus" <<'PY'
 from pathlib import Path
 import json
 import sys
@@ -419,14 +420,19 @@ repo_root = Path(sys.argv[3]).resolve()
 target_path = sys.argv[4].strip("/")
 target_progress_valid = sys.argv[5]
 fallback_applied = sys.argv[6]
+iteration_focus = sys.argv[7].strip()
 
 status = "unknown"
 test_result = "unknown"
 summary = "no summary available"
+did = "no summary available"
+optimized = "target artifact moved"
+next_round = iteration_focus or "keep improving the target artifact"
 target_files: list[str] = []
 other_files: list[str] = []
 drift = "no"
 provider = "unknown"
+artifact_hint = "target artifact"
 
 if result_path.exists():
     try:
@@ -437,6 +443,7 @@ if result_path.exists():
         status = str(data.get("status") or data.get("mode") or "unknown")
         test_result = str(data.get("test_result") or data.get("verification", {}).get("result") or "unknown")
         summary = str(data.get("implementation_summary") or data.get("summary") or data.get("output") or "no summary available")
+        did = summary
         provider = str(data.get("runtime_provider") or data.get("provider") or data.get("provider_info", {}).get("provider") or "unknown")
         changed_raw = data.get("changed_files", [])
         for item in changed_raw:
@@ -451,9 +458,29 @@ if result_path.exists():
             else:
                 other_files.append(rel)
         drift = "yes" if other_files else "no"
+        if target_files:
+            if any(rel.endswith("game.js") for rel in target_files):
+                artifact_hint = "gameplay logic"
+                optimized = "gameplay / progression / loop behavior"
+            elif any(rel.endswith("index.html") for rel in target_files):
+                artifact_hint = "layout / overlay / controls"
+                optimized = "layout / overlay / controls"
+            elif any(rel.endswith("styles.css") for rel in target_files):
+                artifact_hint = "visual styling"
+                optimized = "visual styling / responsiveness"
+            elif any(rel.endswith("README.md") for rel in target_files):
+                artifact_hint = "documentation"
+                optimized = "documentation clarity"
+            else:
+                artifact_hint = ", ".join(target_files[:3])
+                optimized = "target artifact behavior"
 
 print(f"""### Iteration {iteration} / 第 {iteration} 轮
 
+- did: {did}
+- optimized: {optimized}
+- artifact: {artifact_hint}
+- next: {next_round}
 - result file: {result_path}
 - provider or path: {provider}
 - status: {status}
@@ -656,7 +683,7 @@ PY
     DRIFT_OBSERVED="yes"
   fi
 
-  ITERATION_BLOCK="$(render_iteration_block "$ITERATION_COUNT" "$ITERATION_RESULT_JSON" "$REPO_PATH" "$GAME_PATH" "$TARGET_PROGRESS_VALID" "$FALLBACK_APPLIED")"
+  ITERATION_BLOCK="$(render_iteration_block "$ITERATION_COUNT" "$ITERATION_RESULT_JSON" "$REPO_PATH" "$GAME_PATH" "$TARGET_PROGRESS_VALID" "$FALLBACK_APPLIED" "$ITERATION_FOCUS")"
   SESSION_BLOCKS+="${ITERATION_BLOCK}"$'\n'
   LAST_TARGET_FINGERPRINT="$TARGET_FINGERPRINT_AFTER"
 

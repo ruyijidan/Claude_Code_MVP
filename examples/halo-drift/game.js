@@ -485,7 +485,7 @@ function updateOverlayForDifficulty() {
   const config = currentConfig();
   const runConfig = currentRunConfig();
   const runText = runConfig.name === "MARATHON"
-    ? "马拉松模式会持续推进，并在每个阶段后给你一次永久升级选择，适合 30 分钟长任务验证。当前目标不是只跑够时长，而是让同一轮长局持续收敛，并补齐下一层可见进步。"
+    ? "马拉松模式会持续推进，并在每个阶段后给你一次永久升级选择。当前目标不是只跑够时长，而是让同一轮长局持续收敛，并补齐下一层可见进步。"
     : "经典模式会在 5 个阶段后直接结算。";
   showOverlay(
     "READY",

@@ -632,6 +632,33 @@ Impact:
 - `glm5` can now participate in unattended release acceptance runs through a local harness-controlled execution path
 - release acceptance artifacts can be validated and optionally retained for audit and debugging
 
+## 2026-05-11
+
+### Long-Task Session Reporting Tightening / 长任务会话报告收紧
+
+Included commit:
+
+- pending local change set for long-task session reporting and CLI permission-path test stability
+
+Highlights:
+
+- tightened the long-task session markdown block so each iteration now records `did`, `optimized`, `artifact`, and `next` fields
+- threaded per-iteration focus text through the long-task launcher so follow-up guidance survives into the saved session report
+- inferred a clearer artifact category from changed target files to make long runs easier to review at a glance
+- stabilized the delegated `codex_cli` permission-denied JSON test by patching the runtime adapter instead of depending on ambient provider availability
+- shortened one `halo-drift` marathon overlay sentence
+
+Verification:
+
+- shell syntax check passed: `bash -n scripts/start_long_task_game_session.sh`
+- Python compile check passed: `python3 -m py_compile tests/test_cli_main.py`
+- targeted unit suite passed: `python3 -m unittest tests.test_cli_main`
+
+Impact:
+
+- long-task replay notes now show clearer per-iteration intent and artifact focus instead of relying only on a summary blob
+- the CLI test suite is less sensitive to local provider installation state when asserting permission-denied behavior
+
 ## 2026-04-16
 
 ### GLM5 Provider And Web Game Demo / GLM5 Provider 与网页小游戏 Demo
