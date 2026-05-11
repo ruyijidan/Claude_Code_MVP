@@ -28,7 +28,7 @@ class VerificationGateTests(unittest.TestCase):
             {
                 "task_spec": type("TaskSpecStub", (), {"name": "implement_feature"})(),
                 "workflow_spec": workflow,
-                "changed_files": ["sample_app/tool_router.py", "tests/test_tool_router.py"],
+                "changed_files": ["app/tool_router.py", "tests/test_tool_router.py"],
                 "implementation_summary": "Added tool routing and coverage.",
                 "test_result": "passed",
                 "verification_errors": [],
@@ -60,7 +60,7 @@ class VerificationGateTests(unittest.TestCase):
             {
                 "task_spec": type("TaskSpecStub", (), {"name": "fix_bug"})(),
                 "workflow_spec": workflow,
-                "changed_files": ["sample_app/calculator.py"],
+                "changed_files": ["app/calculator.py"],
                 "implementation_summary": "Updated the calculator logic.",
                 "test_result": "failed",
                 "verification_errors": [],

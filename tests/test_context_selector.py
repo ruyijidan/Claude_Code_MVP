@@ -22,15 +22,15 @@ class ContextSelectorTests(unittest.TestCase):
                 "write tests for router",
                 {"available": False},
                 [
-                    "sample_app/tool_router.py",
-                    "sample_app/calculator.py",
+                    "app/tool_router.py",
+                    "app/calculator.py",
                     "tests/test_tool_router.py",
                     "README.md",
                 ],
             )
 
             self.assertIn("AGENTS.md", result.always_include_docs)
-            self.assertIn("sample_app/tool_router.py", result.likely_relevant_files)
+            self.assertIn("app/tool_router.py", result.likely_relevant_files)
             self.assertIn("tests/test_tool_router.py", result.test_targets)
             self.assertIn("docs/architecture/boundaries.md", result.architecture_constraints)
 

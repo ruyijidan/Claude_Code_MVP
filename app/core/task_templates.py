@@ -59,7 +59,7 @@ if __name__ == "__main__":
 
     if task_name == "fix_bug":
         return {
-            "module_path": "sample_app/calculator.py",
+            "module_path": "app/calculator.py",
             "module_content": """from __future__ import annotations
 
 
@@ -71,7 +71,7 @@ def divide(left: float, right: float) -> float:
             "test_path": "tests/test_calculator.py",
             "test_content": """import unittest
 
-from sample_app.calculator import divide
+from app.calculator import divide
 
 
 class CalculatorTests(unittest.TestCase):
@@ -91,7 +91,7 @@ if __name__ == "__main__":
 
     if task_name == "write_tests":
         return {
-            "module_path": "sample_app/string_utils.py",
+            "module_path": "app/string_utils.py",
             "module_content": """from __future__ import annotations
 
 
@@ -101,7 +101,7 @@ def slugify(value: str) -> str:
             "test_path": "tests/test_string_utils.py",
             "test_content": """import unittest
 
-from sample_app.string_utils import slugify
+from app.string_utils import slugify
 
 
 class StringUtilsTests(unittest.TestCase):
@@ -143,7 +143,7 @@ if __name__ == "__main__":
         }
 
     return {
-        "module_path": "sample_app/tool_router.py",
+        "module_path": "app/tool_router.py",
         "module_content": """from __future__ import annotations
 
 
@@ -162,7 +162,7 @@ class ToolRouter:
         "test_path": "tests/test_tool_router.py",
         "test_content": """import unittest
 
-from sample_app.tool_router import ToolRouter
+from app.tool_router import ToolRouter
 
 
 class ToolRouterTests(unittest.TestCase):

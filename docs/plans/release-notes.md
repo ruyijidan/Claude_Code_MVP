@@ -634,6 +634,32 @@ Impact:
 
 ## 2026-05-11
 
+### Sample App Removal And Starter Path Cleanup / sample_app 移除与起步路径清理
+
+Included commit:
+
+- pending local change set for removing `sample_app` and retargeting starter task artifacts
+
+Highlights:
+
+- removed the leftover `sample_app/` starter package from the repository
+- retargeted starter task templates so generated calculator, string utility, and tool router artifacts now live under `app/`
+- kept temporary workspace execution working by generating `app/__init__.py` for non-long-task starter flows
+- updated permission rules, write-profile examples, and harness tests so they no longer depend on `sample_app`
+- simplified the long-task launcher reminder so it only blocks unrelated-file edits instead of naming a removed directory
+
+Verification:
+
+- targeted migration suite passed: `python3 -m unittest tests.test_tool_router tests.test_context_selector tests.test_completion_contracts tests.test_permission_pipeline tests.test_runtime_command_guard tests.test_verification_gates tests.test_failure_classifier tests.test_critic_agent tests.test_graph_execution`
+- full unit suite passed: `python3 -m unittest discover -s tests`
+
+Impact:
+
+- the repository no longer carries an orphaned starter package with half-stale references
+- starter-flow examples and repair paths now point at the main `app/` tree instead of a separate sample namespace
+
+## 2026-05-11
+
 ### Long-Task Session Reporting Tightening / 长任务会话报告收紧
 
 Included commit:

@@ -91,7 +91,7 @@ class CriticAgentTests(unittest.TestCase):
                 "changed_files": [
                     "docs/notes.md",
                     "reports/plan.md",
-                    "sample_app/tool_router.py",
+                    "app/tool_router.py",
                     "tests/test_tool_router.py",
                 ],
                 "test_result": "passed",

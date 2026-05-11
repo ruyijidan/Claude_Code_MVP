@@ -21,10 +21,10 @@ class CoderAgent(BaseAgent):
         changed_files: list[str] = []
 
         if task_name != "long_task_game":
-            init_file = repo_path / "sample_app" / "__init__.py"
+            init_file = repo_path / "app" / "__init__.py"
             self.adapter.edit_file(
                 init_file,
-                '"""Sample package for starter flows."""\n',
+                '"""Generated application package for starter flows."""\n',
             )
             changed_files.append(str(init_file))
 

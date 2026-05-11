@@ -13,14 +13,14 @@ class CompletionContractTests(unittest.TestCase):
         failed = registry.evaluate(
             "fix_bug",
             {
-                "changed_files": ["sample_app/calculator.py"],
+                "changed_files": ["app/calculator.py"],
                 "implementation_summary": "Updated the calculator logic.",
             },
         )
         passed = registry.evaluate(
             "fix_bug",
             {
-                "changed_files": ["sample_app/calculator.py", "tests/test_calculator.py"],
+                "changed_files": ["app/calculator.py", "tests/test_calculator.py"],
                 "implementation_summary": "Updated the calculator logic and regression coverage.",
             },
         )

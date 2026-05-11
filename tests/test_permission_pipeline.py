@@ -157,7 +157,7 @@ class PermissionPipelineTests(unittest.TestCase):
         pipeline = PermissionPipeline()
         with tempfile.TemporaryDirectory() as tmp_dir:
             repo_root = Path(tmp_dir)
-            decision = pipeline.assess_file_write(repo_root / "sample_app" / "tool_router.py", repo_root)
+            decision = pipeline.assess_file_write(repo_root / "app" / "tool_router.py", repo_root)
         self.assertTrue(decision.approved)
         self.assertEqual(decision.boundary, "repository_managed_write")
         self.assertFalse(decision.requires_confirmation)

@@ -91,7 +91,7 @@ class PermissionPipeline:
         self.permission_rules = permission_rules or PermissionRulesSpec(
             name="permission_rules_builtin",
             runtime_artifact_dirs=[".claude-code", "logs"],
-            standard_repo_dirs=["app", "tests", "docs", "specs", "scripts", "examples", "sample_app", "reports"],
+            standard_repo_dirs=["app", "tests", "docs", "specs", "scripts", "examples", "reports"],
             protected_dirs=[".git"],
         )
 
@@ -515,7 +515,7 @@ class PermissionPipeline:
 
     def inspect_write_profiles(self, repo_root: Path, policy: ExecutionPolicy | None = None) -> dict[str, dict]:
         profiles = {
-            "repo_source_file": repo_root / "sample_app" / "tool_router.py",
+            "repo_source_file": repo_root / "app" / "tool_router.py",
             "repo_test_file": repo_root / "tests" / "test_tool_router.py",
             "runtime_trajectory": repo_root / ".claude-code" / "trajectories" / "run.json",
             "runtime_log_file": repo_root / "logs" / "agent.log",

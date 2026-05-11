@@ -305,7 +305,7 @@ Follow docs/design/long-task-game-execution.md.
 Do not ask for step-by-step approval.
 Stay autonomous.
 Work only on {game_path} inside this repository.
-Do not touch sample_app or any unrelated files.
+Do not touch unrelated files.
 Keep the game playable from file:// without external dependencies.
 Improve the game in visible, user-facing layers.
 Continue from the previous iteration instead of restarting the design.

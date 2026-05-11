@@ -75,7 +75,7 @@ class RuntimeCommandGuardTests(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as tmp_dir:
             repo_path = Path(tmp_dir)
-            target = repo_path / "sample_app" / "tool_router.py"
+            target = repo_path / "app" / "tool_router.py"
             adapter.configure_file_guard(make_file_write_guard(pipeline, repo_root=repo_path))
 
             adapter.edit_file(target, "print('ok')\n")

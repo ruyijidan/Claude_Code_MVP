@@ -10,7 +10,7 @@ class FailureClassifierTests(unittest.TestCase):
         classifier = FailureClassifier()
 
         signals = classifier.classify(
-            {"changed_files": ["sample_app/calculator.py"]},
+            {"changed_files": ["app/calculator.py"]},
             [
                 "fix_bug requires at least one changed test file",
                 "architecture boundary violation detected",

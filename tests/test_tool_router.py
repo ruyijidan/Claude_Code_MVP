@@ -23,8 +23,10 @@ class ToolRouterCodegenTests(unittest.TestCase):
             repo_path = Path(tmp_dir)
             agent = CoderAgent(spec, ECCAdapter())
             result = agent.run({"repo_path": repo_path})
-            router_file = repo_path / "sample_app" / "tool_router.py"
+            router_file = repo_path / "app" / "tool_router.py"
+            init_file = repo_path / "app" / "__init__.py"
             self.assertTrue(router_file.exists())
+            self.assertTrue(init_file.exists())
             self.assertEqual(len(result["changed_files"]), 2)
 
 
