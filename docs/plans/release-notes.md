@@ -8,6 +8,24 @@ owner: core
 
 ## 2026-05-15
 
+### Teaching Path And Harness Lab Onboarding Flow / 教学路径与 Harness Lab 入门路径
+
+Included pending change set:
+
+- `docs/guides/harness-teaching-path.md`: added a dedicated teaching-order guide for onboarding, internal sharing, and concept-to-practice routing
+- `docs/guides/README.md`: linked the new teaching path from the guides index
+- `examples/harness-lab/README.md`: added a quick-start flow and related-reading links so the tiny practice target can be used directly in teaching
+
+Highlights:
+
+- turned the existing guide set into a clearer teaching path instead of leaving learners to infer reading order
+- made `examples/harness-lab` easier to use as the first hands-on exercise after the conceptual reading material
+- removed stale references to the deleted longform Feishu packaging path from the teaching route
+
+Verification:
+
+- manual link and content review across `docs/guides/README.md`, `docs/guides/harness-teaching-path.md`, and `examples/harness-lab/README.md`
+
 ### Harness Learning Docs Collapse Into A Single Publishable Core / Harness 学习文档收拢为单一可发布主集
 
 Included pending change set:

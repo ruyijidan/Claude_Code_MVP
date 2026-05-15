@@ -17,10 +17,19 @@ The goal is to create a safe training target for:
 
 ## What Is Inside / 里面有什么
 
-- `app/calculator.py`: a tiny module with one known bug and one missing capability
 - `labapp/calculator.py`: a tiny module with one known bug and one missing capability
 - `tests/test_calculator.py`: a small test suite with one failing expectation
 - `TASKS.md`: suggested harness exercises
+
+## Quick Start / 快速开始
+
+From the repository root, you can practice on this target with:
+
+1. `python3 -m unittest discover -s examples/harness-lab/tests`
+2. inspect `examples/harness-lab/labapp/calculator.py`
+3. read `examples/harness-lab/TASKS.md`
+
+This target is intentionally tiny, so the point is to practice harness behavior, not product design.
 
 ## Suggested Exercises / 建议练习
 
@@ -40,3 +49,11 @@ That failure is the first exercise target, not a broken example.
 Reading `Claude_Code_MVP` directly is great for learning architecture.
 
 Practicing on a tiny target is better for learning execution discipline.
+
+## Related Reading / 相关阅读
+
+If you want the surrounding teaching material, continue with:
+
+1. [`../../docs/guides/harness-teaching-path.md`](../../docs/guides/harness-teaching-path.md)
+2. [`../../docs/guides/how-to-implement-a-harness.md`](../../docs/guides/how-to-implement-a-harness.md)
+3. [`../../docs/guides/from-zero-to-your-own-harness.md`](../../docs/guides/from-zero-to-your-own-harness.md)

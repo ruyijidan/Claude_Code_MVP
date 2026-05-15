@@ -122,6 +122,7 @@ It is now:
 - a new long-form learning article now connects harness basics to building a personal harness project
 - the harness learning path now also includes a capability matrix, code-reading guide, anti-pattern guide, and a tiny practice lab under `examples/harness-lab`
 - the local harness learning docs have now been collapsed into one final unified Feishu-ready article plus summary and distribution materials, and redundant companion drafts have been removed
+- the teaching route now has an explicit onboarding guide and a clearer harness-lab quick-start path for concept-to-practice learning
 - application legibility foundations now inspect browser preview, log, and metric artifacts through registered readers
 - task execution now uses a unified tool registry with schema-validated tool I/O
 - workflow execution now records selected tools, selected readers, and per-run workflow status in replay artifacts
