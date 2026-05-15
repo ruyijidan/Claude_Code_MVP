@@ -6,6 +6,39 @@ owner: core
 
 # Release Notes / 发布说明
 
+## 2026-05-15
+
+### Harness Learning Docs Collapse Into A Single Publishable Core / Harness 学习文档收拢为单一可发布主集
+
+Included pending change set:
+
+- `docs/design/harness-blog-feishu-copyready.md`: finalized the unified Feishu-ready harness learning article and aligned it with the current project architecture and sprint status
+- `docs/design/harness-blog-feishu-promotion-summary.md`: kept the short summary as the companion preview asset
+- `docs/design/harness-feishu-distribution-kit.md`: kept the publishing and submission copy as the outward-facing distribution asset
+- `docs/design/harness-docs-retention-plan.md`: added a local keep/delete plan for cleaning redundant harness-learning docs
+- `docs/design/README.md`: rewrote the design-doc navigation around a smaller canonical harness learning set
+- removed redundant local harness-learning drafts and split companion docs:
+  - `docs/design/harness-blog-feishu-draft.md`
+  - `docs/design/harness-blog-feishu-longform.md`
+  - `docs/design/harness-blog-feishu-cover-note.md`
+  - `docs/design/harness-feishu-topic-index.md`
+  - `docs/design/harness-feishu-01-what-is-harness.md`
+  - `docs/design/harness-feishu-02-how-to-build-a-minimal-harness.md`
+  - `docs/design/harness-feishu-03-how-to-evaluate-a-harness-project.md`
+  - `docs/design/harness-feishu-04-how-harness-looks-in-a-real-project.md`
+
+Highlights:
+
+- turned the harness learning material into one default article instead of a scattered local topic pack
+- kept only the pieces that still have distinct jobs: unified article, short summary, and distribution copy
+- aligned the unified article with the real repository state so first-pass daemon, retrieval, multi-agent, acceptance, registry, and artifact-reader work are not accidentally understated
+- made the local documentation surface easier to maintain before code submission
+
+Verification:
+
+- manual doc review against `README.md`, `ARCHITECTURE.md`, and `docs/plans/current-sprint.md`
+- manual formatting pass for Feishu-friendly code fences in `docs/design/harness-blog-feishu-copyready.md`
+
 ## 2026-05-08
 
 ### Starforge Relay Sets a New Browser-Game Baseline / 星炉中继建立新的浏览器小游戏基线
