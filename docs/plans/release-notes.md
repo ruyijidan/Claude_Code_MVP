@@ -8,6 +8,22 @@ owner: core
 
 ## 2026-05-15
 
+### Local Codex Usage Inspector Script / 本地 Codex 用量检查脚本
+
+Included pending change set:
+
+- `scripts/show_codex_usage.py`: added a small local utility for reading `~/.codex/sessions/*.jsonl` logs and printing token usage plus 5-hour and weekly rate-limit status
+
+Highlights:
+
+- makes it easier to inspect local Codex token usage without opening raw session logs manually
+- supports both a detailed latest-session view and an `--all` summary mode across local session files
+- keeps the utility outside the harness runtime path so it stays a lightweight operator script
+
+Verification:
+
+- `python3 scripts/show_codex_usage.py --help`
+
 ### Teaching Path And Harness Lab Onboarding Flow / 教学路径与 Harness Lab 入门路径
 
 Included pending change set:
