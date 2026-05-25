@@ -699,6 +699,32 @@ Impact:
 - `glm5` can now participate in unattended release acceptance runs through a local harness-controlled execution path
 - release acceptance artifacts can be validated and optionally retained for audit and debugging
 
+## 2026-05-25
+
+### Final Harness Learning Article Polish / Harness 学习主文终稿收尾
+
+Included commit:
+
+- pending local change set for the final Feishu-ready pass on the unified harness learning article
+
+Highlights:
+
+- finalized [`docs/design/harness-blog-feishu-copyready.md`](../design/harness-blog-feishu-copyready.md) as the single primary harness learning article
+- removed remaining draft-style formatting such as fragmented one-line paragraphs and mixed glossary pacing
+- kept the article front half project-agnostic and reserved `Claude_Code_MVP` references for the later sample-project mapping section
+- aligned terminology toward Chinese-first narration with English kept mainly for code-adjacent flow chains and glossary annotations
+- tightened the vibecoding-versus-harness comparison so it reads as one article section instead of a teaching outline
+
+Verification:
+
+- manual final-read pass completed against content richness, readability, and Feishu formatting expectations
+- working tree review confirmed the intended doc-only scope: `docs/design/harness-blog-feishu-copyready.md`
+
+Impact:
+
+- the repository now has one final publishable harness learning article that can be uploaded to Feishu without depending on the removed companion drafts
+- the main learning document now better matches the project's role as a harness learning base instead of a project-intro-only article
+
 ## 2026-05-11
 
 ### Sample App Removal And Starter Path Cleanup / sample_app 移除与起步路径清理
