@@ -8,6 +8,10 @@ owner: core
 
 ## 2026-06-02
 
+### test_dev.py: Fix Relative Path Sensitivity In Missing-File Test
+
+- `tests/test_dev.py` scenario 3: replaced literal `"missing.md"` with a uuid-based temp path so the test does not silently pass if a file named `missing.md` happens to exist in the working directory
+
 ### dev.py Dependency Declaration And Error Handling Fix / dev.py 依赖声明与错误处理修复
 
 Included change set:

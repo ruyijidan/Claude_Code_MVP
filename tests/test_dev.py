@@ -12,6 +12,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import uuid
 from pathlib import Path
 
 # Absolute path to the script under test so tests work regardless of cwd.
@@ -77,11 +78,14 @@ class TokenCountTests(unittest.TestCase):
     def test_nonexistent_file_exits_nonzero_with_filename_in_error(self) -> None:
         """A missing file must cause a non-zero exit; the filename must appear
         in stderr (or stdout — whichever the implementation chooses)."""
-        result = _run("token-count", "missing.md")
+        nonexistent = str(
+            Path(tempfile.gettempdir()) / f"nonexistent-{uuid.uuid4().hex}.md"
+        )
+        result = _run("token-count", nonexistent)
 
         self.assertNotEqual(result.returncode, 0, msg="Expected non-zero exit for missing file")
         combined = result.stdout + result.stderr
-        self.assertIn("missing.md", combined)
+        self.assertIn(Path(nonexistent).name, combined)
 
     # ------------------------------------------------------------------
     # Edge case 4: empty file → 0 tokens, exit 0
