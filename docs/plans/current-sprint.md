@@ -57,6 +57,7 @@ After the first hardening wave and the follow-on asset work, the repository now 
 - planner context assembly can now prioritize bounded memory-derived file paths instead of relying only on fresh repo sampling
 - multi-agent execution now records explicit planner, coder, verifier, critic, and router transitions with isolated stage views
 - a first local daemon service now exposes run, status, and latest-trajectory queries outside the CLI entrypoint
+- `scripts/dev.py` now provides a unified token-count CLI skeleton with a `count_tokens` helper and registered `token-count` / `compare` subcommand placeholders
 
 In practical terms, the project has moved from:
 

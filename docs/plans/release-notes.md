@@ -6,6 +6,26 @@ owner: core
 
 # Release Notes / 发布说明
 
+## 2026-06-02
+
+### Token CLI Skeleton / Token 计数 CLI 骨架
+
+Included pending change set:
+
+- `scripts/dev.py`: new CLI entry point with `token-count` and `compare` subcommand placeholders and a `count_tokens(path: str) -> int` helper using tiktoken cl100k_base encoding
+
+Highlights:
+
+- provides a unified `dev.py` CLI for token-related development utilities
+- `count_tokens` helper is importable by other scripts in addition to being used by the CLI
+- subcommands are registered and show correct `--help` output; implementations are placeholder stubs pending future tasks
+
+Verification:
+
+- `python scripts/dev.py --help`
+- `python scripts/dev.py token-count --help`
+- `python scripts/dev.py compare --help`
+
 ## 2026-05-15
 
 ### Local Codex Usage Inspector Script / 本地 Codex 用量检查脚本
