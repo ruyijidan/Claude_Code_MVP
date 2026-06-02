@@ -6,6 +6,7 @@ Usage:
     python scripts/dev.py token-count --help
     python scripts/dev.py compare --help
 """
+
 import argparse
 import sys
 from pathlib import Path
@@ -39,8 +40,28 @@ def _cmd_token_count(args: argparse.Namespace) -> None:
 
 
 def _cmd_compare(args: argparse.Namespace) -> None:
-    # Placeholder — to be implemented
-    raise NotImplementedError("compare subcommand is not implemented yet")
+    missing = [f for f in (args.baseline, args.target) if not Path(f).exists()]
+    if missing:
+        for f in missing:
+            print(f"error: file not found: {Path(f).name}", file=sys.stderr)
+        raise SystemExit(1)
+
+    baseline_n = count_tokens(args.baseline)
+    target_n = count_tokens(args.target)
+    diff = target_n - baseline_n
+
+    if baseline_n == 0:
+        pct_str = "+0.0%" if diff == 0 else "N/A (baseline is 0 tokens)"
+    else:
+        pct = diff / baseline_n * 100
+        sign = "+" if pct >= 0 else ""
+        pct_str = f"{sign}{pct:.1f}%"
+
+    sign = "+" if diff >= 0 else ""
+    print(f"{Path(args.baseline).name}\t{baseline_n}")
+    print(f"{Path(args.target).name}\t{target_n}")
+    print("-" * 40)
+    print(f"diff\t{sign}{diff} tokens ({pct_str})")
 
 
 def build_parser() -> argparse.ArgumentParser:

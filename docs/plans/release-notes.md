@@ -8,6 +8,11 @@ owner: core
 
 ## 2026-06-02
 
+### dev.py: Implement compare subcommand
+
+- `scripts/dev.py`: `_cmd_compare` shows per-file token counts, absolute diff with sign, and percentage; handles missing files (non-zero exit + filename in stderr); handles baseline = 0 tokens edge case
+- All 9 tests in `tests/test_dev.py` now pass
+
 ### test_dev.py: Add CompareTests (failing, awaiting T005)
 
 - Added `CompareTests` class with 5 scenarios: basic diff+percentage, equal files → 0 diff, missing file → non-zero exit, too few args, too many args
