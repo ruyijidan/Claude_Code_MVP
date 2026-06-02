@@ -25,6 +25,22 @@ Verification:
 - `python scripts/dev.py --help` still shows correct usage
 - `python scripts/dev.py token-count somefile.txt` now prints a clean error line instead of a traceback
 
+### Token-Count Acceptance Tests / token-count 验收测试
+
+Included change set:
+
+- `tests/test_dev.py`: four failing acceptance tests for the `token-count` subcommand covering single-file output, multi-file output with a total row, non-existent file error handling, and the empty-file edge case
+
+Highlights:
+
+- tests are intentionally red until T003 implements `_cmd_token_count`
+- subprocess-based harness exercises real CLI argument parsing and exit-code semantics
+- spec file at `specs/001-token-cli/spec.md` used as a real non-empty fixture
+
+Verification:
+
+- `python -m pytest tests/test_dev.py -v` → 4 FAILED (expected — implementation pending)
+
 ### Token CLI Skeleton / Token 计数 CLI 骨架
 
 Included pending change set:

@@ -125,6 +125,7 @@ It is now:
 - the local harness learning docs have now been collapsed into one final unified Feishu-ready article plus summary and distribution materials, and redundant companion drafts have been removed
 - the unified harness learning article has now received its final readability and Feishu-format polish pass, and is ready to serve as the single primary publishable learning document
 - the teaching route now has an explicit onboarding guide and a clearer harness-lab quick-start path for concept-to-practice learning
+- `tests/test_dev.py` now holds four failing acceptance tests for the `token-count` subcommand; they will turn green when T003 implements the handler
 - application legibility foundations now inspect browser preview, log, and metric artifacts through registered readers
 - task execution now uses a unified tool registry with schema-validated tool I/O
 - workflow execution now records selected tools, selected readers, and per-run workflow status in replay artifacts
