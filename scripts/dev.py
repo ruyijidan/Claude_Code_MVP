@@ -7,6 +7,7 @@ Usage:
     python scripts/dev.py compare --help
 """
 import argparse
+import sys
 from pathlib import Path
 
 import tiktoken
@@ -25,7 +26,7 @@ def _cmd_token_count(args: argparse.Namespace) -> None:
     missing = [f for f in args.files if not Path(f).exists()]
     if missing:
         for f in missing:
-            print(f"error: file not found: {Path(f).name}", file=__import__("sys").stderr)
+            print(f"error: file not found: {Path(f).name}", file=sys.stderr)
         raise SystemExit(1)
 
     counts = [(Path(f).name, count_tokens(f)) for f in args.files]
