@@ -8,6 +8,23 @@ owner: core
 
 ## 2026-06-02
 
+### dev.py Dependency Declaration And Error Handling Fix / dev.py 依赖声明与错误处理修复
+
+Included change set:
+
+- `pyproject.toml`: declared `tiktoken>=0.7` in `[project.dependencies]` so the import in `scripts/dev.py` is properly tracked
+- `scripts/dev.py`: wrapped `args.func(args)` in `main()` with `try/except NotImplementedError` so placeholder subcommands print a clean `argparse` error instead of a raw traceback
+
+Highlights:
+
+- removes an undeclared runtime dependency that would cause `ImportError` in fresh installs
+- replaces the raw `NotImplementedError` traceback with a formatted `usage: dev.py: error: Not yet implemented: …` message
+
+Verification:
+
+- `python scripts/dev.py --help` still shows correct usage
+- `python scripts/dev.py token-count somefile.txt` now prints a clean error line instead of a traceback
+
 ### Token CLI Skeleton / Token 计数 CLI 骨架
 
 Included pending change set:

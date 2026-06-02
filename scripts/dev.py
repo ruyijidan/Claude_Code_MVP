@@ -86,7 +86,10 @@ def main() -> None:
         parser.print_help()
         return
 
-    args.func(args)
+    try:
+        args.func(args)
+    except NotImplementedError as exc:
+        parser.error(f"Not yet implemented: {exc}")
 
 
 if __name__ == "__main__":
