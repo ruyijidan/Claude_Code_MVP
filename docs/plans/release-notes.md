@@ -8,6 +8,10 @@ owner: core
 
 ## 2026-06-02
 
+### test_dev.py: Remove stale docstring
+
+- Removed "MUST fail until T005" note from module docstring (T005 has landed, all 9 tests pass)
+
 ### dev.py: Implement compare subcommand
 
 - `scripts/dev.py`: `_cmd_compare` shows per-file token counts, absolute diff with sign, and percentage; handles missing files (non-zero exit + filename in stderr); handles baseline = 0 tokens edge case

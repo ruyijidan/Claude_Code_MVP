@@ -1,10 +1,8 @@
 """
 Tests for the `token-count` and `compare` subcommands in scripts/dev.py.
 
-These tests drive the CLI as a subprocess so they exercise the real
-argument-parsing layer and exit-code semantics.  CompareTests are
-intentionally written *before* the subcommand is implemented and MUST
-fail until T005 lands the implementation.
+Tests drive the CLI as a subprocess to exercise the real argument-parsing
+layer and exit-code semantics.
 """
 from __future__ import annotations
 
