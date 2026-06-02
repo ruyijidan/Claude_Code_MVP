@@ -8,6 +8,12 @@ owner: core
 
 ## 2026-06-02
 
+### test_dev.py: Add CompareTests (failing, awaiting T005)
+
+- Added `CompareTests` class with 5 scenarios: basic diff+percentage, equal files → 0 diff, missing file → non-zero exit, too few args, too many args
+- 3 tests fail until `compare` subcommand is implemented (expected red)
+- 2 tests (wrong arg count) already pass via argparse enforcement
+
 ### dev.py: Implement token-count subcommand + cleanup import style
 
 - `scripts/dev.py`: `_cmd_token_count` now counts tokens for one or more files using cl100k_base; prints per-file counts and a total row for multi-file input; exits non-zero with filename in stderr for missing files; reports 0 for empty files
