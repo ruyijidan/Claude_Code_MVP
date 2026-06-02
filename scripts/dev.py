@@ -22,8 +22,19 @@ def count_tokens(path: str) -> int:
 
 
 def _cmd_token_count(args: argparse.Namespace) -> None:
-    # Placeholder — to be implemented
-    raise NotImplementedError("token-count subcommand is not implemented yet")
+    missing = [f for f in args.files if not Path(f).exists()]
+    if missing:
+        for f in missing:
+            print(f"error: file not found: {Path(f).name}", file=__import__("sys").stderr)
+        raise SystemExit(1)
+
+    counts = [(Path(f).name, count_tokens(f)) for f in args.files]
+    for name, n in counts:
+        print(f"{name}\t{n}")
+
+    if len(counts) > 1:
+        print("-" * 40)
+        print(f"total\t{sum(n for _, n in counts)}")
 
 
 def _cmd_compare(args: argparse.Namespace) -> None:

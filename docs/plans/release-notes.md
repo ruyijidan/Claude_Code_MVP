@@ -8,6 +8,11 @@ owner: core
 
 ## 2026-06-02
 
+### dev.py: Implement token-count subcommand
+
+- `scripts/dev.py`: `_cmd_token_count` now counts tokens for one or more files using cl100k_base; prints per-file counts and a total row for multi-file input; exits non-zero with filename in stderr for missing files; reports 0 for empty files
+- All 4 tests in `tests/test_dev.py::TokenCountTests` now pass
+
 ### test_dev.py: Fix Relative Path Sensitivity In Missing-File Test
 
 - `tests/test_dev.py` scenario 3: replaced literal `"missing.md"` with a uuid-based temp path so the test does not silently pass if a file named `missing.md` happens to exist in the working directory
