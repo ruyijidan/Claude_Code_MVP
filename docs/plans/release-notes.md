@@ -8,6 +8,12 @@ owner: core
 
 ## 2026-06-02
 
+### specs: 首次创建 product.md 和 tech.md（001-token-cli spec-merge）
+
+- `specs/product.md`：新建，录入 Token CLI 产品能力（token-count + compare 子命令）
+- `specs/tech.md`：新建，录入 Token CLI 技术模块（tiktoken cl100k_base、argparse 实现、测试覆盖）
+- `specs/001-token-cli/spec-merge/specs-diff.md`：存档 G2 Gate 确认的 diff 原文
+
 ### test_dev.py: Remove stale docstring
 
 - Removed "MUST fail until T005" note from module docstring (T005 has landed, all 9 tests pass)
