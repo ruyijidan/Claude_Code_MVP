@@ -14,6 +14,15 @@ owner: core
 - 更新 `.gitignore`：排除 author 安装的 18 个 skills 目录，仅追踪项目专属 skills
 - dev-flow、brainstorming、speckit-* 等 skills 不再存储于本项目，改由 author 仓库统一维护
 
+## 2026-06-03 (word-count)
+
+### dev.py: Add word-count subcommand
+
+- `scripts/dev.py`: added `count_words()` using `str.split()` for word counting
+- `_cmd_word_count` handler: per-file `<filename>\t<count>` output, multi-file total row, stderr + exit 1 for missing files
+- Registered `word-count` subcommand in `build_parser()` with `nargs="+"` / metavar `FILE`
+- Covers FR-001–FR-005: 1+ files, tab output, multi-file totals, missing-file error, whitespace-split word definition
+
 ## 2026-06-02
 
 ### specs: 首次创建 product.md 和 tech.md（001-token-cli spec-merge）

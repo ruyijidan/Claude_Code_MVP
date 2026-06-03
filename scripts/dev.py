@@ -39,6 +39,31 @@ def _cmd_token_count(args: argparse.Namespace) -> None:
         print(f"total\t{sum(n for _, n in counts)}")
 
 
+def count_words(path: str) -> int:
+    """Read *path* and return its word count using str.split()."""
+    p = Path(path)
+    if not p.exists():
+        raise FileNotFoundError(f"No such file: {path}")
+    text = p.read_text(encoding="utf-8")
+    return len(text.split())
+
+
+def _cmd_word_count(args: argparse.Namespace) -> None:
+    missing = [f for f in args.files if not Path(f).exists()]
+    if missing:
+        for f in missing:
+            print(f"error: file not found: {Path(f).name}", file=sys.stderr)
+        sys.exit(1)
+
+    counts = [(Path(f).name, count_words(f)) for f in args.files]
+    for name, n in counts:
+        print(f"{name}\t{n}")
+
+    if len(counts) > 1:
+        print("-" * 40)
+        print(f"total\t{sum(n for _, n in counts)}")
+
+
 def _cmd_compare(args: argparse.Namespace) -> None:
     missing = [f for f in (args.baseline, args.target) if not Path(f).exists()]
     if missing:
@@ -107,6 +132,23 @@ def build_parser() -> argparse.ArgumentParser:
         help="Path to the target file to compare against the baseline.",
     )
     compare_parser.set_defaults(func=_cmd_compare)
+
+    # --- word-count ---
+    word_count_parser = subparsers.add_parser(
+        "word-count",
+        help="Count words in one or more files.",
+        description=(
+            "Count the number of words in a file. "
+            "A word is any sequence of non-whitespace characters (str.split())."
+        ),
+    )
+    word_count_parser.add_argument(
+        "files",
+        nargs="+",
+        metavar="FILE",
+        help="Path(s) to the file(s) to count words in.",
+    )
+    word_count_parser.set_defaults(func=_cmd_word_count)
 
     return parser
 
