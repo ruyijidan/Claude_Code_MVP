@@ -1,10 +1,192 @@
 ---
-last_updated: 2026-05-08
+last_updated: 2026-06-03
 status: active
 owner: core
 ---
 
 # Release Notes / 发布说明
+
+## 2026-06-03 (word-count-tests)
+
+### test: add WordCountTests and update dev.py module docstring
+
+- `tests/test_dev.py`: added `WordCountTests` with five scenarios — single-file word count, multi-file with total row, empty file (0 words), whitespace-only file (0 words), and missing file (stderr + exit 1)
+- `scripts/dev.py`: added `word-count` usage example to module docstring
+
+## 2026-06-03
+
+### chore: 将 dev-flow skills 迁移至 author 仓库
+
+- 新增 `install-author.sh`：从 https://github.com/ruyijidan/author 安装开发工作流 skills
+- 更新 `.gitignore`：排除 author 安装的 18 个 skills 目录，仅追踪项目专属 skills
+- dev-flow、brainstorming、speckit-* 等 skills 不再存储于本项目，改由 author 仓库统一维护
+
+## 2026-06-03 (word-count-fix)
+
+### fix: remove redundant exists check and unify SystemExit in word-count
+
+- `count_words()`: removed dead-code `exists()` guard and inlined `Path` variable to match `count_tokens()` style
+- `_cmd_word_count`: replaced `sys.exit(1)` with `raise SystemExit(1)` to match `_cmd_token_count` and `_cmd_compare`
+
+## 2026-06-03 (word-count)
+
+### dev.py: Add word-count subcommand
+
+- `scripts/dev.py`: added `count_words()` using `str.split()` for word counting
+- `_cmd_word_count` handler: per-file `<filename>\t<count>` output, multi-file total row, stderr + exit 1 for missing files
+- Registered `word-count` subcommand in `build_parser()` with `nargs="+"` / metavar `FILE`
+- Covers FR-001–FR-005: 1+ files, tab output, multi-file totals, missing-file error, whitespace-split word definition
+
+## 2026-06-02
+
+### specs: 首次创建 product.md 和 tech.md（001-token-cli spec-merge）
+
+- `specs/product.md`：新建，录入 Token CLI 产品能力（token-count + compare 子命令）
+- `specs/tech.md`：新建，录入 Token CLI 技术模块（tiktoken cl100k_base、argparse 实现、测试覆盖）
+- `specs/001-token-cli/spec-merge/specs-diff.md`：存档 G2 Gate 确认的 diff 原文
+
+### test_dev.py: Remove stale docstring
+
+- Removed "MUST fail until T005" note from module docstring (T005 has landed, all 9 tests pass)
+
+### dev.py: Implement compare subcommand
+
+- `scripts/dev.py`: `_cmd_compare` shows per-file token counts, absolute diff with sign, and percentage; handles missing files (non-zero exit + filename in stderr); handles baseline = 0 tokens edge case
+- All 9 tests in `tests/test_dev.py` now pass
+
+### test_dev.py: Add CompareTests (failing, awaiting T005)
+
+- Added `CompareTests` class with 5 scenarios: basic diff+percentage, equal files → 0 diff, missing file → non-zero exit, too few args, too many args
+- 3 tests fail until `compare` subcommand is implemented (expected red)
+- 2 tests (wrong arg count) already pass via argparse enforcement
+
+### dev.py: Implement token-count subcommand + cleanup import style
+
+- `scripts/dev.py`: `_cmd_token_count` now counts tokens for one or more files using cl100k_base; prints per-file counts and a total row for multi-file input; exits non-zero with filename in stderr for missing files; reports 0 for empty files
+- Added `import sys` at the top level (replaced inline `__import__("sys")` trick)
+- All 4 tests in `tests/test_dev.py::TokenCountTests` now pass
+
+### test_dev.py: Fix Relative Path Sensitivity In Missing-File Test
+
+- `tests/test_dev.py` scenario 3: replaced literal `"missing.md"` with a uuid-based temp path so the test does not silently pass if a file named `missing.md` happens to exist in the working directory
+
+### dev.py Dependency Declaration And Error Handling Fix / dev.py 依赖声明与错误处理修复
+
+Included change set:
+
+- `pyproject.toml`: declared `tiktoken>=0.7` in `[project.dependencies]` so the import in `scripts/dev.py` is properly tracked
+- `scripts/dev.py`: wrapped `args.func(args)` in `main()` with `try/except NotImplementedError` so placeholder subcommands print a clean `argparse` error instead of a raw traceback
+
+Highlights:
+
+- removes an undeclared runtime dependency that would cause `ImportError` in fresh installs
+- replaces the raw `NotImplementedError` traceback with a formatted `usage: dev.py: error: Not yet implemented: …` message
+
+Verification:
+
+- `python scripts/dev.py --help` still shows correct usage
+- `python scripts/dev.py token-count somefile.txt` now prints a clean error line instead of a traceback
+
+### Token-Count Acceptance Tests / token-count 验收测试
+
+Included change set:
+
+- `tests/test_dev.py`: four failing acceptance tests for the `token-count` subcommand covering single-file output, multi-file output with a total row, non-existent file error handling, and the empty-file edge case
+
+Highlights:
+
+- tests are intentionally red until T003 implements `_cmd_token_count`
+- subprocess-based harness exercises real CLI argument parsing and exit-code semantics
+- spec file at `specs/001-token-cli/spec.md` used as a real non-empty fixture
+
+Verification:
+
+- `python -m pytest tests/test_dev.py -v` → 4 FAILED (expected — implementation pending)
+
+### Token CLI Skeleton / Token 计数 CLI 骨架
+
+Included pending change set:
+
+- `scripts/dev.py`: new CLI entry point with `token-count` and `compare` subcommand placeholders and a `count_tokens(path: str) -> int` helper using tiktoken cl100k_base encoding
+
+Highlights:
+
+- provides a unified `dev.py` CLI for token-related development utilities
+- `count_tokens` helper is importable by other scripts in addition to being used by the CLI
+- subcommands are registered and show correct `--help` output; implementations are placeholder stubs pending future tasks
+
+Verification:
+
+- `python scripts/dev.py --help`
+- `python scripts/dev.py token-count --help`
+- `python scripts/dev.py compare --help`
+
+## 2026-05-15
+
+### Local Codex Usage Inspector Script / 本地 Codex 用量检查脚本
+
+Included pending change set:
+
+- `scripts/show_codex_usage.py`: added a small local utility for reading `~/.codex/sessions/*.jsonl` logs and printing token usage plus 5-hour and weekly rate-limit status
+
+Highlights:
+
+- makes it easier to inspect local Codex token usage without opening raw session logs manually
+- supports both a detailed latest-session view and an `--all` summary mode across local session files
+- keeps the utility outside the harness runtime path so it stays a lightweight operator script
+
+Verification:
+
+- `python3 scripts/show_codex_usage.py --help`
+
+### Teaching Path And Harness Lab Onboarding Flow / 教学路径与 Harness Lab 入门路径
+
+Included pending change set:
+
+- `docs/guides/harness-teaching-path.md`: added a dedicated teaching-order guide for onboarding, internal sharing, and concept-to-practice routing
+- `docs/guides/README.md`: linked the new teaching path from the guides index
+- `examples/harness-lab/README.md`: added a quick-start flow and related-reading links so the tiny practice target can be used directly in teaching
+
+Highlights:
+
+- turned the existing guide set into a clearer teaching path instead of leaving learners to infer reading order
+- made `examples/harness-lab` easier to use as the first hands-on exercise after the conceptual reading material
+- removed stale references to the deleted longform Feishu packaging path from the teaching route
+
+Verification:
+
+- manual link and content review across `docs/guides/README.md`, `docs/guides/harness-teaching-path.md`, and `examples/harness-lab/README.md`
+
+### Harness Learning Docs Collapse Into A Single Publishable Core / Harness 学习文档收拢为单一可发布主集
+
+Included pending change set:
+
+- `docs/design/harness-blog-feishu-copyready.md`: finalized the unified Feishu-ready harness learning article and aligned it with the current project architecture and sprint status
+- `docs/design/harness-blog-feishu-promotion-summary.md`: kept the short summary as the companion preview asset
+- `docs/design/harness-feishu-distribution-kit.md`: kept the publishing and submission copy as the outward-facing distribution asset
+- `docs/design/harness-docs-retention-plan.md`: added a local keep/delete plan for cleaning redundant harness-learning docs
+- `docs/design/README.md`: rewrote the design-doc navigation around a smaller canonical harness learning set
+- removed redundant local harness-learning drafts and split companion docs:
+  - `docs/design/harness-blog-feishu-draft.md`
+  - `docs/design/harness-blog-feishu-longform.md`
+  - `docs/design/harness-blog-feishu-cover-note.md`
+  - `docs/design/harness-feishu-topic-index.md`
+  - `docs/design/harness-feishu-01-what-is-harness.md`
+  - `docs/design/harness-feishu-02-how-to-build-a-minimal-harness.md`
+  - `docs/design/harness-feishu-03-how-to-evaluate-a-harness-project.md`
+  - `docs/design/harness-feishu-04-how-harness-looks-in-a-real-project.md`
+
+Highlights:
+
+- turned the harness learning material into one default article instead of a scattered local topic pack
+- kept only the pieces that still have distinct jobs: unified article, short summary, and distribution copy
+- aligned the unified article with the real repository state so first-pass daemon, retrieval, multi-agent, acceptance, registry, and artifact-reader work are not accidentally understated
+- made the local documentation surface easier to maintain before code submission
+
+Verification:
+
+- manual doc review against `README.md`, `ARCHITECTURE.md`, and `docs/plans/current-sprint.md`
+- manual formatting pass for Feishu-friendly code fences in `docs/design/harness-blog-feishu-copyready.md`
 
 ## 2026-05-08
 
@@ -632,6 +814,32 @@ Impact:
 - `glm5` can now participate in unattended release acceptance runs through a local harness-controlled execution path
 - release acceptance artifacts can be validated and optionally retained for audit and debugging
 
+## 2026-05-25
+
+### Final Harness Learning Article Polish / Harness 学习主文终稿收尾
+
+Included commit:
+
+- pending local change set for the final Feishu-ready pass on the unified harness learning article
+
+Highlights:
+
+- finalized [`docs/design/harness-blog-feishu-copyready.md`](../design/harness-blog-feishu-copyready.md) as the single primary harness learning article
+- removed remaining draft-style formatting such as fragmented one-line paragraphs and mixed glossary pacing
+- kept the article front half project-agnostic and reserved `Claude_Code_MVP` references for the later sample-project mapping section
+- aligned terminology toward Chinese-first narration with English kept mainly for code-adjacent flow chains and glossary annotations
+- tightened the vibecoding-versus-harness comparison so it reads as one article section instead of a teaching outline
+
+Verification:
+
+- manual final-read pass completed against content richness, readability, and Feishu formatting expectations
+- working tree review confirmed the intended doc-only scope: `docs/design/harness-blog-feishu-copyready.md`
+
+Impact:
+
+- the repository now has one final publishable harness learning article that can be uploaded to Feishu without depending on the removed companion drafts
+- the main learning document now better matches the project's role as a harness learning base instead of a project-intro-only article
+
 ## 2026-05-11
 
 ### Sample App Removal And Starter Path Cleanup / sample_app 移除与起步路径清理
@@ -712,3 +920,25 @@ Impact:
 
 - the harness can now execute coding-style delegated prompts through a configured `GLM-5` compatible endpoint
 - the repository now includes a simple end-user-facing web artifact that can be opened directly in a browser or shared on a LAN
+
+## 2026-06-03
+
+### Word Count CLI Subcommand / word-count 子命令
+
+- `a8c5864` `feat: add word-count subcommand to scripts/dev.py`
+
+Highlights:
+
+- added `word-count <file> [file ...]` subcommand to `scripts/dev.py`
+- word is defined as any sequence of non-whitespace characters (`str.split()`)
+- output format mirrors `token-count`: per-file `filename\tcount`, separator and `total` line for multi-file
+- missing files print to stderr and exit 1, consistent with existing subcommands
+
+Verification:
+
+- 5 new `WordCountTests` added; full suite now 14/14 tests passing
+- edge cases verified: empty file → 0, whitespace-only file → 0, missing file → exit 1
+
+Impact:
+
+- developers can now quickly count words in any file via `python scripts/dev.py word-count <file>`

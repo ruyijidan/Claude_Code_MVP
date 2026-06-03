@@ -1,5 +1,5 @@
 ---
-last_updated: 2026-05-08
+last_updated: 2026-05-25
 status: active
 owner: core
 ---
@@ -57,6 +57,7 @@ After the first hardening wave and the follow-on asset work, the repository now 
 - planner context assembly can now prioritize bounded memory-derived file paths instead of relying only on fresh repo sampling
 - multi-agent execution now records explicit planner, coder, verifier, critic, and router transitions with isolated stage views
 - a first local daemon service now exposes run, status, and latest-trajectory queries outside the CLI entrypoint
+- `scripts/dev.py` now provides a unified token-count CLI skeleton with a `count_tokens` helper and registered `token-count` / `compare` subcommand placeholders
 
 In practical terms, the project has moved from:
 
@@ -121,6 +122,10 @@ It is now:
 - documentation conventions now explicitly require bilingual English/Chinese titles for new or materially updated docs
 - a new long-form learning article now connects harness basics to building a personal harness project
 - the harness learning path now also includes a capability matrix, code-reading guide, anti-pattern guide, and a tiny practice lab under `examples/harness-lab`
+- the local harness learning docs have now been collapsed into one final unified Feishu-ready article plus summary and distribution materials, and redundant companion drafts have been removed
+- the unified harness learning article has now received its final readability and Feishu-format polish pass, and is ready to serve as the single primary publishable learning document
+- the teaching route now has an explicit onboarding guide and a clearer harness-lab quick-start path for concept-to-practice learning
+- `tests/test_dev.py` now holds four failing acceptance tests for the `token-count` subcommand; they will turn green when T003 implements the handler
 - application legibility foundations now inspect browser preview, log, and metric artifacts through registered readers
 - task execution now uses a unified tool registry with schema-validated tool I/O
 - workflow execution now records selected tools, selected readers, and per-run workflow status in replay artifacts
