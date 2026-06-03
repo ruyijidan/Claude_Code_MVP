@@ -920,3 +920,25 @@ Impact:
 
 - the harness can now execute coding-style delegated prompts through a configured `GLM-5` compatible endpoint
 - the repository now includes a simple end-user-facing web artifact that can be opened directly in a browser or shared on a LAN
+
+## 2026-06-03
+
+### Word Count CLI Subcommand / word-count 子命令
+
+- `a8c5864` `feat: add word-count subcommand to scripts/dev.py`
+
+Highlights:
+
+- added `word-count <file> [file ...]` subcommand to `scripts/dev.py`
+- word is defined as any sequence of non-whitespace characters (`str.split()`)
+- output format mirrors `token-count`: per-file `filename\tcount`, separator and `total` line for multi-file
+- missing files print to stderr and exit 1, consistent with existing subcommands
+
+Verification:
+
+- 5 new `WordCountTests` added; full suite now 14/14 tests passing
+- edge cases verified: empty file → 0, whitespace-only file → 0, missing file → exit 1
+
+Impact:
+
+- developers can now quickly count words in any file via `python scripts/dev.py word-count <file>`
