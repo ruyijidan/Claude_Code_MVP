@@ -187,5 +187,103 @@ class CompareTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
 
 
+class WordCountTests(unittest.TestCase):
+    # ------------------------------------------------------------------
+    # Scenario 1: single file → filename + word count, exit 0
+    # ------------------------------------------------------------------
+    def test_single_file_shows_filename_and_word_count(self) -> None:
+        """Output must contain the filename and the correct word count."""
+        with tempfile.NamedTemporaryFile(
+            suffix=".txt", delete=False, mode="w", encoding="utf-8"
+        ) as fh:
+            tmp_path = fh.name
+            fh.write("hello world foo")
+
+        try:
+            result = _run("word-count", tmp_path)
+        finally:
+            Path(tmp_path).unlink(missing_ok=True)
+
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+        output = result.stdout
+        self.assertIn(Path(tmp_path).name, output)
+        self.assertIn("3", output)
+
+    # ------------------------------------------------------------------
+    # Scenario 2: multiple files → per-file counts + separator + total
+    # ------------------------------------------------------------------
+    def test_multiple_files_shows_each_count_and_total(self) -> None:
+        """Each filename must appear with its count; a 'total' row must follow."""
+        with tempfile.TemporaryDirectory() as tmp:
+            file_a = Path(tmp) / "alpha.txt"
+            file_b = Path(tmp) / "beta.txt"
+            file_a.write_text("one two", encoding="utf-8")
+            file_b.write_text("foo bar", encoding="utf-8")
+
+            result = _run("word-count", str(file_a), str(file_b))
+
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+        output = result.stdout.lower()
+
+        self.assertIn("alpha.txt", output)
+        self.assertIn("beta.txt", output)
+        self.assertIn("total", output)
+        self.assertIn("4", output)
+
+    # ------------------------------------------------------------------
+    # Scenario 3: empty file → 0 words, exit 0
+    # ------------------------------------------------------------------
+    def test_empty_file_outputs_zero_and_exits_successfully(self) -> None:
+        """An empty file should report 0 words and exit cleanly."""
+        with tempfile.NamedTemporaryFile(
+            suffix=".txt", delete=False, mode="w", encoding="utf-8"
+        ) as fh:
+            tmp_path = fh.name
+            # write nothing
+
+        try:
+            result = _run("word-count", tmp_path)
+        finally:
+            Path(tmp_path).unlink(missing_ok=True)
+
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+        self.assertIn("0", result.stdout)
+
+    # ------------------------------------------------------------------
+    # Scenario 4: whitespace-only file → 0 words, exit 0
+    # ------------------------------------------------------------------
+    def test_whitespace_only_file_outputs_zero(self) -> None:
+        """A file containing only spaces and newlines should report 0 words."""
+        with tempfile.NamedTemporaryFile(
+            suffix=".txt", delete=False, mode="w", encoding="utf-8"
+        ) as fh:
+            tmp_path = fh.name
+            fh.write("   \n\t\n  ")
+
+        try:
+            result = _run("word-count", tmp_path)
+        finally:
+            Path(tmp_path).unlink(missing_ok=True)
+
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+        self.assertIn("0", result.stdout)
+
+    # ------------------------------------------------------------------
+    # Scenario 5: non-existent file → stderr has error info, exit 1
+    # ------------------------------------------------------------------
+    def test_nonexistent_file_exits_nonzero_with_error_in_stderr(self) -> None:
+        """A missing file must cause a non-zero exit with an error in stderr."""
+        nonexistent = str(
+            Path(tempfile.gettempdir()) / f"nonexistent-{uuid.uuid4().hex}.txt"
+        )
+        result = _run("word-count", nonexistent)
+
+        self.assertNotEqual(result.returncode, 0, msg="Expected non-zero exit for missing file")
+        self.assertTrue(
+            result.stderr.strip(),
+            msg="Expected error output in stderr for missing file",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

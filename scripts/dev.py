@@ -5,6 +5,7 @@ Usage:
     python scripts/dev.py --help
     python scripts/dev.py token-count --help
     python scripts/dev.py compare --help
+    python scripts/dev.py word-count --help
 """
 
 import argparse

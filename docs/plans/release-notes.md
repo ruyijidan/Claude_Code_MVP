@@ -6,6 +6,13 @@ owner: core
 
 # Release Notes / 发布说明
 
+## 2026-06-03 (word-count-tests)
+
+### test: add WordCountTests and update dev.py module docstring
+
+- `tests/test_dev.py`: added `WordCountTests` with five scenarios — single-file word count, multi-file with total row, empty file (0 words), whitespace-only file (0 words), and missing file (stderr + exit 1)
+- `scripts/dev.py`: added `word-count` usage example to module docstring
+
 ## 2026-06-03
 
 ### chore: 将 dev-flow skills 迁移至 author 仓库
