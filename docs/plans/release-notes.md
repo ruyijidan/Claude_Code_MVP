@@ -14,6 +14,13 @@ owner: core
 - 更新 `.gitignore`：排除 author 安装的 18 个 skills 目录，仅追踪项目专属 skills
 - dev-flow、brainstorming、speckit-* 等 skills 不再存储于本项目，改由 author 仓库统一维护
 
+## 2026-06-03 (word-count-fix)
+
+### fix: remove redundant exists check and unify SystemExit in word-count
+
+- `count_words()`: removed dead-code `exists()` guard and inlined `Path` variable to match `count_tokens()` style
+- `_cmd_word_count`: replaced `sys.exit(1)` with `raise SystemExit(1)` to match `_cmd_token_count` and `_cmd_compare`
+
 ## 2026-06-03 (word-count)
 
 ### dev.py: Add word-count subcommand

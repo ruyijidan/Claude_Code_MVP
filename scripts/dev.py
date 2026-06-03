@@ -41,10 +41,7 @@ def _cmd_token_count(args: argparse.Namespace) -> None:
 
 def count_words(path: str) -> int:
     """Read *path* and return its word count using str.split()."""
-    p = Path(path)
-    if not p.exists():
-        raise FileNotFoundError(f"No such file: {path}")
-    text = p.read_text(encoding="utf-8")
+    text = Path(path).read_text(encoding="utf-8")
     return len(text.split())
 
 
@@ -53,7 +50,7 @@ def _cmd_word_count(args: argparse.Namespace) -> None:
     if missing:
         for f in missing:
             print(f"error: file not found: {Path(f).name}", file=sys.stderr)
-        sys.exit(1)
+        raise SystemExit(1)
 
     counts = [(Path(f).name, count_words(f)) for f in args.files]
     for name, n in counts:
