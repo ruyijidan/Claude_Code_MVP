@@ -1,10 +1,18 @@
 ---
-last_updated: 2026-05-08
+last_updated: 2026-06-03
 status: active
 owner: core
 ---
 
 # Release Notes / 发布说明
+
+## 2026-06-03
+
+### chore: 将 dev-flow skills 迁移至 author 仓库
+
+- 新增 `install-author.sh`：从 https://github.com/ruyijidan/author 安装开发工作流 skills
+- 更新 `.gitignore`：排除 author 安装的 18 个 skills 目录，仅追踪项目专属 skills
+- dev-flow、brainstorming、speckit-* 等 skills 不再存储于本项目，改由 author 仓库统一维护
 
 ## 2026-06-02
 

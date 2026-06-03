@@ -18,6 +18,28 @@ venv/
 # Local Codex runtime metadata
 .codex
 .claude-code/
+.claude/settings.local.json
+# Skills installed from https://github.com/ruyijidan/author (run install-author.sh)
+.claude/skills/brainstorming/
+.claude/skills/dev-flow/
+.claude/skills/dispatching-parallel-agents/
+.claude/skills/finishing-a-development-branch/
+.claude/skills/receiving-code-review/
+.claude/skills/requesting-code-review/
+.claude/skills/speckit-clarify/
+.claude/skills/speckit-plan/
+.claude/skills/speckit-specify/
+.claude/skills/speckit-tasks/
+.claude/skills/subagent-driven-development/
+.claude/skills/systematic-debugging/
+.claude/skills/test-driven-development/
+.claude/skills/using-git-worktrees/
+.claude/skills/using-superpowers/
+.claude/skills/verification-before-completion/
+.claude/skills/writing-plans/
+.claude/skills/writing-skills/
+.specify/
+CLAUDE.md
 .coverage
 build/
 dist/
@@ -31,3 +53,7 @@ logs
 
 # Local helper binaries
 bin/feishu-cli
+
+
+skills/
+zegoflow/
