@@ -942,3 +942,16 @@ Verification:
 Impact:
 
 - developers can now quickly count words in any file via `python scripts/dev.py word-count <file>`
+
+## 2026-06-03
+
+### Scan Subcommand Design / scan 子命令设计文档
+
+- Design doc written: specs/003-scan/design.md
+
+Highlights:
+
+- recursive directory scan with auto-skip of noise dirs (.git, node_modules, __pycache__, .venv, dist, build)
+- aligned table output with headers and total row, sorted by token count descending
+- optional --ext filter for file extension whitelist
+- binary file detection via null-byte check; unreadable files produce stderr warning and are skipped
