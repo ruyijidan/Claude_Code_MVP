@@ -6,6 +6,17 @@ owner: core
 
 # Release Notes / 发布说明
 
+## 2026-06-04 (scan-subcommand)
+
+### feat: add scan subcommand to scripts/dev.py
+
+- `scripts/dev.py`: added `scan` subcommand that recursively scans a directory, reports token and word counts per file sorted by token count descending
+- Added `_SKIP_DIRS` constant to skip common noise directories (`.git`, `node_modules`, `__pycache__`, etc.)
+- Added `_is_binary()` helper that detects binary files via null-byte check in first 1024 bytes
+- Added `_scan_files()` to collect candidate files with optional extension filtering
+- Added `_format_scan_table()` for fixed-width tabular output with totals row
+- Added `_cmd_scan()` command handler with error/skip reporting to stderr
+
 ## 2026-06-03 (word-count-tests)
 
 ### test: add WordCountTests and update dev.py module docstring
