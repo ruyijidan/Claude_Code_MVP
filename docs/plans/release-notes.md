@@ -6,6 +6,14 @@ owner: core
 
 # Release Notes / 发布说明
 
+## 2026-06-04 (scan-spec-merge)
+
+### docs: G2 spec-merge for 003-scan — update product.md, tech.md, archive diff
+
+- `specs/product.md`: added scan subcommand description
+- `specs/tech.md`: added scan implementation details and updated test count (14→23)
+- `specs/003-scan/spec-merge/specs-diff.md`: archived G2-approved diff
+
 ## 2026-06-04 (scan-polish)
 
 ### chore: polish scan implementation — docstrings, comment, stale text
