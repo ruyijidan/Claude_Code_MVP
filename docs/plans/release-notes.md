@@ -6,6 +6,14 @@ owner: core
 
 # Release Notes / 发布说明
 
+## 2026-06-04 (scan-fix-skip-dirs)
+
+### fix: correct skip-dir path check, guard empty table, fix black formatting
+
+- `scripts/dev.py _scan_files`: use `p.relative_to(directory)` instead of `p.parts` to avoid false-positives when the absolute project path contains a skip-dir name (e.g. `build`, `dist`)
+- `scripts/dev.py _format_scan_table`: return `"(no files)"` early when `rows` is empty to prevent `ValueError` from `max()` on an empty sequence
+- auto-formatted with black
+
 ## 2026-06-04 (scan-subcommand)
 
 ### feat: add scan subcommand to scripts/dev.py

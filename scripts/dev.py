@@ -17,7 +17,9 @@ import tiktoken
 
 _enc = tiktoken.get_encoding("cl100k_base")
 
-_SKIP_DIRS = frozenset({".git", "node_modules", "__pycache__", ".venv", "dist", "build"})
+_SKIP_DIRS = frozenset(
+    {".git", "node_modules", "__pycache__", ".venv", "dist", "build"}
+)
 
 
 def count_tokens(path: str) -> int:
@@ -79,8 +81,9 @@ def _scan_files(
     """Recursively collect text-candidate files under *directory*."""
     results: list[Path] = []
     for p in directory.rglob("*"):
-        # Skip if any path component is in skip_dirs
-        if any(part in skip_dirs for part in p.parts):
+        # Skip if any relative path component is in skip_dirs
+        rel = p.relative_to(directory)
+        if any(part in skip_dirs for part in rel.parts):
             continue
         if not p.is_file():
             continue
@@ -92,21 +95,15 @@ def _scan_files(
 
 def _format_scan_table(rows: list[tuple[str, int, int]]) -> str:
     """Format scan results as a fixed-width table string."""
+    if not rows:
+        return "(no files)"
     file_col_width = max(4, max(len(r[0]) for r in rows)) + 2
     sep = "─" * (file_col_width + 8 + 8 + 2 * 2)
 
-    header = (
-        f"{'file':<{file_col_width}}"
-        f"  {'tokens':>8}"
-        f"  {'words':>8}"
-    )
+    header = f"{'file':<{file_col_width}}" f"  {'tokens':>8}" f"  {'words':>8}"
     lines = [header]
     for rel_path, tokens, words in rows:
-        lines.append(
-            f"{rel_path:<{file_col_width}}"
-            f"  {tokens:>8}"
-            f"  {words:>8}"
-        )
+        lines.append(f"{rel_path:<{file_col_width}}" f"  {tokens:>8}" f"  {words:>8}")
     lines.append(sep)
 
     total_tokens = sum(r[1] for r in rows)
@@ -114,9 +111,7 @@ def _format_scan_table(rows: list[tuple[str, int, int]]) -> str:
     n = len(rows)
     total_label = f"total ({n} files)"
     lines.append(
-        f"{total_label:<{file_col_width}}"
-        f"  {total_tokens:>8}"
-        f"  {total_words:>8}"
+        f"{total_label:<{file_col_width}}" f"  {total_tokens:>8}" f"  {total_words:>8}"
     )
     return "\n".join(lines)
 
