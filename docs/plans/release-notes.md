@@ -6,6 +6,15 @@ owner: core
 
 # Release Notes / 发布说明
 
+## 2026-06-04 (scan-tests)
+
+### test: add ScanTests covering US1/US2/US3
+
+- `tests/test_dev.py`: added `ScanTests` class with 6 test cases
+- T008: basic scan — multi-file dir sorted by token desc, empty dir, nonexistent path
+- T009: `--ext` filter — matching files only, no-match reports no files found
+- T010: binary file handling — binary skipped with stderr warning, text file still shown
+
 ## 2026-06-04 (scan-unicode-decode-fix)
 
 ### fix: catch UnicodeDecodeError in _cmd_scan alongside OSError

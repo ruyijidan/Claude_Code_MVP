@@ -285,5 +285,126 @@ class WordCountTests(unittest.TestCase):
         )
 
 
+class ScanTests(unittest.TestCase):
+    # ------------------------------------------------------------------
+    # T008 — User Story 1: basic directory scan
+    # ------------------------------------------------------------------
+
+    def test_multi_file_dir_sorted_by_tokens_descending(self) -> None:
+        """Scan a directory with 2+ files; output must have header, one row per
+        file sorted token-descending, a total row, and exit 0."""
+        with tempfile.TemporaryDirectory() as tmp:
+            small = Path(tmp) / "small.txt"
+            large = Path(tmp) / "large.txt"
+            small.write_text("hi", encoding="utf-8")
+            large.write_text(
+                "the quick brown fox jumps over the lazy dog " * 20,
+                encoding="utf-8",
+            )
+
+            result = _run("scan", tmp)
+
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+        output = result.stdout
+        output_lower = output.lower()
+
+        # Header row
+        self.assertIn("file", output_lower)
+        self.assertIn("token", output_lower)
+        self.assertIn("word", output_lower)
+
+        # Both files appear
+        self.assertIn("small.txt", output)
+        self.assertIn("large.txt", output)
+
+        # Total row present (contains file count)
+        self.assertIn("total", output_lower)
+
+        # large.txt must appear before small.txt (higher token count first)
+        self.assertLess(
+            output.index("large.txt"),
+            output.index("small.txt"),
+            msg="large.txt (more tokens) should appear before small.txt",
+        )
+
+    def test_empty_directory_reports_no_files_found(self) -> None:
+        """An empty directory must report 'no files found' and exit 0."""
+        with tempfile.TemporaryDirectory() as tmp:
+            result = _run("scan", tmp)
+
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+        self.assertIn("no files found", result.stdout.lower())
+
+    def test_nonexistent_directory_exits_nonzero_with_error(self) -> None:
+        """A path that does not exist must write to stderr and exit 1."""
+        result = _run("scan", "/nonexistent/path/xyz")
+
+        self.assertEqual(result.returncode, 1)
+        self.assertTrue(
+            result.stderr.strip(),
+            msg="Expected error message in stderr for nonexistent directory",
+        )
+
+    # ------------------------------------------------------------------
+    # T009 — User Story 2: extension filter
+    # ------------------------------------------------------------------
+
+    def test_ext_filter_includes_only_matching_files(self) -> None:
+        """--ext .md must include only .md files; .py files must not appear."""
+        with tempfile.TemporaryDirectory() as tmp:
+            md_file = Path(tmp) / "readme.md"
+            py_file = Path(tmp) / "script.py"
+            md_file.write_text("# hello markdown", encoding="utf-8")
+            py_file.write_text("print('hello python')", encoding="utf-8")
+
+            result = _run("scan", tmp, "--ext", ".md")
+
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+        output = result.stdout
+
+        self.assertIn("readme.md", output)
+        self.assertNotIn("script.py", output)
+
+    def test_ext_filter_no_match_reports_no_files_found(self) -> None:
+        """--ext with an extension that matches nothing must report 'no files found', exit 0."""
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / "readme.md").write_text("hello", encoding="utf-8")
+
+            result = _run("scan", tmp, "--ext", ".xyz")
+
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+        self.assertIn("no files found", result.stdout.lower())
+
+    # ------------------------------------------------------------------
+    # T010 — User Story 3: binary file handling
+    # ------------------------------------------------------------------
+
+    def test_binary_file_skipped_with_warning_text_file_shown(self) -> None:
+        """Binary files must be skipped (not in stdout table); a warning
+        mentioning 'binary' must appear in stderr; text files still appear;
+        exit 0."""
+        with tempfile.TemporaryDirectory() as tmp:
+            bin_file = Path(tmp) / "image.bin"
+            txt_file = Path(tmp) / "notes.txt"
+            bin_file.write_bytes(b"\x00binary\x00\xff\xfe")
+            txt_file.write_text("some readable text here", encoding="utf-8")
+
+            result = _run("scan", tmp)
+
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+        stdout = result.stdout
+        stderr = result.stderr.lower()
+
+        # Binary file must NOT appear in the output table
+        self.assertNotIn("image.bin", stdout)
+
+        # A warning about the binary file must appear in stderr
+        self.assertIn("warning", stderr)
+        self.assertIn("binary", stderr)
+
+        # Text file must still appear normally
+        self.assertIn("notes.txt", stdout)
+
+
 if __name__ == "__main__":
     unittest.main()
