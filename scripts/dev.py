@@ -139,7 +139,7 @@ def _cmd_scan(args: argparse.Namespace) -> None:
         try:
             tokens = count_tokens(str(p))
             words = count_words(str(p))
-        except OSError as e:
+        except (OSError, UnicodeDecodeError) as e:
             print(f"warning: skipped {rel_path} (unreadable: {e})", file=sys.stderr)
             continue
         rows.append((rel_path, tokens, words))

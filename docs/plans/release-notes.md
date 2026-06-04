@@ -1,10 +1,17 @@
 ---
-last_updated: 2026-06-03
+last_updated: 2026-06-04
 status: active
 owner: core
 ---
 
 # Release Notes / 发布说明
+
+## 2026-06-04 (scan-unicode-decode-fix)
+
+### fix: catch UnicodeDecodeError in _cmd_scan alongside OSError
+
+- `scripts/dev.py _cmd_scan`: changed exception handler from `except OSError` to `except (OSError, UnicodeDecodeError)` to properly handle non-UTF-8 files
+- `UnicodeDecodeError` is not a subclass of `OSError`, so non-UTF-8 files would previously cause unhandled crashes; now they are skipped with a warning message
 
 ## 2026-06-04 (scan-fix-skip-dirs)
 
