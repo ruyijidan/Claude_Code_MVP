@@ -469,9 +469,15 @@ class ScanTests(unittest.TestCase):
 
         self.assertEqual(result.returncode, 0, msg=result.stderr)
         output_lower = result.stdout.lower()
+        stderr_lower = result.stderr.lower()
 
         # Must report no files found
         self.assertIn("no files found", output_lower)
+
+        # Per-file warnings must appear in stderr
+        self.assertIn("warning", stderr_lower)
+        self.assertIn("file1.bin", result.stderr)
+        self.assertIn("file2.exe", result.stderr)
 
 
 if __name__ == "__main__":

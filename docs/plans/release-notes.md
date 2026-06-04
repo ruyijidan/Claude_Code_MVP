@@ -6,6 +6,14 @@ owner: core
 
 # Release Notes / 发布说明
 
+## 2026-06-04 (scan-tests-stderr-assert)
+
+### test: assert per-file stderr warnings in test_all_binary_files_reports_no_files_found
+
+- `tests/test_dev.py`: added `stderr_lower` assertion to verify "warning" appears in stderr when all files are binary
+- `tests/test_dev.py`: added filename assertions to verify both `file1.bin` and `file2.exe` are mentioned in stderr
+- Closes spec compliance gap: AS9 now fully verifies "warnings are printed for each file" per FR-007
+
 ## 2026-06-04 (scan-tests-coverage)
 
 ### test: add 3 missing ScanTests coverage gaps (single-file, multi-ext, all-binary)
