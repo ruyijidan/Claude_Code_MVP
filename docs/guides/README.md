@@ -11,6 +11,7 @@ This directory contains contributor playbooks and learner-oriented harness guide
 Current guides:
 
 - [`from-zero-to-your-own-harness.md`](./from-zero-to-your-own-harness.md)
+- [`harness-teaching-path.md`](./harness-teaching-path.md)
 - [`harness-capability-matrix.md`](./harness-capability-matrix.md)
 - [`harness-code-reading-path.md`](./harness-code-reading-path.md)
 - [`harness-pitfalls-and-anti-patterns.md`](./harness-pitfalls-and-anti-patterns.md)
@@ -21,5 +22,6 @@ Current guides:
 Use these docs when you want to learn the harness, read the codebase in a deliberate order, or make a concrete repository change.
 
 Start with `how-to-implement-a-harness.md` when you want to learn the end-to-end control loop before adding specific workflow or rule assets.
+Start with `harness-teaching-path.md` when you need the quickest route for onboarding, internal sharing, or converting the current docs into a teaching pack.
 Read `from-zero-to-your-own-harness.md` when you want the longer learning path from harness basics to building your own project.
 Use `harness-capability-matrix.md` to separate current implementation from roadmap, `harness-code-reading-path.md` to follow the codebase in execution order, and `harness-pitfalls-and-anti-patterns.md` to prepare examples of what not to build.
