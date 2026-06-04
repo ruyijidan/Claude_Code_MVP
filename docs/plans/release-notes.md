@@ -6,6 +6,13 @@ owner: core
 
 # Release Notes / 发布说明
 
+## 2026-06-04 (scan-polish)
+
+### chore: polish scan implementation — docstrings, comment, stale text
+
+- `scripts/dev.py`: added docstring to `_cmd_scan`; added inline comment explaining sep-width formula; added `scan --help` to module usage block
+- `tests/test_dev.py`: updated stale module docstring to list all four subcommands
+
 ## 2026-06-04 (scan-tests-quality-fix)
 
 ### test: use uuid-based path for nonexistent directory test (robustness)

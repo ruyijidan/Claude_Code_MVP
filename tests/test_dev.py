@@ -1,5 +1,6 @@
 """
-Tests for the `token-count` and `compare` subcommands in scripts/dev.py.
+Tests for the `token-count`, `compare`, `word-count`, and `scan` subcommands
+in scripts/dev.py.
 
 Tests drive the CLI as a subprocess to exercise the real argument-parsing
 layer and exit-code semantics.

@@ -6,6 +6,7 @@ Usage:
     python scripts/dev.py token-count --help
     python scripts/dev.py compare --help
     python scripts/dev.py word-count --help
+    python scripts/dev.py scan --help
 """
 
 import argparse
@@ -98,6 +99,7 @@ def _format_scan_table(rows: list[tuple[str, int, int]]) -> str:
     if not rows:
         return "(no files)"
     file_col_width = max(4, max(len(r[0]) for r in rows)) + 2
+    # file_col_width + two 8-char numeric cols + two 2-space separators
     sep = "─" * (file_col_width + 8 + 8 + 2 * 2)
 
     header = f"{'file':<{file_col_width}}" f"  {'tokens':>8}" f"  {'words':>8}"
@@ -117,6 +119,7 @@ def _format_scan_table(rows: list[tuple[str, int, int]]) -> str:
 
 
 def _cmd_scan(args: argparse.Namespace) -> None:
+    """Print a token/word-count table for text files under args.dir; exit 1 if directory missing."""
     directory = Path(args.dir)
     if not directory.exists():
         print(f"error: directory not found: {directory}", file=sys.stderr)
