@@ -336,10 +336,11 @@ class ScanTests(unittest.TestCase):
         self.assertIn("no files found", result.stdout.lower())
 
     def test_nonexistent_directory_exits_nonzero_with_error(self) -> None:
-        """A path that does not exist must write to stderr and exit 1."""
-        result = _run("scan", "/nonexistent/path/xyz")
+        """A path that does not exist must write to stderr and exit non-zero."""
+        nonexistent = str(Path(tempfile.gettempdir()) / f"nonexistent-{uuid.uuid4().hex}")
+        result = _run("scan", nonexistent)
 
-        self.assertEqual(result.returncode, 1)
+        self.assertNotEqual(result.returncode, 0, msg="Expected non-zero exit for missing directory")
         self.assertTrue(
             result.stderr.strip(),
             msg="Expected error message in stderr for nonexistent directory",

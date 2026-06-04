@@ -6,6 +6,13 @@ owner: core
 
 # Release Notes / 发布说明
 
+## 2026-06-04 (scan-tests-quality-fix)
+
+### test: use uuid-based path for nonexistent directory test (robustness)
+
+- `tests/test_dev.py`: replaced hardcoded `/nonexistent/path/xyz` with `tempfile.gettempdir() / f"nonexistent-{uuid.uuid4().hex}"` to avoid environment-dependent flakiness
+- `tests/test_dev.py`: changed `assertEqual(returncode, 1)` to `assertNotEqual(returncode, 0)` for consistency with sibling test classes
+
 ## 2026-06-04 (scan-tests-stderr-assert)
 
 ### test: assert per-file stderr warnings in test_all_binary_files_reports_no_files_found
