@@ -6,6 +6,15 @@ owner: core
 
 # Release Notes / 发布说明
 
+## 2026-06-04 (scan-tests-coverage)
+
+### test: add 3 missing ScanTests coverage gaps (single-file, multi-ext, all-binary)
+
+- `tests/test_dev.py`: added `test_single_file_shows_one_row_and_total()` — verifies single-file scan shows header, one data row, and total row
+- `tests/test_dev.py`: added `test_ext_filter_multiple_extensions_shows_both()` — verifies `--ext .md .txt` filters correctly with multiple extensions
+- `tests/test_dev.py`: added `test_all_binary_files_reports_no_files_found()` — verifies directory with only binary files reports "no files found"
+- ScanTests now has 9 total test cases covering all major code paths
+
 ## 2026-06-04 (scan-tests)
 
 ### test: add ScanTests covering US1/US2/US3

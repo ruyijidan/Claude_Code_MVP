@@ -405,6 +405,74 @@ class ScanTests(unittest.TestCase):
         # Text file must still appear normally
         self.assertIn("notes.txt", stdout)
 
+    # ------------------------------------------------------------------
+    # Additional coverage gaps
+    # ------------------------------------------------------------------
+
+    def test_single_file_shows_one_row_and_total(self) -> None:
+        """Scan a directory with only one text file; output must have header,
+        one data row with the file, a total row, and exit 0."""
+        with tempfile.TemporaryDirectory() as tmp:
+            single_file = Path(tmp) / "single.txt"
+            single_file.write_text("hello world test", encoding="utf-8")
+
+            result = _run("scan", tmp)
+
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+        output = result.stdout
+        output_lower = output.lower()
+
+        # Header row
+        self.assertIn("file", output_lower)
+        self.assertIn("token", output_lower)
+        self.assertIn("word", output_lower)
+
+        # Single file appears
+        self.assertIn("single.txt", output)
+
+        # Total row present
+        self.assertIn("total", output_lower)
+
+    def test_ext_filter_multiple_extensions_shows_both(self) -> None:
+        """--ext with multiple extensions (.md .txt) must include files matching
+        either extension; .py files must not appear; exit 0."""
+        with tempfile.TemporaryDirectory() as tmp:
+            md_file = Path(tmp) / "a.md"
+            txt_file = Path(tmp) / "b.txt"
+            py_file = Path(tmp) / "c.py"
+            md_file.write_text("# markdown file", encoding="utf-8")
+            txt_file.write_text("text file content", encoding="utf-8")
+            py_file.write_text("print('python')", encoding="utf-8")
+
+            result = _run("scan", tmp, "--ext", ".md", ".txt")
+
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+        output = result.stdout
+
+        # Both .md and .txt files must appear
+        self.assertIn("a.md", output)
+        self.assertIn("b.txt", output)
+
+        # .py file must not appear
+        self.assertNotIn("c.py", output)
+
+    def test_all_binary_files_reports_no_files_found(self) -> None:
+        """Scan a directory containing only binary files; output must report
+        'no files found', a warning in stderr, and exit 0."""
+        with tempfile.TemporaryDirectory() as tmp:
+            bin_file1 = Path(tmp) / "file1.bin"
+            bin_file2 = Path(tmp) / "file2.exe"
+            bin_file1.write_bytes(b"\x00binary\x00\xff\xfe")
+            bin_file2.write_bytes(b"\x4d\x5a\x90\x00")  # PE header
+
+            result = _run("scan", tmp)
+
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+        output_lower = result.stdout.lower()
+
+        # Must report no files found
+        self.assertIn("no files found", output_lower)
+
 
 if __name__ == "__main__":
     unittest.main()
